@@ -379,6 +379,11 @@ export default function AgentOverview() {
           </Link>
           
           <Button variant="outline" size="sm">
+            <Zap className="h-4 w-4 mr-2" />
+            Test Agent
+          </Button>
+          
+          <Button variant="outline" size="sm">
             <Share className="h-4 w-4 mr-2" />
             Share
           </Button>
@@ -798,31 +803,6 @@ export default function AgentOverview() {
                 <span className="text-sm text-muted-foreground">Created</span>
                 <span className="text-sm">{formatDate(agent.createdAt)}</span>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Quick Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Link to={`/app/agents/${agent.id}/analyze`} className="block">
-                <Button variant="outline" className="w-full justify-start gap-2">
-                  <BarChart3 className="h-4 w-4" />
-                  View Analytics
-                </Button>
-              </Link>
-              
-              <Button variant="outline" className="w-full justify-start gap-2" onClick={() => setShareDialogOpen(true)}>
-                <Users className="h-4 w-4" />
-                Share Access
-              </Button>
-              
-              <Button variant="outline" className="w-full justify-start gap-2">
-                <Zap className="h-4 w-4" />
-                Test Agent
-              </Button>
             </CardContent>
           </Card>
         </div>
