@@ -37,7 +37,12 @@ import {
   File,
   Download,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Search,
+  X,
+  UserPlus,
+  Crown,
+  Eye
 } from 'lucide-react';
 import { Agent, InterviewGuide, KnowledgeAsset } from '@/types';
 import { agentsService } from '@/services/agents';
@@ -52,7 +57,10 @@ export default function AgentOverview() {
   const [loading, setLoading] = useState(true);
   const [expandedSections, setExpandedSections] = useState<Set<number>>(new Set());
   const [deployDialogOpen, setDeployDialogOpen] = useState(false);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [caseCode, setCaseCode] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedUsers, setSelectedUsers] = useState<Array<{id: string, name: string, email: string, role: 'viewer' | 'editor'}>>([]);
   const [isDeploying, setIsDeploying] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -212,6 +220,51 @@ export default function AgentOverview() {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  // Mock Okta users for sharing
+  const mockOktaUsers = [
+    { id: '1', name: 'Sarah Chen', email: 'sarah.chen@bcg.com', department: 'Strategy' },
+    { id: '2', name: 'Michael Rodriguez', email: 'michael.rodriguez@bcg.com', department: 'Operations' },
+    { id: '3', name: 'Emma Johnson', email: 'emma.johnson@bcg.com', department: 'Digital' },
+    { id: '4', name: 'David Kim', email: 'david.kim@bcg.com', department: 'Technology' },
+    { id: '5', name: 'Lisa Wang', email: 'lisa.wang@bcg.com', department: 'Marketing' },
+    { id: '6', name: 'James Thompson', email: 'james.thompson@bcg.com', department: 'Finance' },
+    { id: '7', name: 'Ana Garcia', email: 'ana.garcia@bcg.com', department: 'Strategy' },
+    { id: '8', name: 'Robert Lee', email: 'robert.lee@bcg.com', department: 'Operations' },
+  ];
+
+  const filteredUsers = mockOktaUsers.filter(user => 
+    !selectedUsers.find(selected => selected.id === user.id) &&
+    (user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+     user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+     user.department.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
+  const addUser = (user: typeof mockOktaUsers[0]) => {
+    setSelectedUsers(prev => [...prev, { ...user, role: 'viewer' }]);
+    setSearchQuery('');
+  };
+
+  const removeUser = (userId: string) => {
+    setSelectedUsers(prev => prev.filter(user => user.id !== userId));
+  };
+
+  const updateUserRole = (userId: string, role: 'viewer' | 'editor') => {
+    setSelectedUsers(prev => 
+      prev.map(user => user.id === userId ? { ...user, role } : user)
+    );
+  };
+
+  const handleShareAgent = () => {
+    // Fake sharing functionality
+    toast({
+      title: 'Access Shared Successfully',
+      description: `Shared with ${selectedUsers.length} user${selectedUsers.length !== 1 ? 's' : ''}.`,
+    });
+    setShareDialogOpen(false);
+    setSelectedUsers([]);
+    setSearchQuery('');
   };
 
   return (
@@ -761,7 +814,7 @@ export default function AgentOverview() {
                 </Button>
               </Link>
               
-              <Button variant="outline" className="w-full justify-start gap-2">
+              <Button variant="outline" className="w-full justify-start gap-2" onClick={() => setShareDialogOpen(true)}>
                 <Users className="h-4 w-4" />
                 Share Access
               </Button>
@@ -774,6 +827,141 @@ export default function AgentOverview() {
           </Card>
         </div>
       </div>
+
+      {/* Share Access Dialog */}
+      <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Share Agent Access</DialogTitle>
+            <DialogDescription>
+              Add BCG team members and set their permission levels for this agent.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            {/* Search Users */}
+            <div className="space-y-2">
+              <Label>Add Team Members</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by name, email, or department..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              
+              {/* Search Results */}
+              {searchQuery && (
+                <div className="max-h-40 overflow-y-auto border rounded-md">
+                  {filteredUsers.length > 0 ? (
+                    filteredUsers.map((user) => (
+                      <button
+                        key={user.id}
+                        onClick={() => addUser(user)}
+                        className="w-full flex items-center justify-between p-3 hover:bg-muted transition-colors text-left"
+                      >
+                        <div>
+                          <p className="font-medium text-sm">{user.name}</p>
+                          <p className="text-xs text-muted-foreground">{user.email}</p>
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {user.department}
+                        </div>
+                      </button>
+                    ))
+                  ) : (
+                    <p className="p-3 text-sm text-muted-foreground text-center">
+                      No users found matching "{searchQuery}"
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Selected Users */}
+            {selectedUsers.length > 0 && (
+              <div className="space-y-2">
+                <Label>Shared With ({selectedUsers.length})</Label>
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {selectedUsers.map((user) => (
+                    <div key={user.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                          <span className="text-xs font-medium text-primary">
+                            {user.name.split(' ').map(n => n[0]).join('')}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">{user.name}</p>
+                          <p className="text-xs text-muted-foreground">{user.email}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={user.role}
+                          onChange={(e) => updateUserRole(user.id, e.target.value as 'viewer' | 'editor')}
+                          className="text-sm border rounded px-2 py-1"
+                        >
+                          <option value="viewer">Viewer</option>
+                          <option value="editor">Editor</option>
+                        </select>
+                        
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeUser(user.id)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Permission Explanation */}
+            <div className="space-y-3 p-4 bg-muted/30 rounded-lg">
+              <h4 className="font-medium text-sm">Permission Levels</h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <Eye className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-medium">Viewer:</span>
+                  <span className="text-muted-foreground">Can view agent details and analytics</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Crown className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-medium">Editor:</span>
+                  <span className="text-muted-foreground">Can edit agent configuration and settings</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShareDialogOpen(false);
+                setSelectedUsers([]);
+                setSearchQuery('');
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleShareAgent}
+              disabled={selectedUsers.length === 0}
+            >
+              <UserPlus className="h-4 w-4 mr-2" />
+              Share Access ({selectedUsers.length})
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
