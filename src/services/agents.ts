@@ -45,6 +45,160 @@ const mockAgents: Agent[] = [
   }
 ];
 
+const mockInterviewGuides: InterviewGuide[] = [
+  {
+    id: 'guide-1',
+    agentId: 'agent-1',
+    rawText: `Welcome to our expert interview on EU battery technologies. We're conducting research to understand the current landscape and future opportunities in this rapidly evolving sector.
+
+Objectives:
+- Assess current market dynamics in EU battery manufacturing
+- Identify key technological trends and innovations
+- Understand regulatory landscape and its impact
+- Evaluate competitive positioning of major players
+
+Questions:
+1. What are the main drivers of growth in the EU battery market?
+2. How do you see the regulatory environment evolving?
+3. Which technologies show the most promise for the next 5 years?
+4. What are the key challenges facing battery manufacturers today?
+
+Thank you for your participation in this research.`,
+    structured: {
+      intro: "Welcome to our expert interview on EU battery technologies. We're conducting research to understand the current landscape and future opportunities in this rapidly evolving sector.",
+      objectives: [
+        "Assess current market dynamics in EU battery manufacturing",
+        "Identify key technological trends and innovations",
+        "Understand regulatory landscape and its impact",
+        "Evaluate competitive positioning of major players"
+      ],
+      sections: [
+        {
+          title: "Market Dynamics",
+          questions: [
+            {
+              id: "q1",
+              type: "open",
+              prompt: "What are the main drivers of growth in the EU battery market?",
+              required: true
+            },
+            {
+              id: "q2",
+              type: "scale",
+              prompt: "How would you rate the current competitive intensity?",
+              scale: { min: 1, max: 5, labels: { 1: "Very Low", 5: "Very High" } },
+              required: true
+            }
+          ]
+        },
+        {
+          title: "Technology & Innovation",
+          questions: [
+            {
+              id: "q3",
+              type: "open",
+              prompt: "Which technologies show the most promise for the next 5 years?",
+              followUps: ["Can you elaborate on the technical advantages?", "What are the main barriers to adoption?"]
+            },
+            {
+              id: "q4",
+              type: "multi",
+              prompt: "Which of these areas need the most innovation investment?",
+              options: ["Energy density", "Charging speed", "Longevity", "Sustainability", "Cost reduction"],
+              required: true
+            }
+          ]
+        }
+      ],
+      closing: "Thank you for your participation in this research."
+    },
+    validation: { complete: true, issues: [] }
+  },
+  {
+    id: 'guide-2',
+    agentId: 'agent-2',
+    rawText: `Quick NPS survey for retail experience.
+
+1. How likely are you to recommend us to a friend? (0-10 scale)
+2. What's the main reason for your score?
+3. Any suggestions for improvement?
+
+Thank you!`,
+    structured: {
+      intro: "Quick NPS survey for retail experience.",
+      objectives: ["Measure customer satisfaction", "Identify improvement areas"],
+      sections: [
+        {
+          title: "NPS Assessment",
+          questions: [
+            {
+              id: "nps",
+              type: "scale",
+              prompt: "How likely are you to recommend us to a friend?",
+              scale: { min: 0, max: 10 },
+              required: true
+            },
+            {
+              id: "reason",
+              type: "open",
+              prompt: "What's the main reason for your score?",
+              required: true
+            },
+            {
+              id: "suggestions",
+              type: "open",
+              prompt: "Any suggestions for improvement?"
+            }
+          ]
+        }
+      ],
+      closing: "Thank you!"
+    },
+    validation: { complete: true, issues: [] }
+  }
+];
+
+const mockKnowledgeAssets: KnowledgeAsset[] = [
+  {
+    id: 'knowledge-1',
+    agentId: 'agent-1',
+    title: 'EU Battery Market Report 2024',
+    type: 'file',
+    fileName: 'eu_battery_market_2024.pdf',
+    fileSize: 2400000
+  },
+  {
+    id: 'knowledge-2',
+    agentId: 'agent-1',
+    title: 'Industry Expert Contacts',
+    type: 'text',
+    contentText: 'List of key industry experts in EU battery sector:\n\n1. Dr. Maria Schmidt - Head of Battery Research, TU Berlin\n2. Prof. Jean Dubois - Energy Storage Institute, Sorbonne\n3. Henrik Andersson - CTO, NorthVolt\n\nContact protocols and key topics for each expert...'
+  },
+  {
+    id: 'knowledge-3',
+    agentId: 'agent-1',
+    title: 'Technical Specifications Guide',
+    type: 'file',
+    fileName: 'battery_tech_specs_v3.docx',
+    fileSize: 890000
+  },
+  {
+    id: 'knowledge-4',
+    agentId: 'agent-2',
+    title: 'Retail Location Details',
+    type: 'text',
+    contentText: 'Store information:\n- Location: Downtown Shopping Center\n- Opening hours: 9 AM - 9 PM\n- Store size: 2,500 sq ft\n- Staff: 8 team members\n- Peak hours: 12-2 PM, 6-8 PM'
+  },
+  {
+    id: 'knowledge-5',
+    agentId: 'agent-2',
+    title: 'Previous NPS Results',
+    type: 'file',
+    fileName: 'nps_history_q1_q3.xlsx',
+    fileSize: 156000
+  }
+];
+
 const mockInterviews: InterviewSummary[] = [
   {
     id: 'interview-1',
@@ -186,6 +340,18 @@ export const agentsService = {
         return interviewDate > sevenDaysAgo;
       }).length
     };
+  },
+
+  // Get agent interview guide
+  async getAgentGuide(agentId: string): Promise<InterviewGuide | null> {
+    await delay(300);
+    return mockInterviewGuides.find(guide => guide.agentId === agentId) || null;
+  },
+
+  // Get agent knowledge assets
+  async getAgentKnowledge(agentId: string): Promise<KnowledgeAsset[]> {
+    await delay(300);
+    return mockKnowledgeAssets.filter(asset => asset.agentId === agentId);
   }
 };
 

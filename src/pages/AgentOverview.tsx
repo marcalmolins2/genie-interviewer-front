@@ -31,9 +31,13 @@ import {
   Zap,
   Rocket,
   CheckCircle,
-  ExternalLink
+  ExternalLink,
+  FileText,
+  Brain,
+  File,
+  Download
 } from 'lucide-react';
-import { Agent } from '@/types';
+import { Agent, InterviewGuide, KnowledgeAsset } from '@/types';
 import { agentsService } from '@/services/agents';
 import { useToast } from '@/hooks/use-toast';
 
@@ -41,6 +45,8 @@ export default function AgentOverview() {
   const { agentId } = useParams<{ agentId: string }>();
   const [agent, setAgent] = useState<Agent | null>(null);
   const [stats, setStats] = useState<any>(null);
+  const [guide, setGuide] = useState<InterviewGuide | null>(null);
+  const [knowledge, setKnowledge] = useState<KnowledgeAsset[]>([]);
   const [loading, setLoading] = useState(true);
   const [deployDialogOpen, setDeployDialogOpen] = useState(false);
   const [caseCode, setCaseCode] = useState('');
@@ -52,6 +58,7 @@ export default function AgentOverview() {
     if (agentId) {
       loadAgent();
       loadStats();
+      loadGuideAndKnowledge();
     }
   }, [agentId]);
 
@@ -85,6 +92,21 @@ export default function AgentOverview() {
       setStats(data);
     } catch (error) {
       console.error('Failed to load stats:', error);
+    }
+  };
+
+  const loadGuideAndKnowledge = async () => {
+    if (!agentId) return;
+    
+    try {
+      const [guideData, knowledgeData] = await Promise.all([
+        agentsService.getAgentGuide(agentId),
+        agentsService.getAgentKnowledge(agentId)
+      ]);
+      setGuide(guideData);
+      setKnowledge(knowledgeData);
+    } catch (error) {
+      console.error('Failed to load guide and knowledge:', error);
     }
   };
 
@@ -381,6 +403,151 @@ export default function AgentOverview() {
                   <p className="text-sm text-muted-foreground">
                     Generating contact credentials...
                   </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Interview Guide */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Interview Guide
+              </CardTitle>
+              <CardDescription>The conversation structure for this agent</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {guide ? (
+                <div className="space-y-4">
+                  {guide.structured ? (
+                    <div className="space-y-4">
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Introduction</h4>
+                        <p className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
+                          {guide.structured.intro}
+                        </p>
+                      </div>
+                      
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Objectives</h4>
+                        <ul className="text-sm text-muted-foreground space-y-1">
+                          {guide.structured.objectives.map((obj, idx) => (
+                            <li key={idx} className="flex items-start gap-2">
+                              <span className="w-1 h-1 bg-primary rounded-full mt-2 flex-shrink-0"></span>
+                              {obj}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Question Sections ({guide.structured.sections.length})</h4>
+                        <div className="space-y-2">
+                          {guide.structured.sections.map((section, idx) => (
+                            <div key={idx} className="bg-muted p-3 rounded-md">
+                              <p className="font-medium text-sm">{section.title}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {section.questions.length} question{section.questions.length !== 1 ? 's' : ''}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ) : guide.rawText ? (
+                    <div>
+                      <h4 className="font-medium text-sm mb-2">Raw Guide Text</h4>
+                      <Textarea 
+                        value={guide.rawText} 
+                        readOnly 
+                        className="min-h-[200px] text-sm"
+                      />
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No guide content available</p>
+                  )}
+                  
+                  <div className="flex items-center justify-between pt-2 border-t">
+                    <div className="flex items-center gap-2">
+                      {guide.validation.complete ? (
+                        <CheckCircle className="h-4 w-4 text-success" />
+                      ) : (
+                        <div className="h-4 w-4 rounded-full border-2 border-muted-foreground"></div>
+                      )}
+                      <span className="text-sm text-muted-foreground">
+                        {guide.validation.complete ? 'Guide validated' : 'Validation pending'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <FileText className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">No interview guide configured</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Knowledge Base */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Brain className="h-5 w-5" />
+                Knowledge Base
+              </CardTitle>
+              <CardDescription>Information and resources available to the agent</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {knowledge.length > 0 ? (
+                <div className="space-y-3">
+                  {knowledge.map((asset) => (
+                    <div key={asset.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                      <div className="flex items-center gap-3">
+                        {asset.type === 'file' ? (
+                          <File className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <FileText className="h-4 w-4 text-muted-foreground" />
+                        )}
+                        <div>
+                          <p className="font-medium text-sm">{asset.title}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {asset.type === 'file' && asset.fileName ? (
+                              <span>
+                                {asset.fileName} • {Math.round((asset.fileSize || 0) / 1024)} KB
+                              </span>
+                            ) : (
+                              'Text content'
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                      {asset.type === 'text' && asset.contentText && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            // Create a modal or expand to show content
+                            alert(asset.contentText?.substring(0, 200) + '...');
+                          }}
+                        >
+                          View
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                  
+                  <div className="pt-2 border-t">
+                    <p className="text-xs text-muted-foreground text-center">
+                      {knowledge.length} knowledge asset{knowledge.length !== 1 ? 's' : ''} configured
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <Brain className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">No knowledge assets configured</p>
                 </div>
               )}
             </CardContent>
