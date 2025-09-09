@@ -1,0 +1,162 @@
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { AlertCircle, Sparkles, Loader2 } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Link, useNavigate } from 'react-router-dom';
+
+export default function Login() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+
+  const handleOktaLogin = async () => {
+    setIsLoading(true);
+    setError('');
+    
+    try {
+      // Simulate Okta authentication
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // In real implementation, this would integrate with Okta Sign-In Widget
+      // For demo purposes, we'll simulate successful login
+      localStorage.setItem('user', JSON.stringify({
+        id: 'user-1',
+        email: 'consultant@bcg.com',
+        name: 'Sarah Chen',
+        organizationId: 'bcg-lumen'
+      }));
+      
+      navigate('/app/agents');
+    } catch (err) {
+      setError('Authentication failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDemoLogin = async () => {
+    setIsLoading(true);
+    
+    // Simulate demo login
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    localStorage.setItem('user', JSON.stringify({
+      id: 'demo-user',
+      email: 'demo@example.com',
+      name: 'Demo User',
+      organizationId: 'demo-org'
+    }));
+    
+    navigate('/app/agents');
+    setIsLoading(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="w-full max-w-md space-y-6">
+        {/* Header */}
+        <div className="text-center">
+          <Link to="/" className="inline-flex items-center gap-2 mb-8">
+            <Sparkles className="h-8 w-8 text-primary" />
+            <span className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              Genie Interviewers
+            </span>
+          </Link>
+          
+          <h1 className="text-2xl font-bold">Welcome Back</h1>
+          <p className="text-muted-foreground mt-2">
+            Sign in to your BCG Project Lumen account
+          </p>
+        </div>
+
+        {/* Login Card */}
+        <Card className="card-elevated">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-xl">Sign In</CardTitle>
+            <CardDescription>
+              Use your BCG credentials to access Genie Interviewers
+            </CardDescription>
+          </CardHeader>
+          
+          <CardContent className="space-y-4">
+            {error && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            {/* Okta SSO Button */}
+            <Button 
+              onClick={handleOktaLogin}
+              disabled={isLoading}
+              className="w-full"
+              size="lg"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Authenticating...
+                </>
+              ) : (
+                'Sign in with Okta SSO'
+              )}
+            </Button>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <Separator className="w-full" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">
+                  Or for demo
+                </span>
+              </div>
+            </div>
+
+            {/* Demo Login */}
+            <Button 
+              variant="outline"
+              onClick={handleDemoLogin}
+              disabled={isLoading}
+              className="w-full"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Loading Demo...
+                </>
+              ) : (
+                'Continue with Demo Account'
+              )}
+            </Button>
+
+            {/* Help Text */}
+            <div className="text-center text-sm text-muted-foreground space-y-2 pt-4">
+              <p>
+                Having trouble signing in?{' '}
+                <a href="#" className="text-primary hover:underline">
+                  Contact IT Support
+                </a>
+              </p>
+              <p className="text-xs">
+                This application requires BCG Okta credentials for production access.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Footer */}
+        <div className="text-center text-xs text-muted-foreground">
+          <p>
+            © 2024 BCG Project Lumen. Enterprise security and compliance enabled.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
