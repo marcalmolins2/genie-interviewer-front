@@ -1,5 +1,5 @@
 // Mock Service Layer for Agents API
-import { Agent, InterviewGuide, KnowledgeAsset, AudienceUpload, Share, InterviewSummary, PRICE_BY_CHANNEL } from '@/types';
+import { Agent, InterviewGuide, KnowledgeAsset, AudienceUpload, Share, InterviewSummary, GuideSchema, PRICE_BY_CHANNEL } from '@/types';
 
 // Mock data
 const mockAgents: Agent[] = [
@@ -660,7 +660,7 @@ export const agentsService = {
   },
 
   // Update agent guide
-  async updateAgentGuide(agentId: string, guideText: string): Promise<InterviewGuide> {
+  async updateAgentGuide(agentId: string, guideText: string, structured?: GuideSchema | null): Promise<InterviewGuide> {
     await delay(400);
     const guideIndex = mockInterviewGuides.findIndex(g => g.agentId === agentId);
     
@@ -670,7 +670,8 @@ export const agentsService = {
         id: `guide-${Date.now()}`,
         agentId,
         rawText: guideText,
-        validation: { complete: guideText.length > 50, issues: [] }
+        structured: structured || undefined,
+        validation: { complete: guideText.length > 50 || !!structured, issues: [] }
       };
       mockInterviewGuides.push(newGuide);
       return newGuide;
@@ -679,7 +680,8 @@ export const agentsService = {
       mockInterviewGuides[guideIndex] = {
         ...mockInterviewGuides[guideIndex],
         rawText: guideText,
-        validation: { complete: guideText.length > 50, issues: [] }
+        structured: structured || mockInterviewGuides[guideIndex].structured,
+        validation: { complete: guideText.length > 50 || !!structured, issues: [] }
       };
       return mockInterviewGuides[guideIndex];
     }

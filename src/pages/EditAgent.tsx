@@ -29,6 +29,7 @@ import {
 import { Agent, InterviewGuide, KnowledgeAsset, Channel, PRICE_BY_CHANNEL } from '@/types';
 import { agentsService } from '@/services/agents';
 import { useToast } from '@/hooks/use-toast';
+import { InterviewGuideEditor } from '@/components/InterviewGuideEditor';
 
 export default function EditAgent() {
   const { agentId } = useParams<{ agentId: string }>();
@@ -116,7 +117,8 @@ export default function EditAgent() {
       await agentsService.updateAgent(agentId, updatedAgent);
       
       if (formData.guideText !== (guide?.rawText || '')) {
-        await agentsService.updateAgentGuide(agentId, formData.guideText);
+        const guideData = guide?.structured || null;
+        await agentsService.updateAgentGuide(agentId, formData.guideText, guideData);
       }
       
       toast({
@@ -330,19 +332,31 @@ export default function EditAgent() {
             <CardDescription>Define the conversation structure and questions</CardDescription>
           </CardHeader>
           <CardContent>
-            <div>
-              <Label htmlFor="guide">Interview Guide Content</Label>
-              <Textarea
-                id="guide"
-                value={formData.guideText}
-                onChange={(e) => setFormData(prev => ({ ...prev, guideText: e.target.value }))}
-                placeholder="Enter your interview guide content..."
-                className="mt-1 min-h-[200px]"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Define your introduction, objectives, questions, and closing remarks.
-              </p>
-            </div>
+            <InterviewGuideEditor
+              guide={guide?.structured || null}
+              onChange={(newGuide) => {
+                setFormData(prev => ({ 
+                  ...prev, 
+                  guideText: newGuide.intro + '\n\n' + 
+                    'Objectives:\n' + newGuide.objectives.map(obj => `- ${obj}`).join('\n') + '\n\n' +
+                    newGuide.sections.map(section => 
+                      `## ${section.title}\n` + 
+                      section.questions.map((q, idx) => `${idx + 1}. ${q.prompt}`).join('\n')
+                    ).join('\n\n') + '\n\n' + newGuide.closing
+                }));
+                // Also update guide state for immediate preview
+                setGuide(prev => prev ? { 
+                  ...prev, 
+                  structured: newGuide,
+                  validation: { complete: true, issues: [] }
+                } : {
+                  id: `guide-${Date.now()}`,
+                  agentId: agentId!,
+                  structured: newGuide,
+                  validation: { complete: true, issues: [] }
+                });
+              }}
+            />
           </CardContent>
         </Card>
 

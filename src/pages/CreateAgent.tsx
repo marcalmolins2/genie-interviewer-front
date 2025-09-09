@@ -19,9 +19,10 @@ import {
   Check,
   AlertCircle
 } from 'lucide-react';
-import { ARCHETYPES, Channel, Archetype, PRICE_BY_CHANNEL } from '@/types';
+import { ARCHETYPES, Channel, Archetype, PRICE_BY_CHANNEL, GuideSchema } from '@/types';
 import { agentsService } from '@/services/agents';
 import { useToast } from '@/hooks/use-toast';
+import { InterviewGuideEditor } from '@/components/InterviewGuideEditor';
 
 interface CreateAgentForm {
   name: string;
@@ -30,6 +31,7 @@ interface CreateAgentForm {
   voiceId: string;
   channel: Channel;
   interviewGuide: string;
+  guideStructured: GuideSchema | null;
   knowledgeText: string;
   knowledgeFiles: File[];
 }
@@ -64,6 +66,7 @@ export default function CreateAgent() {
     voiceId: 'voice-1',
     channel: 'chat',
     interviewGuide: '',
+    guideStructured: null,
     knowledgeText: '',
     knowledgeFiles: [],
   });
@@ -81,7 +84,7 @@ export default function CreateAgent() {
         return form.archetype !== null;
       case 1: // Configure
         return form.name.trim().length >= 3 && 
-               form.interviewGuide.trim().length >= 10 &&
+               (form.guideStructured !== null || form.interviewGuide.trim().length >= 10) &&
                (form.knowledgeText.trim().length > 0 || form.knowledgeFiles.length > 0);
       case 2: // Channel
         return true; // Channel has default value
@@ -250,17 +253,25 @@ export default function CreateAgent() {
               </Card>
 
               {/* Interview Guide */}
-              <Card>
+              <Card className="lg:col-span-2">
                 <CardHeader>
                   <CardTitle>Interview Guide *</CardTitle>
-                  <CardDescription>The script and questions for your agent</CardDescription>
+                  <CardDescription>Design the conversation structure and questions for your agent</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Textarea
-                    value={form.interviewGuide}
-                    onChange={(e) => updateForm({ interviewGuide: e.target.value })}
-                    placeholder="Enter your interview guide here... Include intro, main questions, and closing."
-                    className="min-h-[200px]"
+                  <InterviewGuideEditor
+                    guide={form.guideStructured}
+                    onChange={(guide) => {
+                      updateForm({ 
+                        guideStructured: guide,
+                        interviewGuide: guide.intro + '\n\n' + 
+                          'Objectives:\n' + guide.objectives.map(obj => `- ${obj}`).join('\n') + '\n\n' +
+                          guide.sections.map(section => 
+                            `## ${section.title}\n` + 
+                            section.questions.map((q, idx) => `${idx + 1}. ${q.prompt}`).join('\n')
+                          ).join('\n\n') + '\n\n' + guide.closing
+                      });
+                    }}
                   />
                 </CardContent>
               </Card>
@@ -415,10 +426,17 @@ export default function CreateAgent() {
 
                 <div>
                   <Label className="text-muted-foreground">Interview Guide</Label>
-                  <p className="text-sm bg-muted p-3 rounded mt-1">
-                    {form.interviewGuide.substring(0, 200)}
-                    {form.interviewGuide.length > 200 && '...'}
-                  </p>
+                  {form.guideStructured ? (
+                    <div className="text-sm bg-muted p-3 rounded mt-1 space-y-2">
+                      <p><strong>Introduction:</strong> {form.guideStructured.intro.substring(0, 100)}...</p>
+                      <p><strong>Objectives:</strong> {form.guideStructured.objectives.length} defined</p>
+                      <p><strong>Sections:</strong> {form.guideStructured.sections.length} question sections</p>
+                    </div>
+                  ) : (
+                    <p className="text-sm bg-muted p-3 rounded mt-1 text-muted-foreground">
+                      No structured guide configured yet
+                    </p>
+                  )}
                 </div>
 
                 <div>
