@@ -11,7 +11,11 @@ import {
   Phone,
   PhoneCall,
   CheckCircle,
-  Sparkles
+  Sparkles,
+  Settings,
+  Play,
+  Rocket,
+  TrendingUp
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ARCHETYPES, PRICE_BY_CHANNEL } from '@/types';
@@ -41,11 +45,11 @@ export default function Landing() {
   ];
 
   const steps = [
-    { title: 'Create', description: 'Choose archetype and configure your agent' },
-    { title: 'Configure', description: 'Add interview guide and knowledge base' },
-    { title: 'Test', description: 'Validate with sample conversations' },
-    { title: 'Deploy', description: 'Go live with your case code' },
-    { title: 'Analyze', description: 'Extract insights from conversations' },
+    { title: 'Create', description: 'Choose archetype and configure your agent', icon: Sparkles },
+    { title: 'Configure', description: 'Add interview guide and knowledge base', icon: Settings },
+    { title: 'Test', description: 'Validate with sample conversations', icon: Play },
+    { title: 'Deploy', description: 'Go live with your case code', icon: Rocket },
+    { title: 'Analyze', description: 'Extract insights from conversations', icon: TrendingUp },
   ];
 
   const channels = [
@@ -121,11 +125,11 @@ export default function Landing() {
           <div className="max-w-4xl mx-auto">
             <div className="flex flex-col md:flex-row items-center justify-between gap-8">
               {steps.map((step, index) => (
-                <div key={index} className="flex flex-col items-center text-center">
-                  <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg mb-4">
-                    {index + 1}
+                <div key={index} className="flex flex-col items-center text-center group">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-primary/70 text-primary-foreground flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110 shadow-lg">
+                    <step.icon className="h-8 w-8" />
                   </div>
-                  <h3 className="font-semibold mb-2">{step.title}</h3>
+                  <h3 className="font-semibold mb-2 transition-colors duration-300 group-hover:text-primary">{step.title}</h3>
                   <p className="text-sm text-muted-foreground">{step.description}</p>
                 </div>
               ))}
