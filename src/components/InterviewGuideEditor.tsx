@@ -237,28 +237,22 @@ export function InterviewGuideEditor({ guide, onChange }: InterviewGuideEditorPr
           </CardTitle>
           <CardDescription>Key goals and outcomes for this interview</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
-          {currentGuide.objectives.map((objective, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <Input
-                value={objective}
-                onChange={(e) => updateObjective(index, e.target.value)}
-                placeholder="Enter objective..."
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => removeObjective(index)}
-                disabled={currentGuide.objectives.length <= 1}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-          ))}
-          <Button variant="outline" size="sm" onClick={addObjective}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Objective
-          </Button>
+        <CardContent>
+          <Textarea
+            value={currentGuide.objectives.join('\n')}
+            onChange={(e) => {
+              const objectiveLines = e.target.value
+                .split('\n')
+                .map(line => line.replace(/^[•\-\*]\s*/, '').trim())
+                .filter(line => line.length > 0);
+              updateGuide({ objectives: objectiveLines });
+            }}
+            placeholder="Enter your research objectives, one per line:&#10;• Gather valuable insights&#10;• Understand key perspectives&#10;• Identify pain points"
+            className="min-h-[120px]"
+          />
+          <p className="text-xs text-muted-foreground mt-2">
+            Enter each objective on a new line. Bullets (•, -, *) are optional and will be automatically handled.
+          </p>
         </CardContent>
       </Card>
 
