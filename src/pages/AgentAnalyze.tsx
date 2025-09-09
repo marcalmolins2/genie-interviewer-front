@@ -88,7 +88,57 @@ export default function AgentAnalyze() {
       
       if (agentData) {
         setAgent(agentData);
-        setInterviews(interviewsData);
+        
+        // Add mock interviews for demo
+        const mockInterviews: InterviewSummary[] = [
+          {
+            id: 'int-20241201-001',
+            agentId: agentId,
+            startedAt: '2024-12-01T14:30:00Z',
+            durationSec: 1280,
+            completed: true,
+            respondentId: 'sarah.chen@company.com',
+            channel: agentData.channel
+          },
+          {
+            id: 'int-20241201-002', 
+            agentId: agentId,
+            startedAt: '2024-12-01T09:15:00Z',
+            durationSec: 952,
+            completed: true,
+            respondentId: 'mike.rodriguez@company.com',
+            channel: agentData.channel
+          },
+          {
+            id: 'int-20241130-003',
+            agentId: agentId,
+            startedAt: '2024-11-30T16:45:00Z', 
+            durationSec: 445,
+            completed: false,
+            respondentId: 'emma.johnson@company.com',
+            channel: agentData.channel
+          },
+          {
+            id: 'int-20241130-004',
+            agentId: agentId,
+            startedAt: '2024-11-30T11:20:00Z',
+            durationSec: 1560,
+            completed: true,
+            respondentId: 'david.kim@company.com',
+            channel: agentData.channel
+          },
+          {
+            id: 'int-20241129-005',
+            agentId: agentId,
+            startedAt: '2024-11-29T13:00:00Z',
+            durationSec: 720,
+            completed: false,
+            respondentId: 'lisa.wang@company.com',
+            channel: agentData.channel
+          }
+        ];
+        
+        setInterviews(mockInterviews);
         setStats(statsData);
       } else {
         navigate('/app/agents');
