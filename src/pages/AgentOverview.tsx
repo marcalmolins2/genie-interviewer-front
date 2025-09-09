@@ -693,8 +693,8 @@ export default function AgentOverview() {
                 </div>
                 
                 <div className="text-center p-3 bg-muted rounded-lg">
-                  <div className="text-2xl font-bold text-primary">${agent.pricePerInterviewUsd}</div>
-                  <div className="text-xs text-muted-foreground">Per Interview</div>
+                  <div className="text-2xl font-bold text-primary">${(agent.pricePerInterviewUsd * agent.interviewsCount).toFixed(2)}</div>
+                  <div className="text-xs text-muted-foreground">Total Spent</div>
                 </div>
               </div>
               
