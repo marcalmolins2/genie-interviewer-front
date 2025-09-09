@@ -73,13 +73,6 @@ export default function AppLayout() {
 
           <div className="flex items-center gap-4">
 
-            {/* New Agent Button */}
-            <Link to="/app/agents/new">
-              <Button size="sm" className="gap-2 hidden sm:inline-flex">
-                <Plus className="h-4 w-4" />
-                New Agent
-              </Button>
-            </Link>
 
             {/* Mobile Menu Button */}
             <Button
