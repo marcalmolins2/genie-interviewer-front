@@ -48,10 +48,6 @@ export default function AppLayout() {
     navigate('/login');
   };
 
-  const navItems = [
-    { href: '/app/agents', label: 'My Agents' },
-    { href: '/app/agents/new', label: 'New Agent' },
-  ];
 
   if (!user) {
     return <div className="min-h-screen flex items-center justify-center">
@@ -73,29 +69,9 @@ export default function AppLayout() {
               </span>
             </Link>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-6">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  className={`text-sm font-medium transition-colors hover:text-primary ${
-                    location.pathname === item.href
-                      ? 'text-primary'
-                      : 'text-muted-foreground'
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Project Badge */}
-            <Badge variant="outline" className="hidden sm:inline-flex">
-              Project Lumen
-            </Badge>
 
             {/* New Agent Button */}
             <Link to="/app/agents/new">
@@ -154,35 +130,6 @@ export default function AppLayout() {
           </div>
         </div>
 
-        {/* Mobile Navigation */}
-        {mobileMenuOpen && (
-          <div className="border-t md:hidden">
-            <nav className="container py-4 space-y-2">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    location.pathname === item.href
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:bg-muted'
-                  }`}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {item.label}
-                </Link>
-              ))}
-              <div className="pt-2">
-                <Link to="/app/agents/new" onClick={() => setMobileMenuOpen(false)}>
-                  <Button size="sm" className="w-full gap-2">
-                    <Plus className="h-4 w-4" />
-                    New Agent
-                  </Button>
-                </Link>
-              </div>
-            </nav>
-          </div>
-        )}
       </header>
 
       {/* Main Content */}

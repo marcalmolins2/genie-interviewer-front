@@ -69,7 +69,7 @@ export default function Login() {
           
           <h1 className="text-2xl font-bold">Welcome Back</h1>
           <p className="text-muted-foreground mt-2">
-            Sign in to your BCG Project Lumen account
+            Sign in to your Genie Interviewers account
           </p>
         </div>
 
@@ -78,7 +78,7 @@ export default function Login() {
           <CardHeader className="space-y-1">
             <CardTitle className="text-xl">Sign In</CardTitle>
             <CardDescription>
-              Use your BCG credentials to access Genie Interviewers
+              Use your credentials to access Genie Interviewers
             </CardDescription>
           </CardHeader>
           
@@ -144,7 +144,7 @@ export default function Login() {
                 </a>
               </p>
               <p className="text-xs">
-                This application requires BCG Okta credentials for production access.
+                This application requires Okta credentials for production access.
               </p>
             </div>
           </CardContent>
@@ -153,7 +153,7 @@ export default function Login() {
         {/* Footer */}
         <div className="text-center text-xs text-muted-foreground">
           <p>
-            © 2024 BCG Project Lumen. Enterprise security and compliance enabled.
+            © 2024 Genie Interviewers. Enterprise security and compliance enabled.
           </p>
         </div>
       </div>

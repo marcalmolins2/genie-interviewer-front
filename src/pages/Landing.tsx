@@ -67,9 +67,6 @@ export default function Landing() {
           </div>
           
           <div className="flex items-center gap-4">
-            <Badge variant="outline" className="hidden sm:inline-flex">
-              BCG Project Lumen
-            </Badge>
             <Link to="/login">
               <Button>Get Started</Button>
             </Link>
@@ -314,7 +311,7 @@ export default function Landing() {
         <div className="container">
           <div className="text-center text-muted-foreground">
             <p className="text-sm">
-              © 2024 BCG Project Lumen. Built for BCG case teams with enterprise security and compliance.
+              © 2024 Genie Interviewers. Built for case teams with enterprise security and compliance.
             </p>
           </div>
         </div>
