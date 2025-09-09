@@ -9,6 +9,7 @@ import AppLayout from "./pages/AppLayout";
 import AgentsList from "./pages/AgentsList";
 import CreateAgent from "./pages/CreateAgent";
 import AgentOverview from "./pages/AgentOverview";
+import EditAgent from "./pages/EditAgent";
 import AgentAnalyze from "./pages/AgentAnalyze";
 import NotFound from "./pages/NotFound";
 
@@ -27,6 +28,7 @@ const App = () => (
             <Route path="agents" element={<AgentsList />} />
             <Route path="agents/new" element={<CreateAgent />} />
             <Route path="agents/:agentId" element={<AgentOverview />} />
+            <Route path="agents/:agentId/edit" element={<EditAgent />} />
             <Route path="agents/:agentId/analyze" element={<AgentAnalyze />} />
           </Route>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

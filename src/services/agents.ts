@@ -657,6 +657,53 @@ export const agentsService = {
   async getAgentKnowledge(agentId: string): Promise<KnowledgeAsset[]> {
     await delay(300);
     return mockKnowledgeAssets.filter(asset => asset.agentId === agentId);
+  },
+
+  // Update agent guide
+  async updateAgentGuide(agentId: string, guideText: string): Promise<InterviewGuide> {
+    await delay(400);
+    const guideIndex = mockInterviewGuides.findIndex(g => g.agentId === agentId);
+    
+    if (guideIndex === -1) {
+      // Create new guide
+      const newGuide: InterviewGuide = {
+        id: `guide-${Date.now()}`,
+        agentId,
+        rawText: guideText,
+        validation: { complete: guideText.length > 50, issues: [] }
+      };
+      mockInterviewGuides.push(newGuide);
+      return newGuide;
+    } else {
+      // Update existing guide
+      mockInterviewGuides[guideIndex] = {
+        ...mockInterviewGuides[guideIndex],
+        rawText: guideText,
+        validation: { complete: guideText.length > 50, issues: [] }
+      };
+      return mockInterviewGuides[guideIndex];
+    }
+  },
+
+  // Add knowledge asset
+  async addKnowledgeAsset(agentId: string, assetData: { title: string; type: 'text' | 'file'; contentText?: string; fileName?: string; fileSize?: number }): Promise<KnowledgeAsset> {
+    await delay(400);
+    const newAsset: KnowledgeAsset = {
+      id: `knowledge-${Date.now()}`,
+      agentId,
+      ...assetData
+    };
+    mockKnowledgeAssets.push(newAsset);
+    return newAsset;
+  },
+
+  // Remove knowledge asset
+  async removeKnowledgeAsset(assetId: string): Promise<void> {
+    await delay(300);
+    const assetIndex = mockKnowledgeAssets.findIndex(a => a.id === assetId);
+    if (assetIndex !== -1) {
+      mockKnowledgeAssets.splice(assetIndex, 1);
+    }
   }
 };
 
