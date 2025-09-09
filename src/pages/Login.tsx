@@ -61,10 +61,11 @@ export default function Login() {
         {/* Header */}
         <div className="text-center">
           <Link to="/" className="inline-flex items-center gap-2 mb-8">
-            <Sparkles className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              Genie Interviewers
-            </span>
+            <img 
+              src="/lovable-uploads/0d665f3b-7af8-4635-bd06-54729cc704ea.png" 
+              alt="Genie Logo" 
+              className="h-10 w-auto"
+            />
           </Link>
           
           <h1 className="text-2xl font-bold">Welcome Back</h1>

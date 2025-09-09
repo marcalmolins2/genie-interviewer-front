@@ -63,10 +63,11 @@ export default function AppLayout() {
           <div className="flex items-center gap-6">
             {/* Logo */}
             <Link to="/app/agents" className="flex items-center gap-2">
-              <Sparkles className="h-7 w-7 text-primary" />
-              <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                Genie
-              </span>
+              <img 
+                src="/lovable-uploads/0d665f3b-7af8-4635-bd06-54729cc704ea.png" 
+                alt="Genie Logo" 
+                className="h-8 w-auto"
+              />
             </Link>
 
           </div>

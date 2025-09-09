@@ -60,10 +60,11 @@ export default function Landing() {
       <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              Genie Interviewers
-            </span>
+            <img 
+              src="/lovable-uploads/0d665f3b-7af8-4635-bd06-54729cc704ea.png" 
+              alt="Genie Logo" 
+              className="h-10 w-auto"
+            />
           </div>
           
           <div className="flex items-center gap-4">
