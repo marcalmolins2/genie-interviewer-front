@@ -4,6 +4,20 @@ import { Agent, InterviewGuide, KnowledgeAsset, AudienceUpload, Share, Interview
 // Mock data
 const mockAgents: Agent[] = [
   {
+    id: 'agent-genai-strategy',
+    name: 'GenAI Strategy Consulting Research',
+    archetype: 'expert_deep_dive',
+    createdAt: '2024-11-25T08:00:00Z',
+    status: 'live',
+    language: 'en',
+    voiceId: 'voice-2',
+    channel: 'inbound_call',
+    interviewsCount: 34,
+    pricePerInterviewUsd: PRICE_BY_CHANNEL.inbound_call,
+    contact: { phoneNumber: '+1 (555) 987-6543' },
+    credentialsReady: true,
+  },
+  {
     id: 'agent-1',
     name: 'EU Battery Expert Deep-Dive',
     archetype: 'expert_deep_dive',
@@ -46,6 +60,204 @@ const mockAgents: Agent[] = [
 ];
 
 const mockInterviewGuides: InterviewGuide[] = [
+  {
+    id: 'guide-genai-strategy',
+    agentId: 'agent-genai-strategy',
+    rawText: `### Respondent Screener
+- Confirm the respondent's role and experience in strategy consulting, with specific exposure to GenAI initiatives either as an internal practitioner or client-facing consultant.
+- Verify their involvement in GenAI use case development, implementation, or strategic planning within a consulting environment.
+- Assess their experience level with both traditional strategy methodologies and emerging AI-enhanced approaches.
+
+### Industry Overview
+- What percentage of strategy consulting engagements now incorporate GenAI tools or methodologies? **[QUANTIFY]**
+- How are leading strategy consulting firms (McKinsey, BCG, Bain, Deloitte, etc.) differentiating their GenAI capabilities in the market?
+- What is the current maturity level of GenAI adoption across the strategy consulting industry — are most firms still in pilot phases or have some moved to scaled implementation?
+- How do clients perceive the value proposition of GenAI-enhanced strategy consulting versus traditional approaches?
+
+### Process Analysis
+- Walk through a typical strategy engagement workflow and identify where GenAI tools are currently being integrated (e.g., market research, scenario planning, competitive analysis, synthesis).
+- What are the most successful GenAI use cases you've seen in strategy work? (e.g., market sizing, trend analysis, strategic option generation, stakeholder analysis)
+- How do you balance human strategic thinking with AI-generated insights? Where do you see the most value in human oversight versus automation?
+- What is the typical timeline and resource allocation for implementing GenAI tools in a strategy engagement? **[QUANTIFY]**
+- What are the primary challenges in scaling GenAI use cases from proof-of-concept to standard practice?
+
+### Market Dynamics
+- How are strategy consulting firms pricing GenAI-enhanced engagements? Are clients willing to pay premiums for AI-augmented strategy work, or do they expect cost reductions due to efficiency gains?
+- What is driving client demand for GenAI in strategy consulting — cost reduction, speed to insight, analytical depth, or competitive advantage?
+- How do boutique strategy firms compete with larger firms that have more resources to invest in GenAI capabilities?
+- What role do partnerships with technology providers (OpenAI, Google, Microsoft, specialized AI vendors) play in strategy consulting firms' GenAI offerings?
+- How do you handle client concerns about data security, confidentiality, and competitive intelligence when using GenAI tools?
+
+### Future Trends
+- Looking ahead 3–5 years, which strategic consulting functions do you believe will be most transformed by GenAI? (e.g., market research, scenario modeling, recommendation synthesis)
+- How will the role of strategy consultants evolve as GenAI becomes more sophisticated? What skills will become more or less valuable?
+- Do you anticipate GenAI will commoditize certain aspects of strategy consulting, and if so, how should firms adapt their value proposition?
+- What new types of strategic questions or analyses become possible with advanced GenAI that weren't feasible with traditional methods?
+- How might client expectations and engagement models change as GenAI becomes standard in the industry?`,
+    structured: {
+      intro: "This research explores the integration of Generative AI in strategy consulting, examining current adoption patterns, successful use cases, market dynamics, and future implications for the industry.",
+      objectives: [
+        "Quantify current GenAI adoption rates in strategy consulting engagements",
+        "Map successful GenAI integration points in typical strategy workflows",
+        "Analyze pricing models and client value perception of AI-enhanced consulting",
+        "Identify competitive dynamics and differentiation strategies among consulting firms",
+        "Project future evolution of consultant roles and client expectations"
+      ],
+      sections: [
+        {
+          title: "Respondent Screener",
+          questions: [
+            {
+              id: "screener-role",
+              type: "single",
+              prompt: "What is your current role in strategy consulting?",
+              options: ["Partner/Principal", "Engagement Manager", "Senior Associate", "Associate", "Other"],
+              required: true
+            },
+            {
+              id: "screener-genai-exposure",
+              type: "single",
+              prompt: "How would you describe your exposure to GenAI initiatives?",
+              options: ["Internal practitioner", "Client-facing consultant", "Both", "Limited exposure"],
+              required: true
+            },
+            {
+              id: "screener-experience",
+              type: "scale",
+              prompt: "Rate your experience level with AI-enhanced strategy approaches",
+              scale: { min: 1, max: 5, labels: { 1: "Beginner", 5: "Expert" } },
+              required: true
+            }
+          ]
+        },
+        {
+          title: "Industry Overview",
+          questions: [
+            {
+              id: "adoption-percentage",
+              type: "open",
+              prompt: "What percentage of strategy consulting engagements now incorporate GenAI tools or methodologies?",
+              required: true,
+              followUps: ["How has this changed over the past 12 months?", "What factors are driving this adoption rate?"]
+            },
+            {
+              id: "firm-differentiation",
+              type: "open",
+              prompt: "How are leading strategy consulting firms differentiating their GenAI capabilities?",
+              followUps: ["Which firms do you see as leaders in this space?", "What specific capabilities set them apart?"]
+            },
+            {
+              id: "maturity-level",
+              type: "single",
+              prompt: "What is the current maturity level of GenAI adoption in strategy consulting?",
+              options: ["Pilot/experimentation phase", "Early implementation", "Scaled deployment", "Mature integration"],
+              required: true
+            },
+            {
+              id: "client-perception",
+              type: "scale",
+              prompt: "How do clients perceive the value of GenAI-enhanced vs traditional consulting?",
+              scale: { min: 1, max: 5, labels: { 1: "Traditional preferred", 5: "GenAI strongly preferred" } }
+            }
+          ]
+        },
+        {
+          title: "Process Analysis",
+          questions: [
+            {
+              id: "workflow-integration",
+              type: "open",
+              prompt: "Walk through where GenAI tools are integrated in typical strategy engagements",
+              required: true,
+              followUps: ["Which integration points show the highest ROI?", "Where do you see the most resistance?"]
+            },
+            {
+              id: "successful-use-cases",
+              type: "multi",
+              prompt: "What are the most successful GenAI use cases in strategy work?",
+              options: ["Market sizing", "Trend analysis", "Strategic option generation", "Stakeholder analysis", "Competitive intelligence", "Scenario planning"],
+              required: true
+            },
+            {
+              id: "human-ai-balance",
+              type: "open",
+              prompt: "How do you balance human strategic thinking with AI-generated insights?",
+              followUps: ["Where is human oversight most critical?", "What should never be automated?"]
+            },
+            {
+              id: "implementation-timeline",
+              type: "open",
+              prompt: "What is the typical timeline and resource allocation for implementing GenAI tools?",
+              required: true
+            }
+          ]
+        },
+        {
+          title: "Market Dynamics",
+          questions: [
+            {
+              id: "pricing-models",
+              type: "open",
+              prompt: "How are firms pricing GenAI-enhanced engagements?",
+              required: true,
+              followUps: ["Are clients willing to pay premiums?", "Do they expect cost reductions due to efficiency?"]
+            },
+            {
+              id: "demand-drivers",
+              type: "multi",
+              prompt: "What is driving client demand for GenAI in strategy consulting?",
+              options: ["Cost reduction", "Speed to insight", "Analytical depth", "Competitive advantage", "Innovation capability"],
+              required: true
+            },
+            {
+              id: "boutique-competition",
+              type: "open",
+              prompt: "How do boutique firms compete with larger firms on GenAI capabilities?"
+            },
+            {
+              id: "tech-partnerships",
+              type: "multi",
+              prompt: "Which technology partnerships are most valuable?",
+              options: ["OpenAI", "Google", "Microsoft", "Specialized AI vendors", "Internal development"],
+              followUps: ["How do these partnerships influence client choices?"]
+            }
+          ]
+        },
+        {
+          title: "Future Trends",
+          questions: [
+            {
+              id: "transformed-functions",
+              type: "multi",
+              prompt: "Which consulting functions will be most transformed by GenAI in 3-5 years?",
+              options: ["Market research", "Scenario modeling", "Recommendation synthesis", "Data analysis", "Client presentations", "Project management"],
+              required: true
+            },
+            {
+              id: "consultant-evolution",
+              type: "open",
+              prompt: "How will consultant roles evolve as GenAI becomes more sophisticated?",
+              followUps: ["What skills will become more valuable?", "What skills will become less valuable?"]
+            },
+            {
+              id: "commoditization-risk",
+              type: "scale",
+              prompt: "Will GenAI commoditize aspects of strategy consulting?",
+              scale: { min: 1, max: 5, labels: { 1: "No risk", 5: "High risk" } },
+              followUps: ["How should firms adapt their value proposition?"]
+            },
+            {
+              id: "new-capabilities",
+              type: "open",
+              prompt: "What new strategic analyses become possible with advanced GenAI?"
+            }
+          ]
+        }
+      ],
+      closing: "Thank you for sharing your insights on GenAI in strategy consulting. Your perspective helps us understand this rapidly evolving landscape."
+    },
+    validation: { complete: true, issues: [] }
+  },
   {
     id: 'guide-1',
     agentId: 'agent-1',
@@ -160,6 +372,72 @@ Thank you!`,
 
 const mockKnowledgeAssets: KnowledgeAsset[] = [
   {
+    id: 'knowledge-genai-1',
+    agentId: 'agent-genai-strategy',
+    title: 'GenAI in Consulting Industry Report 2024',
+    type: 'file',
+    fileName: 'genai_consulting_landscape_2024.pdf',
+    fileSize: 3200000
+  },
+  {
+    id: 'knowledge-genai-2',
+    agentId: 'agent-genai-strategy',
+    title: 'Strategy Consultant Interview Protocol',
+    type: 'text',
+    contentText: `Interview Guidelines:
+    
+Target Respondents:
+- Strategy consultants with 3+ years experience
+- Direct exposure to GenAI projects (either internal or client-facing)
+- Mix of firm sizes: MBB, Big 4, boutique firms
+- Geographic diversity: North America, Europe, Asia-Pacific
+
+Key Probing Areas:
+1. Quantify adoption rates and timelines
+2. Understand workflow integration points
+3. Explore pricing and value perception
+4. Assess competitive positioning
+5. Project future industry evolution
+
+Interview Duration: 45-60 minutes
+Compensation: $200 consulting credit or equivalent`
+  },
+  {
+    id: 'knowledge-genai-3',
+    agentId: 'agent-genai-strategy',
+    title: 'Consulting Firm GenAI Capabilities Matrix',
+    type: 'file',
+    fileName: 'firm_genai_capabilities_comparison.xlsx',
+    fileSize: 750000
+  },
+  {
+    id: 'knowledge-genai-4',
+    agentId: 'agent-genai-strategy',
+    title: 'GenAI Technology Stack Reference',
+    type: 'text',
+    contentText: `Common GenAI Technologies in Strategy Consulting:
+
+Large Language Models:
+- GPT-4, Claude, Gemini for analysis and synthesis
+- Custom fine-tuned models for specific domains
+
+Specialized Tools:
+- Market research: Crayon, Klenty, SimilarWeb
+- Data analysis: DataRobot, H2O.ai, Dataiku
+- Presentation: Gamma, Beautiful.ai, Tome
+
+Integration Platforms:
+- Microsoft Copilot for M365
+- Google Workspace AI features
+- Custom enterprise solutions
+
+Key Considerations:
+- Data security and client confidentiality
+- Model accuracy and bias mitigation
+- Integration with existing workflows
+- Training and change management`
+  },
+  {
     id: 'knowledge-1',
     agentId: 'agent-1',
     title: 'EU Battery Market Report 2024',
@@ -200,6 +478,33 @@ const mockKnowledgeAssets: KnowledgeAsset[] = [
 ];
 
 const mockInterviews: InterviewSummary[] = [
+  {
+    id: 'interview-genai-1',
+    agentId: 'agent-genai-strategy',
+    startedAt: '2024-12-08T14:00:00Z',
+    durationSec: 2834,
+    channel: 'inbound_call',
+    completed: true,
+    respondentId: 'resp-genai-1'
+  },
+  {
+    id: 'interview-genai-2',
+    agentId: 'agent-genai-strategy',
+    startedAt: '2024-12-08T16:30:00Z',
+    durationSec: 3156,
+    channel: 'inbound_call',
+    completed: true,
+    respondentId: 'resp-genai-2'
+  },
+  {
+    id: 'interview-genai-3',
+    agentId: 'agent-genai-strategy',
+    startedAt: '2024-12-09T10:15:00Z',
+    durationSec: 2945,
+    channel: 'inbound_call',
+    completed: false,
+    respondentId: 'resp-genai-3'
+  },
   {
     id: 'interview-1',
     agentId: 'agent-1',
