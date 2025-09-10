@@ -240,18 +240,17 @@ const ProjectOverview = () => {
       {/* Agents */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center space-x-2">
-              <Bot className="h-5 w-5" />
-              <span>Interview Agents</span>
-            </CardTitle>
-            <Button asChild size="sm">
-              <Link to={`/app/projects/${project.id}/agents/new`}>
-                <Plus className="h-4 w-4 mr-2" />
-                New Agent
-              </Link>
-            </Button>
-          </div>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center space-x-2">
+                <Bot className="h-5 w-5" />
+                <span>Interview Agents</span>
+              </CardTitle>
+              <Button asChild size="sm">
+                <Link to={`/app/projects/${projectId}/agents`}>
+                  View All Agents
+                </Link>
+              </Button>
+            </div>
         </CardHeader>
         <CardContent>
           {agents.length === 0 ? (
@@ -357,6 +356,17 @@ const ProjectOverview = () => {
                   </Card>
                 );
               })}
+            </div>
+          )}
+          
+          {/* View All Agents Link */}
+          {agents.length > 0 && (
+            <div className="mt-4 text-center">
+              <Button variant="outline" asChild>
+                <Link to={`/app/projects/${project.id}/agents`}>
+                  View All Agents ({agents.length})
+                </Link>
+              </Button>
             </div>
           )}
         </CardContent>

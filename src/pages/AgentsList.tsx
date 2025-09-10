@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -26,10 +26,12 @@ import {
   Phone,
   PhoneCall,
   Calendar,
-  Users
+  Users,
+  ArrowLeft
 } from 'lucide-react';
-import { Agent, Channel } from '@/types';
+import { Agent, Channel, Project } from '@/types';
 import { agentsService } from '@/services/agents';
+import { projectsService } from '@/services/projects';
 import { useToast } from '@/hooks/use-toast';
 
 const channelIcons = {
@@ -39,6 +41,8 @@ const channelIcons = {
 };
 
 export default function AgentsList() {
+  const { projectId } = useParams<{ projectId: string }>();
+  const [project, setProject] = useState<Project | null>(null);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [filteredAgents, setFilteredAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,8 +51,10 @@ export default function AgentsList() {
   const { toast } = useToast();
 
   useEffect(() => {
-    loadAgents();
-  }, []);
+    if (projectId) {
+      loadProjectAndAgents();
+    }
+  }, [projectId]);
 
   useEffect(() => {
     // Filter agents based on search query
@@ -59,14 +65,28 @@ export default function AgentsList() {
     setFilteredAgents(filtered);
   }, [agents, searchQuery]);
 
-  const loadAgents = async () => {
+  const loadProjectAndAgents = async () => {
+    if (!projectId) return;
+    
     try {
-      const data = await agentsService.getAgents();
-      setAgents(data);
+      const [projectData, allAgents] = await Promise.all([
+        projectsService.getProject(projectId),
+        agentsService.getAgents()
+      ]);
+      
+      if (!projectData) {
+        navigate('/app/projects');
+        return;
+      }
+      
+      setProject(projectData);
+      // Filter agents by projectId
+      const projectAgents = allAgents.filter(agent => agent.projectId === projectId);
+      setAgents(projectAgents);
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Failed to load agents. Please try again.',
+        description: 'Failed to load project data. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -78,6 +98,7 @@ export default function AgentsList() {
     try {
       const updatedAgent = await agentsService.toggleAgentStatus(agent.id);
       setAgents(prev => prev.map(a => a.id === agent.id ? updatedAgent : a));
+      loadProjectAndAgents(); // Reload to get fresh data
       
       toast({
         title: 'Success',
@@ -179,10 +200,10 @@ export default function AgentsList() {
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
                       <CardTitle className="text-lg truncate mb-1">
-                        <Link 
-                          to={`/app/agents/${agent.id}`}
-                          className="hover:text-primary transition-colors"
-                        >
+                  <Link 
+                    to={`/app/projects/${projectId}/agents/${agent.id}`}
+                    className="hover:text-primary transition-colors"
+                  >
                           {agent.name}
                         </Link>
                       </CardTitle>
@@ -203,7 +224,7 @@ export default function AgentsList() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => navigate(`/app/agents/${agent.id}`)}>
+                        <DropdownMenuItem onClick={() => navigate(`/app/projects/${projectId}/agents/${agent.id}`)}>
                           <Edit className="mr-2 h-4 w-4" />
                           Edit
                         </DropdownMenuItem>
@@ -223,7 +244,7 @@ export default function AgentsList() {
                             </>
                           )}
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate(`/app/agents/${agent.id}/analyze`)}>
+                        <DropdownMenuItem onClick={() => navigate(`/app/projects/${projectId}/agents/${agent.id}/analyze`)}>
                           <BarChart3 className="mr-2 h-4 w-4" />
                           Analyze
                         </DropdownMenuItem>
@@ -266,12 +287,12 @@ export default function AgentsList() {
                   </div>
                   
                   <div className="flex gap-2 pt-2">
-                    <Link to={`/app/agents/${agent.id}`} className="flex-1">
+                    <Link to={`/app/projects/${projectId}/agents/${agent.id}`} className="flex-1">
                       <Button variant="outline" size="sm" className="w-full">
                         View Details
                       </Button>
                     </Link>
-                    <Link to={`/app/agents/${agent.id}/analyze`}>
+                    <Link to={`/app/projects/${projectId}/agents/${agent.id}/analyze`}>
                       <Button variant="outline" size="sm">
                         <BarChart3 className="h-4 w-4" />
                       </Button>

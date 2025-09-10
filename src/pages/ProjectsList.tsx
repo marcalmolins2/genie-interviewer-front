@@ -201,7 +201,12 @@ const ProjectsList = () => {
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center space-x-1">
                     <Bot className="h-4 w-4 text-muted-foreground" />
-                    <span>{project.agentsCount} agents</span>
+                    <Link 
+                      to={`/app/projects/${project.id}/agents`}
+                      className="hover:text-primary transition-colors"
+                    >
+                      {project.agentsCount} agents
+                    </Link>
                   </div>
                   <div className="flex items-center space-x-1">
                     <Users className="h-4 w-4 text-muted-foreground" />
