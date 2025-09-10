@@ -31,7 +31,6 @@ const App = () => (
             <Route path="projects" element={<ProjectsList />} />
             <Route path="projects/new" element={<CreateProject />} />
             <Route path="projects/:projectId" element={<ProjectOverview />} />
-            <Route path="projects/:projectId/agents" element={<AgentsList />} />
             <Route path="projects/:projectId/agents/new" element={<CreateAgent />} />
             <Route path="projects/:projectId/agents/:agentId" element={<AgentOverview />} />
             <Route path="projects/:projectId/agents/:agentId/edit" element={<EditAgent />} />
