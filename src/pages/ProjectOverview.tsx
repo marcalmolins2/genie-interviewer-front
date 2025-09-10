@@ -38,6 +38,7 @@ import { ArchetypeCard } from '@/components/ArchetypeCard';
 import { ARCHETYPES } from '@/types';
 
 const ProjectOverview = () => {
+  console.log('ProjectOverview component loaded - manageMembersOpen should be defined');
   const { projectId } = useParams<{ projectId: string }>();
   const [project, setProject] = useState<Project | null>(null);
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -247,6 +248,7 @@ const ProjectOverview = () => {
           </div>
         </div>
         <div className="flex items-center space-x-2">
+          {/* Manage Members Dialog */}
           <Dialog open={manageMembersOpen} onOpenChange={setManageMembersOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm">
