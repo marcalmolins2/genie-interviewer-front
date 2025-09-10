@@ -351,6 +351,7 @@ export default function EditAgent() {
                   validation: { complete: true, issues: [] }
                 } : {
                   id: `guide-${Date.now()}`,
+                  projectId: 'proj-default', // TODO: Get actual projectId
                   agentId: agentId!,
                   structured: newGuide,
                   validation: { complete: true, issues: [] }
