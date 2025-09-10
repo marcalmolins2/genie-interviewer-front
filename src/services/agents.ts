@@ -5,6 +5,7 @@ import { Agent, InterviewGuide, KnowledgeAsset, AudienceUpload, Share, Interview
 const mockAgents: Agent[] = [
   {
     id: 'agent-genai-strategy',
+    projectId: 'proj-genai-research',
     name: 'GenAI Strategy Consulting Research',
     archetype: 'expert_deep_dive',
     createdAt: '2024-11-25T08:00:00Z',
@@ -19,6 +20,7 @@ const mockAgents: Agent[] = [
   },
   {
     id: 'agent-1',
+    projectId: 'proj-genai-research',
     name: 'EU Battery Expert Deep-Dive',
     archetype: 'expert_deep_dive',
     createdAt: '2024-12-01T10:00:00Z',
@@ -33,6 +35,7 @@ const mockAgents: Agent[] = [
   },
   {
     id: 'agent-2',
+    projectId: 'proj-customer-insights',
     name: 'Retail NPS Pulse',
     archetype: 'rapid_survey',
     createdAt: '2024-11-28T14:30:00Z',
@@ -46,6 +49,7 @@ const mockAgents: Agent[] = [
   },
   {
     id: 'agent-3',
+    projectId: 'proj-product-feedback',
     name: 'Customer Feedback Portal',
     archetype: 'customer_user',
     createdAt: '2024-12-05T09:15:00Z',
@@ -62,6 +66,7 @@ const mockAgents: Agent[] = [
 const mockInterviewGuides: InterviewGuide[] = [
   {
     id: 'guide-genai-strategy',
+    projectId: 'proj-genai-research',
     agentId: 'agent-genai-strategy',
     rawText: `### Respondent Screener
 - Confirm the respondent's role and experience in strategy consulting, with specific exposure to GenAI initiatives either as an internal practitioner or client-facing consultant.

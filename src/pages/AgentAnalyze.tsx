@@ -93,6 +93,7 @@ export default function AgentAnalyze() {
         const mockInterviews: InterviewSummary[] = [
           {
             id: 'int-20241201-001',
+            projectId: agentId, // Using agentId as temporary projectId
             agentId: agentId,
             startedAt: '2024-12-01T14:30:00Z',
             durationSec: 1280,
@@ -102,6 +103,7 @@ export default function AgentAnalyze() {
           },
           {
             id: 'int-20241201-002', 
+            projectId: agentId,
             agentId: agentId,
             startedAt: '2024-12-01T09:15:00Z',
             durationSec: 952,
@@ -111,6 +113,7 @@ export default function AgentAnalyze() {
           },
           {
             id: 'int-20241130-003',
+            projectId: agentId,
             agentId: agentId,
             startedAt: '2024-11-30T16:45:00Z', 
             durationSec: 445,
@@ -120,6 +123,7 @@ export default function AgentAnalyze() {
           },
           {
             id: 'int-20241130-004',
+            projectId: agentId,
             agentId: agentId,
             startedAt: '2024-11-30T11:20:00Z',
             durationSec: 1560,
@@ -129,6 +133,7 @@ export default function AgentAnalyze() {
           },
           {
             id: 'int-20241129-005',
+            projectId: agentId,
             agentId: agentId,
             startedAt: '2024-11-29T13:00:00Z',
             durationSec: 720,

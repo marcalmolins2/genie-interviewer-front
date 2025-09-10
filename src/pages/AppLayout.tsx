@@ -62,7 +62,7 @@ export default function AppLayout() {
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-6">
             {/* Logo */}
-            <Link to="/app/agents" className="flex items-center gap-2">
+            <Link to="/app/projects" className="flex items-center gap-2">
               <img 
                 src="/lovable-uploads/0d665f3b-7af8-4635-bd06-54729cc704ea.png" 
                 alt="Genie Logo" 
