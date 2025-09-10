@@ -28,7 +28,7 @@ const mockProjects: Project[] = [
         userId: 'user-789',
         email: 'emma.johnson@company.com',
         name: 'Emma Johnson', 
-        role: 'member',
+        role: 'editor',
         joinedAt: '2024-11-18T09:15:00Z'
       }
     ]
@@ -52,7 +52,7 @@ const mockProjects: Project[] = [
         userId: 'user-101',
         email: 'david.kim@company.com',
         name: 'David Kim',
-        role: 'member',
+        role: 'viewer',
         joinedAt: '2024-11-21T11:30:00Z'
       }
     ]
@@ -140,7 +140,7 @@ export const projectsService = {
     return true;
   },
 
-  async addMember(projectId: string, email: string, role: 'admin' | 'member' = 'member'): Promise<ProjectMember | null> {
+  async addMember(projectId: string, email: string, role: 'admin' | 'editor' | 'viewer' = 'viewer'): Promise<ProjectMember | null> {
     await new Promise(resolve => setTimeout(resolve, 400));
     
     const project = mockProjects.find(p => p.id === projectId);
@@ -178,6 +178,24 @@ export const projectsService = {
     }
 
     project.members.splice(memberIndex, 1);
+    return true;
+  },
+
+  async updateMemberRole(projectId: string, userId: string, newRole: 'admin' | 'editor' | 'viewer'): Promise<boolean> {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    const project = mockProjects.find(p => p.id === projectId);
+    if (!project) return false;
+
+    const member = project.members.find(m => m.userId === userId);
+    if (!member) return false;
+
+    // Can't change owner role
+    if (member.role === 'owner') {
+      throw new Error('Cannot change project owner role');
+    }
+
+    member.role = newRole;
     return true;
   }
 };

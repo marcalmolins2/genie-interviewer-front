@@ -18,7 +18,7 @@ export interface ProjectMember {
   userId: string;
   email: string;
   name: string;
-  role: 'owner' | 'admin' | 'member';
+  role: 'owner' | 'admin' | 'editor' | 'viewer';
   joinedAt: string; // ISO
 }
 

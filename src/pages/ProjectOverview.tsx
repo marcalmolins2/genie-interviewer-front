@@ -30,7 +30,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
-import { Project, Agent } from '@/types';
+import { Project, Agent, ProjectMember } from '@/types';
 import { projectsService } from '@/services/projects';
 import { agentsService } from '@/services/agents';
 import { AgentStatusBadge } from '@/components/AgentStatusBadge';
@@ -42,12 +42,13 @@ const ProjectOverview = () => {
   const [project, setProject] = useState<Project | null>(null);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [addMemberOpen, setAddMemberOpen] = useState(false);
+  const [manageMembersOpen, setManageMembersOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [newMemberEmail, setNewMemberEmail] = useState('');
-  const [newMemberRole, setNewMemberRole] = useState<'admin' | 'member'>('member');
+  const [newMemberRole, setNewMemberRole] = useState<'admin' | 'editor' | 'viewer'>('viewer');
   const [projectName, setProjectName] = useState('');
   const [projectDescription, setProjectDescription] = useState('');
+  const [editingMember, setEditingMember] = useState<{ userId: string; role: 'admin' | 'editor' | 'viewer' } | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -111,9 +112,8 @@ const ProjectOverview = () => {
     try {
       await projectsService.addMember(projectId, newMemberEmail, newMemberRole);
       loadProjectData(); // Reload to get updated member list
-      setAddMemberOpen(false);
       setNewMemberEmail('');
-      setNewMemberRole('member');
+      setNewMemberRole('viewer');
       toast({
         title: "Success",
         description: "Team member added successfully",
@@ -122,6 +122,45 @@ const ProjectOverview = () => {
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to add member",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleRemoveMember = async (userId: string) => {
+    if (!projectId) return;
+
+    try {
+      await projectsService.removeMember(projectId, userId);
+      loadProjectData(); // Reload to get updated member list
+      toast({
+        title: "Success",
+        description: "Team member removed successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to remove member",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUpdateMemberRole = async (userId: string, newRole: 'admin' | 'editor' | 'viewer') => {
+    if (!projectId) return;
+
+    try {
+      await projectsService.updateMemberRole(projectId, userId, newRole);
+      loadProjectData(); // Reload to get updated member list
+      setEditingMember(null);
+      toast({
+        title: "Success",
+        description: "Member role updated successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update role",
         variant: "destructive",
       });
     }
@@ -208,54 +247,141 @@ const ProjectOverview = () => {
           </div>
         </div>
         <div className="flex items-center space-x-2">
-          <Dialog open={addMemberOpen} onOpenChange={setAddMemberOpen}>
+          <Dialog open={manageMembersOpen} onOpenChange={setManageMembersOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm">
-                <UserPlus className="h-4 w-4 mr-2" />
-                Add Member
+                <Users className="h-4 w-4 mr-2" />
+                Manage Members
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Add Team Member</DialogTitle>
+                <DialogTitle>Manage Team Members</DialogTitle>
                 <DialogDescription>
-                  Invite a new member to join this project.
+                  Add, remove, and manage roles for project members.
                 </DialogDescription>
               </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="email" className="text-right">
-                    Email
-                  </Label>
+              
+              {/* Add New Member Section */}
+              <div className="border rounded-lg p-4 space-y-4">
+                <h4 className="font-medium">Add New Member</h4>
+                <div className="grid grid-cols-3 gap-4">
                   <Input
-                    id="email"
                     value={newMemberEmail}
                     onChange={(e) => setNewMemberEmail(e.target.value)}
                     placeholder="Enter email address"
-                    className="col-span-3"
                   />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="role" className="text-right">
-                    Role
-                  </Label>
-                  <Select value={newMemberRole} onValueChange={(value: 'admin' | 'member') => setNewMemberRole(value)}>
-                    <SelectTrigger className="col-span-3">
+                  <Select value={newMemberRole} onValueChange={(value: 'admin' | 'editor' | 'viewer') => setNewMemberRole(value)}>
+                    <SelectTrigger>
                       <SelectValue placeholder="Select role" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="member">Member</SelectItem>
+                      <SelectItem value="viewer">Viewer</SelectItem>
+                      <SelectItem value="editor">Editor</SelectItem>
                       <SelectItem value="admin">Admin</SelectItem>
                     </SelectContent>
                   </Select>
+                  <Button onClick={handleAddMember} disabled={!newMemberEmail.trim()}>
+                    Add Member
+                  </Button>
+                </div>
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <p><strong>Viewer:</strong> Can only see agent analysis</p>
+                  <p><strong>Editor:</strong> Can edit agents</p>
+                  <p><strong>Admin:</strong> Can edit agents and manage project members</p>
                 </div>
               </div>
+
+              {/* Current Members List */}
+              <div className="space-y-4">
+                <h4 className="font-medium">Current Members ({project.members.length})</h4>
+                <div className="space-y-3">
+                  {project.members.map((member) => (
+                    <div key={member.userId} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <Avatar>
+                          <AvatarFallback>{getInitials(member.name)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium">{member.name}</p>
+                          <p className="text-sm text-muted-foreground">{member.email}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {member.role === 'owner' ? (
+                          <Badge variant="default">{member.role}</Badge>
+                        ) : editingMember?.userId === member.userId ? (
+                          <div className="flex items-center space-x-2">
+                            <Select
+                              value={editingMember.role}
+                              onValueChange={(value: 'admin' | 'editor' | 'viewer') =>
+                                setEditingMember({ ...editingMember, role: value })
+                              }
+                            >
+                              <SelectTrigger className="w-28">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="viewer">Viewer</SelectItem>
+                                <SelectItem value="editor">Editor</SelectItem>
+                                <SelectItem value="admin">Admin</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <Button
+                              size="sm"
+                              onClick={() => handleUpdateMemberRole(member.userId, editingMember.role)}
+                            >
+                              Save
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setEditingMember(null)}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center space-x-2">
+                            <Badge variant="secondary">{member.role}</Badge>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem
+                                  onClick={() => setEditingMember({ userId: member.userId, role: member.role as 'admin' | 'editor' | 'viewer' })}
+                                >
+                                  <Edit2 className="h-4 w-4 mr-2" />
+                                  Change Role
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleRemoveMember(member.userId)}
+                                  className="text-red-600"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Remove
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               <DialogFooter>
-                <Button variant="outline" onClick={() => setAddMemberOpen(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={handleAddMember} disabled={!newMemberEmail.trim()}>
-                  Add Member
+                <Button variant="outline" onClick={() => {
+                  setManageMembersOpen(false);
+                  setNewMemberEmail('');
+                  setNewMemberRole('viewer');
+                  setEditingMember(null);
+                }}>
+                  Close
                 </Button>
               </DialogFooter>
             </DialogContent>
