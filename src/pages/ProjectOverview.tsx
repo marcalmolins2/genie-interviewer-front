@@ -5,6 +5,24 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +42,12 @@ const ProjectOverview = () => {
   const [project, setProject] = useState<Project | null>(null);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [addMemberOpen, setAddMemberOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [newMemberEmail, setNewMemberEmail] = useState('');
+  const [newMemberRole, setNewMemberRole] = useState<'admin' | 'member'>('member');
+  const [projectName, setProjectName] = useState('');
+  const [projectDescription, setProjectDescription] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -49,6 +73,8 @@ const ProjectOverview = () => {
       }
 
       setProject(projectData);
+      setProjectName(projectData.name);
+      setProjectDescription(projectData.description || '');
       // Filter agents by projectId (in real implementation, this would be done server-side)
       setAgents(agentsData.filter(agent => agent.projectId === projectId));
     } catch (error) {
@@ -74,6 +100,51 @@ const ProjectOverview = () => {
       toast({
         title: "Error",
         description: "Failed to update agent status",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleAddMember = async () => {
+    if (!newMemberEmail.trim() || !projectId) return;
+
+    try {
+      await projectsService.addMember(projectId, newMemberEmail, newMemberRole);
+      loadProjectData(); // Reload to get updated member list
+      setAddMemberOpen(false);
+      setNewMemberEmail('');
+      setNewMemberRole('member');
+      toast({
+        title: "Success",
+        description: "Team member added successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to add member",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUpdateProject = async () => {
+    if (!projectId || !projectName.trim()) return;
+
+    try {
+      await projectsService.updateProject(projectId, {
+        name: projectName,
+        description: projectDescription
+      });
+      loadProjectData(); // Reload to get updated project data
+      setSettingsOpen(false);
+      toast({
+        title: "Success", 
+        description: "Project updated successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update project",
         variant: "destructive",
       });
     }
@@ -137,14 +208,109 @@ const ProjectOverview = () => {
           </div>
         </div>
         <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm">
-            <UserPlus className="h-4 w-4 mr-2" />
-            Add Member
-          </Button>
-          <Button variant="outline" size="sm">
-            <Settings className="h-4 w-4 mr-2" />
-            Settings
-          </Button>
+          <Dialog open={addMemberOpen} onOpenChange={setAddMemberOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm">
+                <UserPlus className="h-4 w-4 mr-2" />
+                Add Member
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Add Team Member</DialogTitle>
+                <DialogDescription>
+                  Invite a new member to join this project.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="email" className="text-right">
+                    Email
+                  </Label>
+                  <Input
+                    id="email"
+                    value={newMemberEmail}
+                    onChange={(e) => setNewMemberEmail(e.target.value)}
+                    placeholder="Enter email address"
+                    className="col-span-3"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="role" className="text-right">
+                    Role
+                  </Label>
+                  <Select value={newMemberRole} onValueChange={(value: 'admin' | 'member') => setNewMemberRole(value)}>
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Select role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="member">Member</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setAddMemberOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleAddMember} disabled={!newMemberEmail.trim()}>
+                  Add Member
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Settings className="h-4 w-4 mr-2" />
+                Settings
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Project Settings</DialogTitle>
+                <DialogDescription>
+                  Update project information and settings.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="project-name" className="text-right">
+                    Name
+                  </Label>
+                  <Input
+                    id="project-name"
+                    value={projectName}
+                    onChange={(e) => setProjectName(e.target.value)}
+                    className="col-span-3"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="project-description" className="text-right">
+                    Description
+                  </Label>
+                  <Input
+                    id="project-description"
+                    value={projectDescription}
+                    onChange={(e) => setProjectDescription(e.target.value)}
+                    placeholder="Optional description"
+                    className="col-span-3"
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setSettingsOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleUpdateProject} disabled={!projectName.trim()}>
+                  Save Changes
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
           <Button asChild>
             <Link to={`/app/projects/${project.id}/agents/new`}>
               <Plus className="h-4 w-4 mr-2" />
