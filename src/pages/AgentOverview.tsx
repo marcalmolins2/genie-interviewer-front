@@ -49,7 +49,7 @@ import { agentsService } from '@/services/agents';
 import { useToast } from '@/hooks/use-toast';
 
 export default function AgentOverview() {
-  const { agentId } = useParams<{ agentId: string }>();
+  const { projectId, agentId } = useParams<{ projectId: string; agentId: string }>();
   const [agent, setAgent] = useState<Agent | null>(null);
   const [stats, setStats] = useState<any>(null);
   const [guide, setGuide] = useState<InterviewGuide | null>(null);
@@ -81,7 +81,7 @@ export default function AgentOverview() {
       if (data) {
         setAgent(data);
       } else {
-        navigate('/app/agents');
+        navigate(`/app/projects/${projectId}`);
       }
     } catch (error) {
       toast({
@@ -89,7 +89,7 @@ export default function AgentOverview() {
         description: 'Failed to load agent details.',
         variant: 'destructive',
       });
-      navigate('/app/agents');
+      navigate(`/app/projects/${projectId}`);
     } finally {
       setLoading(false);
     }
@@ -204,8 +204,8 @@ export default function AgentOverview() {
           <CardDescription className="mb-6">
             The requested agent could not be found.
           </CardDescription>
-          <Link to="/app/agents">
-            <Button>Back to Agents</Button>
+          <Link to={`/app/projects/${projectId}`}>
+            <Button>Back to Project</Button>
           </Link>
         </Card>
       </div>
@@ -272,9 +272,9 @@ export default function AgentOverview() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate('/app/agents')}>
+          <Button variant="ghost" onClick={() => navigate(`/app/projects/${projectId}`)}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Agents
+            Back to Project
           </Button>
           <div>
             <h1 className="text-3xl font-bold">{agent.name}</h1>
@@ -291,7 +291,7 @@ export default function AgentOverview() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => navigate(`/app/agents/${agent.id}/edit`)}>
+          <Button variant="outline" size="sm" onClick={() => navigate(`/app/projects/${projectId}/agents/${agent.id}/edit`)}>
             <Edit className="h-4 w-4 mr-2" />
             Edit
           </Button>
@@ -371,7 +371,7 @@ export default function AgentOverview() {
             </Button>
           )}
           
-          <Link to={`/app/agents/${agent.id}/analyze`}>
+          <Link to={`/app/projects/${projectId}/agents/${agent.id}/analyze`}>
             <Button variant="outline" size="sm">
               <BarChart3 className="h-4 w-4 mr-2" />
               Analyze

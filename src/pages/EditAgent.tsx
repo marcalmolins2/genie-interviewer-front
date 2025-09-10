@@ -32,7 +32,7 @@ import { useToast } from '@/hooks/use-toast';
 import { InterviewGuideEditor } from '@/components/InterviewGuideEditor';
 
 export default function EditAgent() {
-  const { agentId } = useParams<{ agentId: string }>();
+  const { projectId, agentId } = useParams<{ projectId: string; agentId: string }>();
   const [agent, setAgent] = useState<Agent | null>(null);
   const [guide, setGuide] = useState<InterviewGuide | null>(null);
   const [knowledge, setKnowledge] = useState<KnowledgeAsset[]>([]);
@@ -70,7 +70,7 @@ export default function EditAgent() {
       ]);
       
       if (!agentData) {
-        navigate('/app/agents');
+        navigate(`/app/projects/${projectId}`);
         return;
       }
       
@@ -95,7 +95,7 @@ export default function EditAgent() {
         description: 'Failed to load agent data.',
         variant: 'destructive',
       });
-      navigate('/app/agents');
+      navigate(`/app/projects/${projectId}`);
     } finally {
       setLoading(false);
     }
@@ -126,7 +126,7 @@ export default function EditAgent() {
         description: 'Agent updated successfully.',
       });
       
-      navigate(`/app/agents/${agentId}`);
+      navigate(`/app/projects/${projectId}/agents/${agentId}`);
     } catch (error) {
       toast({
         title: 'Error',
@@ -204,8 +204,8 @@ export default function EditAgent() {
           <CardDescription className="mb-6">
             The requested agent could not be found.
           </CardDescription>
-          <Link to="/app/agents">
-            <Button>Back to Agents</Button>
+          <Link to={`/app/projects/${projectId}`}>
+            <Button>Back to Project</Button>
           </Link>
         </Card>
       </div>
@@ -217,7 +217,7 @@ export default function EditAgent() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate(`/app/agents/${agentId}`)}>
+          <Button variant="ghost" onClick={() => navigate(`/app/projects/${projectId}/agents/${agentId}`)}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Overview
           </Button>
@@ -231,7 +231,7 @@ export default function EditAgent() {
         </div>
         
         <div className="flex items-center gap-2">
-          <Link to={`/app/agents/${agentId}`}>
+          <Link to={`/app/projects/${projectId}/agents/${agentId}`}>
             <Button variant="outline">Cancel</Button>
           </Link>
           <Button onClick={handleSave} disabled={saving || !formData.name.trim()}>

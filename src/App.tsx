@@ -9,7 +9,6 @@ import AppLayout from "./pages/AppLayout";
 import ProjectsList from "./pages/ProjectsList";
 import CreateProject from "./pages/CreateProject";
 import ProjectOverview from "./pages/ProjectOverview";
-import AgentsList from "./pages/AgentsList";
 import CreateAgent from "./pages/CreateAgent";
 import AgentOverview from "./pages/AgentOverview";
 import EditAgent from "./pages/EditAgent";

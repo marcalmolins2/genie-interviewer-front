@@ -59,7 +59,7 @@ const SimpleBarChart = ({ data, title }: { data: any[], title: string }) => (
 );
 
 export default function AgentAnalyze() {
-  const { agentId } = useParams<{ agentId: string }>();
+  const { projectId, agentId } = useParams<{ projectId: string; agentId: string }>();
   const [agent, setAgent] = useState<Agent | null>(null);
   const [interviews, setInterviews] = useState<InterviewSummary[]>([]);
   const [stats, setStats] = useState<any>(null);
@@ -146,7 +146,7 @@ export default function AgentAnalyze() {
         setInterviews(mockInterviews);
         setStats(statsData);
       } else {
-        navigate('/app/agents');
+        navigate(`/app/projects/${projectId}`);
       }
     } catch (error) {
       toast({
@@ -154,7 +154,7 @@ export default function AgentAnalyze() {
         description: 'Failed to load agent analytics.',
         variant: 'destructive',
       });
-      navigate('/app/agents');
+      navigate(`/app/projects/${projectId}`);
     } finally {
       setLoading(false);
     }
@@ -223,8 +223,8 @@ export default function AgentAnalyze() {
           <CardDescription className="mb-6">
             The requested agent could not be found.
           </CardDescription>
-          <Link to="/app/agents">
-            <Button>Back to Agents</Button>
+          <Link to={`/app/projects/${projectId}`}>
+            <Button>Back to Project</Button>
           </Link>
         </Card>
       </div>
@@ -236,7 +236,7 @@ export default function AgentAnalyze() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate(`/app/agents/${agent.id}`)}>
+          <Button variant="ghost" onClick={() => navigate(`/app/projects/${projectId}/agents/${agent.id}`)}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Agent
           </Button>
