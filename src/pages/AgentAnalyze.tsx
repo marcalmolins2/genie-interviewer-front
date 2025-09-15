@@ -38,7 +38,8 @@ import {
   Download,
   TrendingUp,
   CheckCircle,
-  XCircle
+  XCircle,
+  FileSliders
 } from 'lucide-react';
 import { Agent, InterviewSummary } from '@/types';
 import { agentsService } from '@/services/agents';
@@ -196,6 +197,75 @@ export default function AgentAnalyze() {
     setIsTranscriptOpen(true);
   };
 
+  const generatePPTReport = () => {
+    const completedInterviews = interviews.filter(i => i.completed);
+    const totalHours = Math.round(interviews.reduce((sum, i) => sum + i.durationSec, 0) / 3600 * 10) / 10;
+    const completionRate = Math.round((completedInterviews.length / interviews.length) * 100);
+    
+    // Get unique profiles/respondents
+    const profiles = [...new Set(interviews.map(i => i.respondentId?.split('@')[0] || 'Unknown'))];
+    
+    const reportData = {
+      title: `${agent.name} - Interview Analysis Report`,
+      date: new Date().toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      }),
+      metrics: {
+        totalInterviews: interviews.length,
+        completedInterviews: completedInterviews.length,
+        totalHours,
+        completionRate,
+        profiles: profiles.slice(0, 5), // Show top 5 profiles
+        revenue: completedInterviews.length * agent.pricePerInterviewUsd,
+        avgDuration: formatDuration(stats?.averageDuration || 0),
+        topTopics: topicsDiscussed.slice(0, 3)
+      }
+    };
+
+    // Create a mock PPT report summary
+    const pptContent = `
+PowerPoint Report Generated: ${reportData.title}
+
+SLIDE 1: Executive Summary
+• We have conducted ${reportData.metrics.totalInterviews} interviews during ${reportData.metrics.totalHours} hours
+• Across profiles: ${reportData.metrics.profiles.join(', ')}${reportData.metrics.profiles.length < profiles.length ? '...' : ''}
+• Completion rate: ${reportData.metrics.completionRate}%
+• Total revenue generated: $${reportData.metrics.revenue}
+
+SLIDE 2: Key Metrics
+• Average interview duration: ${reportData.metrics.avgDuration}
+• Completed interviews: ${reportData.metrics.completedInterviews}/${reportData.metrics.totalInterviews}
+• Performance trend: ${reportData.metrics.completionRate >= 70 ? 'Excellent' : reportData.metrics.completionRate >= 50 ? 'Good' : 'Needs Improvement'}
+
+SLIDE 3: Top Discussion Topics
+${reportData.metrics.topTopics.map((topic, i) => `${i + 1}. ${topic.name} (${topic.value} mentions)`).join('\n')}
+
+SLIDE 4: Recommendations
+• ${reportData.metrics.completionRate >= 70 ? 'Continue current strategy' : 'Optimize interview flow to improve completion rates'}
+• Focus on peak performance hours (${completionByHour.sort((a, b) => b.value - a.value)[0]?.name || 'N/A'})
+• Consider expanding successful topic areas
+    `.trim();
+
+    // In a real implementation, this would generate an actual PowerPoint file
+    // For now, we'll show the content and simulate download
+    const blob = new Blob([pptContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${agent.name.replace(/\s+/g, '_')}_Interview_Report.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: 'PPT Report Generated',
+      description: `Interview analysis report for ${agent.name} has been downloaded.`,
+    });
+  };
+
   const getMockTranscript = (interview: InterviewSummary) => {
     const transcripts = {
       'int-20241201-001': {
@@ -312,6 +382,10 @@ export default function AgentAnalyze() {
         </div>
 
         <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={generatePPTReport}>
+            <FileSliders className="h-4 w-4 mr-2" />
+            Generate PPT Report
+          </Button>
           <Button variant="outline" size="sm">
             <Download className="h-4 w-4 mr-2" />
             Export Data
