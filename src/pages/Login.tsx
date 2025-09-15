@@ -1,10 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { AlertCircle, Sparkles, Loader2 } from 'lucide-react';
+import { AlertCircle, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -30,29 +27,12 @@ export default function Login() {
         organizationId: 'bcg-lumen'
       }));
       
-      navigate('/app/agents');
+      navigate('/projects');
     } catch (err) {
       setError('Authentication failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleDemoLogin = async () => {
-    setIsLoading(true);
-    
-    // Simulate demo login
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    localStorage.setItem('user', JSON.stringify({
-      id: 'demo-user',
-      email: 'demo@example.com',
-      name: 'Demo User',
-      organizationId: 'demo-org'
-    }));
-    
-    navigate('/app/agents');
-    setIsLoading(false);
   };
 
   return (
@@ -105,34 +85,6 @@ export default function Login() {
                 </>
               ) : (
                 'Sign in with Okta SSO'
-              )}
-            </Button>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <Separator className="w-full" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">
-                  Or for demo
-                </span>
-              </div>
-            </div>
-
-            {/* Demo Login */}
-            <Button 
-              variant="outline"
-              onClick={handleDemoLogin}
-              disabled={isLoading}
-              className="w-full"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Loading Demo...
-                </>
-              ) : (
-                'Continue with Demo Account'
               )}
             </Button>
 
