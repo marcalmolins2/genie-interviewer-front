@@ -88,13 +88,7 @@ export default function CreateAgentAssisted() {
     // Send welcome message when component mounts
     setTimeout(() => {
       addAssistantMessage(
-        `👋 Hi there! I'm here to help you create the perfect interview agent. This will be a quick conversation where I'll ask about your research goals and guide you through the setup.\n
-Let's start with a simple question: **What type of research are you planning to conduct?** For example:
-- User experience interviews
-- Market research
-- Customer feedback collection
-- Product validation
-- Academic research`,
+        "👋 Hi there! I'm your Genie Agent Configuration Assistant, here to help you create the perfect interview agent. This will be a quick conversation where I'll ask about your research goals and guide you through the setup.\n\nLet's start with a simple question: **What type of research are you planning to conduct?** For example:\n- User experience interviews\n- Market research\n- Customer feedback collection\n- Product validation\n- Academic research",
         ConversationPhase.WELCOME
       );
     }, 500);
@@ -457,7 +451,7 @@ Your agent is now live and ready to conduct interviews. You can view details, te
             </Button>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold">AI-Assisted Agent Creation</h1>
+            <h1 className="text-2xl font-bold">Genie-Assisted Agent Creation</h1>
             <p className="text-muted-foreground">Let's create your perfect interview agent together</p>
           </div>
         </div>
@@ -523,7 +517,7 @@ Your agent is now live and ready to conduct interviews. You can view details, te
                   <Bot className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <CardTitle className="text-lg">AI Assistant</CardTitle>
+                  <CardTitle className="text-lg">Genie Agent Configuration Assistant</CardTitle>
                   <CardDescription>Creating your perfect interview agent</CardDescription>
                 </div>
               </div>
