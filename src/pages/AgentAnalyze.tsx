@@ -59,7 +59,7 @@ const SimpleBarChart = ({ data, title }: { data: any[], title: string }) => (
 );
 
 export default function AgentAnalyze() {
-  const { projectId, agentId } = useParams<{ projectId: string; agentId: string }>();
+  const { agentId } = useParams<{ agentId: string }>();
   const [agent, setAgent] = useState<Agent | null>(null);
   const [interviews, setInterviews] = useState<InterviewSummary[]>([]);
   const [stats, setStats] = useState<any>(null);
@@ -93,7 +93,6 @@ export default function AgentAnalyze() {
         const mockInterviews: InterviewSummary[] = [
           {
             id: 'int-20241201-001',
-            projectId: agentId, // Using agentId as temporary projectId
             agentId: agentId,
             startedAt: '2024-12-01T14:30:00Z',
             durationSec: 1280,
@@ -103,7 +102,6 @@ export default function AgentAnalyze() {
           },
           {
             id: 'int-20241201-002', 
-            projectId: agentId,
             agentId: agentId,
             startedAt: '2024-12-01T09:15:00Z',
             durationSec: 952,
@@ -113,7 +111,6 @@ export default function AgentAnalyze() {
           },
           {
             id: 'int-20241130-003',
-            projectId: agentId,
             agentId: agentId,
             startedAt: '2024-11-30T16:45:00Z', 
             durationSec: 445,
@@ -123,7 +120,6 @@ export default function AgentAnalyze() {
           },
           {
             id: 'int-20241130-004',
-            projectId: agentId,
             agentId: agentId,
             startedAt: '2024-11-30T11:20:00Z',
             durationSec: 1560,
@@ -133,7 +129,6 @@ export default function AgentAnalyze() {
           },
           {
             id: 'int-20241129-005',
-            projectId: agentId,
             agentId: agentId,
             startedAt: '2024-11-29T13:00:00Z',
             durationSec: 720,
@@ -146,7 +141,7 @@ export default function AgentAnalyze() {
         setInterviews(mockInterviews);
         setStats(statsData);
       } else {
-        navigate(`/app/projects/${projectId}`);
+        navigate('/app/agents');
       }
     } catch (error) {
       toast({
@@ -154,7 +149,7 @@ export default function AgentAnalyze() {
         description: 'Failed to load agent analytics.',
         variant: 'destructive',
       });
-      navigate(`/app/projects/${projectId}`);
+      navigate('/app/agents');
     } finally {
       setLoading(false);
     }
@@ -223,8 +218,8 @@ export default function AgentAnalyze() {
           <CardDescription className="mb-6">
             The requested agent could not be found.
           </CardDescription>
-          <Link to={`/app/projects/${projectId}`}>
-            <Button>Back to Project</Button>
+          <Link to="/app/agents">
+            <Button>Back to Agents</Button>
           </Link>
         </Card>
       </div>
@@ -236,7 +231,7 @@ export default function AgentAnalyze() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate(`/app/projects/${projectId}/agents/${agent.id}`)}>
+          <Button variant="ghost" onClick={() => navigate(`/app/agents/${agent.id}`)}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Agent
           </Button>

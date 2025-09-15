@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -58,7 +58,6 @@ const steps = [
 ];
 
 export default function CreateAgent() {
-  const { projectId } = useParams<{ projectId: string }>();
   const [currentStep, setCurrentStep] = useState(0);
   const [form, setForm] = useState<CreateAgentForm>({
     name: '',
@@ -153,7 +152,7 @@ export default function CreateAgent() {
         description: 'Your agent has been created and is ready to test.',
       });
 
-      navigate(`/app/projects/${projectId}/agents/${agent.id}`);
+      navigate(`/app/agents/${agent.id}`);
     } catch (error) {
       toast({
         title: 'Error',
@@ -473,9 +472,9 @@ export default function CreateAgent() {
     <div className="container py-8 max-w-6xl">
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
-        <Button variant="ghost" onClick={() => navigate(`/app/projects/${projectId}`)}>
+        <Button variant="ghost" onClick={() => navigate('/app/agents')}>
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Project
+          Back to Agents
         </Button>
         <div>
           <h1 className="text-3xl font-bold">Create New Agent</h1>

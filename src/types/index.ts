@@ -4,27 +4,8 @@ export type AgentStatus = 'live' | 'ready_to_test' | 'paused' | 'finished';
 export type Channel = 'chat' | 'inbound_call' | 'outbound_call';
 export type Archetype = 'expert_deep_dive' | 'client_stakeholder' | 'customer_user' | 'rapid_survey' | 'diagnostic' | 'investigative' | 'panel_moderator';
 
-export interface Project {
-  id: string;
-  name: string;
-  description?: string;
-  createdAt: string; // ISO
-  ownerId: string;
-  agentsCount: number;
-  members: ProjectMember[];
-}
-
-export interface ProjectMember {
-  userId: string;
-  email: string;
-  name: string;
-  role: 'owner' | 'admin' | 'editor' | 'viewer';
-  joinedAt: string; // ISO
-}
-
 export interface Agent {
   id: string;
-  projectId: string;
   name: string;
   archetype: Archetype;
   createdAt: string; // ISO
@@ -40,7 +21,6 @@ export interface Agent {
 
 export interface InterviewGuide {
   id: string;
-  projectId: string;
   agentId: string;
   rawText?: string;
   structured?: GuideSchema;
@@ -67,7 +47,6 @@ export interface GuideSchema {
 
 export interface KnowledgeAsset {
   id: string;
-  projectId: string;
   agentId: string;
   title: string;
   type: 'text' | 'file';
@@ -78,7 +57,6 @@ export interface KnowledgeAsset {
 
 export interface AudienceUpload {
   id: string;
-  projectId: string;
   agentId: string;
   fileName: string;
   status: 'processing' | 'ready' | 'error';
@@ -87,14 +65,12 @@ export interface AudienceUpload {
 }
 
 export interface Share {
-  projectId: string;
-  agentId?: string;
+  agentId: string;
   users: { email: string; role: 'owner' | 'editor' | 'viewer' }[];
 }
 
 export interface InterviewSummary {
   id: string;
-  projectId: string;
   agentId: string;
   startedAt: string;
   durationSec: number;

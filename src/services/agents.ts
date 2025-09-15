@@ -5,7 +5,6 @@ import { Agent, InterviewGuide, KnowledgeAsset, AudienceUpload, Share, Interview
 const mockAgents: Agent[] = [
   {
     id: 'agent-genai-strategy',
-    projectId: 'proj-genai-research',
     name: 'GenAI Strategy Consulting Research',
     archetype: 'expert_deep_dive',
     createdAt: '2024-11-25T08:00:00Z',
@@ -20,7 +19,6 @@ const mockAgents: Agent[] = [
   },
   {
     id: 'agent-1',
-    projectId: 'proj-genai-research',
     name: 'EU Battery Expert Deep-Dive',
     archetype: 'expert_deep_dive',
     createdAt: '2024-12-01T10:00:00Z',
@@ -35,7 +33,6 @@ const mockAgents: Agent[] = [
   },
   {
     id: 'agent-2',
-    projectId: 'proj-customer-insights',
     name: 'Retail NPS Pulse',
     archetype: 'rapid_survey',
     createdAt: '2024-11-28T14:30:00Z',
@@ -49,7 +46,6 @@ const mockAgents: Agent[] = [
   },
   {
     id: 'agent-3',
-    projectId: 'proj-product-feedback',
     name: 'Customer Feedback Portal',
     archetype: 'customer_user',
     createdAt: '2024-12-05T09:15:00Z',
@@ -66,7 +62,6 @@ const mockAgents: Agent[] = [
 const mockInterviewGuides: InterviewGuide[] = [
   {
     id: 'guide-genai-strategy',
-    projectId: 'proj-genai-research',
     agentId: 'agent-genai-strategy',
     rawText: `### Respondent Screener
 - Confirm the respondent's role and experience in strategy consulting, with specific exposure to GenAI initiatives either as an internal practitioner or client-facing consultant.
@@ -265,7 +260,6 @@ const mockInterviewGuides: InterviewGuide[] = [
   },
   {
     id: 'guide-1',
-    projectId: 'proj-genai-research',
     agentId: 'agent-1',
     rawText: `Welcome to our expert interview on EU battery technologies. We're conducting research to understand the current landscape and future opportunities in this rapidly evolving sector.
 
@@ -334,7 +328,6 @@ Thank you for your participation in this research.`,
   },
   {
     id: 'guide-2',
-    projectId: 'proj-customer-insights',
     agentId: 'agent-2',
     rawText: `Quick NPS survey for retail experience.
 
@@ -380,7 +373,6 @@ Thank you!`,
 const mockKnowledgeAssets: KnowledgeAsset[] = [
   {
     id: 'knowledge-genai-1',
-    projectId: 'proj-genai-research',
     agentId: 'agent-genai-strategy',
     title: 'GenAI in Consulting Industry Report 2024',
     type: 'file',
@@ -389,7 +381,6 @@ const mockKnowledgeAssets: KnowledgeAsset[] = [
   },
   {
     id: 'knowledge-genai-2',
-    projectId: 'proj-genai-research',
     agentId: 'agent-genai-strategy',
     title: 'Strategy Consultant Interview Protocol',
     type: 'text',
@@ -413,7 +404,6 @@ Compensation: $200 consulting credit or equivalent`
   },
   {
     id: 'knowledge-genai-3',
-    projectId: 'proj-genai-research',
     agentId: 'agent-genai-strategy',
     title: 'Consulting Firm GenAI Capabilities Matrix',
     type: 'file',
@@ -422,7 +412,6 @@ Compensation: $200 consulting credit or equivalent`
   },
   {
     id: 'knowledge-genai-4',
-    projectId: 'proj-genai-research',
     agentId: 'agent-genai-strategy',
     title: 'GenAI Technology Stack Reference',
     type: 'text',
@@ -450,7 +439,6 @@ Key Considerations:
   },
   {
     id: 'knowledge-1',
-    projectId: 'proj-genai-research',
     agentId: 'agent-1',
     title: 'EU Battery Market Report 2024',
     type: 'file',
@@ -459,7 +447,6 @@ Key Considerations:
   },
   {
     id: 'knowledge-2',
-    projectId: 'proj-genai-research',
     agentId: 'agent-1',
     title: 'Industry Expert Contacts',
     type: 'text',
@@ -467,7 +454,6 @@ Key Considerations:
   },
   {
     id: 'knowledge-3',
-    projectId: 'proj-genai-research',
     agentId: 'agent-1',
     title: 'Technical Specifications Guide',
     type: 'file',
@@ -476,7 +462,6 @@ Key Considerations:
   },
   {
     id: 'knowledge-4',
-    projectId: 'proj-customer-insights',
     agentId: 'agent-2',
     title: 'Retail Location Details',
     type: 'text',
@@ -484,7 +469,6 @@ Key Considerations:
   },
   {
     id: 'knowledge-5',
-    projectId: 'proj-customer-insights',
     agentId: 'agent-2',
     title: 'Previous NPS Results',
     type: 'file',
@@ -496,7 +480,6 @@ Key Considerations:
 const mockInterviews: InterviewSummary[] = [
   {
     id: 'interview-genai-1',
-    projectId: 'proj-genai-research',
     agentId: 'agent-genai-strategy',
     startedAt: '2024-12-08T14:00:00Z',
     durationSec: 2834,
@@ -506,7 +489,6 @@ const mockInterviews: InterviewSummary[] = [
   },
   {
     id: 'interview-genai-2',
-    projectId: 'proj-genai-research',
     agentId: 'agent-genai-strategy',
     startedAt: '2024-12-08T16:30:00Z',
     durationSec: 3156,
@@ -516,7 +498,6 @@ const mockInterviews: InterviewSummary[] = [
   },
   {
     id: 'interview-genai-3',
-    projectId: 'proj-genai-research',
     agentId: 'agent-genai-strategy',
     startedAt: '2024-12-09T10:15:00Z',
     durationSec: 2945,
@@ -526,7 +507,6 @@ const mockInterviews: InterviewSummary[] = [
   },
   {
     id: 'interview-1',
-    projectId: 'proj-genai-research',
     agentId: 'agent-1',
     startedAt: '2024-12-08T15:30:00Z',
     durationSec: 1847,
@@ -536,7 +516,6 @@ const mockInterviews: InterviewSummary[] = [
   },
   {
     id: 'interview-2',
-    projectId: 'proj-customer-insights',
     agentId: 'agent-2',
     startedAt: '2024-12-08T14:15:00Z',
     durationSec: 325,
@@ -565,7 +544,6 @@ export const agentsService = {
     await delay(800);
     const newAgent: Agent = {
       id: `agent-${Date.now()}`,
-      projectId: data.projectId || 'proj-default',
       name: data.name || 'Untitled Agent',
       archetype: data.archetype || 'rapid_survey',
       createdAt: new Date().toISOString(),
@@ -690,7 +668,6 @@ export const agentsService = {
       // Create new guide
       const newGuide: InterviewGuide = {
         id: `guide-${Date.now()}`,
-        projectId: 'proj-default', // TODO: Get actual projectId from agent
         agentId,
         rawText: guideText,
         structured: structured || undefined,
@@ -715,7 +692,6 @@ export const agentsService = {
     await delay(400);
     const newAsset: KnowledgeAsset = {
       id: `knowledge-${Date.now()}`,
-      projectId: 'proj-default', // TODO: Get actual projectId from agent
       agentId,
       ...assetData
     };

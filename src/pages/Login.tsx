@@ -30,7 +30,7 @@ export default function Login() {
         organizationId: 'bcg-lumen'
       }));
       
-      navigate('/app/projects');
+      navigate('/app/agents');
     } catch (err) {
       setError('Authentication failed. Please try again.');
     } finally {
@@ -51,7 +51,7 @@ export default function Login() {
       organizationId: 'demo-org'
     }));
     
-    navigate('/app/projects');
+    navigate('/app/agents');
     setIsLoading(false);
   };
 

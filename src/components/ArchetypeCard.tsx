@@ -28,22 +28,10 @@ interface ArchetypeCardProps {
   selected?: boolean;
   onSelect?: () => void;
   className?: string;
-  variant?: 'default' | 'compact';
 }
 
-export function ArchetypeCard({ archetype, selected, onSelect, className, variant = 'default' }: ArchetypeCardProps) {
+export function ArchetypeCard({ archetype, selected, onSelect, className }: ArchetypeCardProps) {
   const IconComponent = iconMap[archetype.icon as keyof typeof iconMap] || Search;
-  
-  if (variant === 'compact') {
-    return (
-      <div className={cn('flex items-center space-x-2 p-2 bg-muted/50 rounded-lg', className)}>
-        <div className="p-1 rounded bg-muted">
-          <IconComponent className="h-3 w-3" />
-        </div>
-        <span className="text-sm font-medium">{archetype.title}</span>
-      </div>
-    );
-  }
   
   return (
     <Card 
