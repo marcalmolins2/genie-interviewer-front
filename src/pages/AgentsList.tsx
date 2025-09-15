@@ -122,7 +122,7 @@ export default function AgentsList() {
         </div>
         
         <div className="flex items-center gap-2">
-          <Link to="/app/agents/new">
+          <Link to="/app/agents/new/assisted">
             <Button className="gap-2">
               <Plus className="h-4 w-4" />
               New Agent
@@ -160,7 +160,7 @@ export default function AgentsList() {
             }
           </CardDescription>
           {!searchQuery && (
-            <Link to="/app/agents/new">
+            <Link to="/app/agents/new/assisted">
               <Button className="gap-2">
                 <Plus className="h-4 w-4" />
                 Create Your First Agent
