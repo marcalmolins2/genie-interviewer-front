@@ -27,7 +27,7 @@ export default function Login() {
         organizationId: 'bcg-lumen'
       }));
       
-      navigate('/agents');
+      navigate('/app/agents');
     } catch (err) {
       setError('Authentication failed. Please try again.');
     } finally {
