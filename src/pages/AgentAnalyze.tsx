@@ -12,6 +12,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { 
   Table,
   TableBody,
@@ -67,6 +74,8 @@ export default function AgentAnalyze() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [insightQuery, setInsightQuery] = useState('');
+  const [selectedTranscript, setSelectedTranscript] = useState<InterviewSummary | null>(null);
+  const [isTranscriptOpen, setIsTranscriptOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -180,6 +189,65 @@ export default function AgentAnalyze() {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const handleViewTranscript = (interview: InterviewSummary) => {
+    setSelectedTranscript(interview);
+    setIsTranscriptOpen(true);
+  };
+
+  const getMockTranscript = (interview: InterviewSummary) => {
+    const transcripts = {
+      'int-20241201-001': {
+        title: 'Customer Experience Interview',
+        content: [
+          { speaker: 'Agent', text: "Hi Sarah! Thank you for joining me today. I'm excited to learn about your experience with our AI strategy tools. Could you start by telling me a bit about your role and how you currently approach AI implementation?" },
+          { speaker: 'Sarah', text: "Hi! I'm a Product Manager at a fintech company. We've been exploring AI integration for about 18 months now, mainly focusing on customer service automation and risk assessment." },
+          { speaker: 'Agent', text: "That's fascinating! What's been the biggest challenge you've faced during this AI implementation journey?" },
+          { speaker: 'Sarah', text: "Honestly, the biggest hurdle has been getting buy-in from stakeholders. There's a lot of fear around AI replacing jobs, and we've had to be very careful about how we position these tools as augmentation rather than replacement." },
+          { speaker: 'Agent', text: "That's a common concern. How have you addressed those fears? What strategies have worked best for you?" },
+          { speaker: 'Sarah', text: "We started with small pilot programs that showed clear value without displacing anyone. For example, our AI chatbot handles routine queries, which freed up our human agents to focus on complex issues. The results spoke for themselves - customer satisfaction actually improved." },
+          { speaker: 'Agent', text: "That's a smart approach. Can you tell me more about the specific metrics you used to measure success?" },
+          { speaker: 'Sarah', text: "We tracked response times, resolution rates, and customer satisfaction scores. Response times dropped by 60%, and our CSAT scores went up by 15 points. But the real win was that our human agents reported higher job satisfaction because they weren't dealing with repetitive tasks anymore." }
+        ]
+      },
+      'int-20241201-002': {
+        title: 'Technology Assessment Interview',
+        content: [
+          { speaker: 'Agent', text: "Hello Mike! Thanks for taking the time to chat with me today. I understand you're involved in AI strategy at your company. Could you walk me through your current AI landscape?" },
+          { speaker: 'Mike', text: "Sure thing! I'm a CTO at a mid-size consulting firm. We've been cautiously dipping our toes into AI, mainly using tools like ChatGPT for content creation and some basic automation workflows." },
+          { speaker: 'Agent', text: "What's driving your AI adoption? Are there specific business challenges you're trying to solve?" },
+          { speaker: 'Mike', text: "The main driver is efficiency. Our consultants spend way too much time on routine tasks - writing proposals, creating reports, doing initial research. If we can automate even 30% of that, it frees them up for high-value client work." },
+          { speaker: 'Agent', text: "That makes perfect sense. Have you encountered any resistance to implementing these AI tools?" },
+          { speaker: 'Mike', text: "Some pushback from the old guard, definitely. They're worried about quality control and client perception. 'What if the client finds out we used AI?' kind of thing. But the younger consultants are embracing it fully." },
+          { speaker: 'Agent', text: "How are you handling that generational divide? Any specific strategies that have worked?" },
+          { speaker: 'Mike', text: "Training and transparency have been key. We show everyone how to use AI as a starting point, not a final product. And we're completely transparent with clients about our AI-assisted processes. Most actually appreciate the efficiency gains." }
+        ]
+      },
+      'int-20241130-004': {
+        title: 'Strategic Planning Discussion',
+        content: [
+          { speaker: 'Agent', text: "Hi David! I'm looking forward to our conversation today about AI strategy. Could you tell me about your organization and your role in AI initiatives?" },
+          { speaker: 'David', text: "Hello! I'm the Head of Digital Transformation at a healthcare organization. AI is obviously huge in healthcare right now, but we have to be incredibly careful about implementation due to regulatory requirements." },
+          { speaker: 'Agent', text: "Healthcare AI certainly comes with unique challenges. What specific areas are you focusing on?" },
+          { speaker: 'David', text: "We're looking at diagnostic assistance, patient flow optimization, and administrative automation. But everything has to be HIPAA compliant and clinically validated. It's a slow process, but necessary." },
+          { speaker: 'Agent', text: "What's been your biggest success story so far?" },
+          { speaker: 'David', text: "Our patient scheduling AI has been a game-changer. It reduced no-shows by 25% and optimized our appointment slots. Patients love the flexibility, and our staff isn't spending hours on phone scheduling." },
+          { speaker: 'Agent', text: "That's impressive! What lessons learned would you share with other healthcare organizations starting their AI journey?" },
+          { speaker: 'David', text: "Start with administrative functions first - they're lower risk but high impact. Get your legal and compliance teams involved early. And invest heavily in staff training. The technology is only as good as the people using it." }
+        ]
+      }
+    };
+
+    return transcripts[interview.id as keyof typeof transcripts] || {
+      title: 'Interview Transcript',
+      content: [
+        { speaker: 'Agent', text: "Thank you for participating in this interview today. Could you tell me a bit about your background?" },
+        { speaker: 'Participant', text: "Of course! I'd be happy to share my experience and thoughts on this topic." },
+        { speaker: 'Agent', text: "That's great. What are the main challenges you face in your current role?" },
+        { speaker: 'Participant', text: "The biggest challenge is definitely staying up to date with rapidly changing technology while ensuring our solutions remain practical and user-friendly." }
+      ]
+    };
   };
 
   // Mock data for charts
@@ -424,7 +492,12 @@ export default function AgentAnalyze() {
                         {interview.respondentId || 'Anonymous'}
                       </TableCell>
                       <TableCell>
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleViewTranscript(interview)}
+                          disabled={!interview.completed}
+                        >
                           View Transcript
                         </Button>
                       </TableCell>
@@ -551,6 +624,56 @@ export default function AgentAnalyze() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Transcript Modal */}
+      <Dialog open={isTranscriptOpen} onOpenChange={setIsTranscriptOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedTranscript && getMockTranscript(selectedTranscript).title}
+            </DialogTitle>
+            <DialogDescription>
+              Interview conducted on {selectedTranscript && formatDate(selectedTranscript.startedAt)} • 
+              Duration: {selectedTranscript && formatDuration(selectedTranscript.durationSec)} • 
+              Participant: {selectedTranscript?.respondentId || 'Anonymous'}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 mt-6">
+            {selectedTranscript && getMockTranscript(selectedTranscript).content.map((message, index) => (
+              <div key={index} className={`flex gap-3 ${message.speaker === 'Agent' ? 'justify-start' : 'justify-end'}`}>
+                <div className={`max-w-[80%] rounded-lg p-4 ${
+                  message.speaker === 'Agent' 
+                    ? 'bg-muted' 
+                    : 'bg-primary text-primary-foreground'
+                }`}>
+                  <div className="font-medium text-sm mb-1 opacity-70">
+                    {message.speaker}
+                  </div>
+                  <div className="text-sm leading-relaxed">
+                    {message.text}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="flex justify-between items-center mt-6 pt-4 border-t">
+            <div className="text-sm text-muted-foreground">
+              Transcript ID: {selectedTranscript?.id}
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm">
+                <Download className="h-4 w-4 mr-2" />
+                Download
+              </Button>
+              <Button variant="outline" size="sm">
+                Export to PDF
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
