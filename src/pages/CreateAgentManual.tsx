@@ -17,7 +17,8 @@ import {
   FileText, 
   X,
   Check,
-  AlertCircle
+  AlertCircle,
+  Sparkles
 } from 'lucide-react';
 import { ARCHETYPES, Channel, Archetype, PRICE_BY_CHANNEL, GuideSchema } from '@/types';
 import { agentsService } from '@/services/agents';
@@ -471,15 +472,25 @@ export default function CreateAgent() {
   return (
     <div className="container py-8 max-w-6xl">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
-        <Button variant="ghost" onClick={() => navigate('/app/agents')}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Agents
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold">Create New Agent</h1>
-          <p className="text-muted-foreground">Set up a new AI interview agent</p>
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" onClick={() => navigate('/app/agents')}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Agents
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Create New Agent</h1>
+            <p className="text-muted-foreground">Set up a new AI interview agent</p>
+          </div>
         </div>
+        <Button 
+          variant="outline" 
+          onClick={() => navigate('/app/agents/new/assisted')}
+          className="flex items-center gap-2"
+        >
+          <Sparkles className="h-4 w-4" />
+          Try AI Assistant
+        </Button>
       </div>
 
       {/* Stepper */}
