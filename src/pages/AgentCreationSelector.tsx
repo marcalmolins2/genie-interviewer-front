@@ -69,9 +69,9 @@ export default function AgentCreationSelector() {
             <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <MessageCircle className="h-8 w-8 text-primary" />
             </div>
-            <CardTitle className="text-xl">AI-Assisted Setup</CardTitle>
+            <CardTitle className="text-xl">Genie-Assisted Setup</CardTitle>
             <CardDescription className="text-base">
-              Let our AI guide you through creating the perfect agent
+              Let our genie guide you through creating the perfect agent
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -82,7 +82,7 @@ export default function AgentCreationSelector() {
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
-                <span>AI suggests optimal configurations</span>
+                <span>Genie suggests optimal configurations</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
