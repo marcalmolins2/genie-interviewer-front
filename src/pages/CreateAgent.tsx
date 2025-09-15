@@ -486,48 +486,52 @@ export default function CreateAgent() {
       <Stepper steps={steps} currentStep={currentStep} className="mb-8" />
 
       {/* Step Content */}
-      <div className="mb-8">
+      <div className="mb-8 pb-24">
         {renderStepContent()}
       </div>
 
-      {/* Navigation */}
-      <div className="flex items-center justify-between border-t pt-6">
-        <Button
-          variant="outline"
-          onClick={prevStep}
-          disabled={currentStep === 0}
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Previous
-        </Button>
+      {/* Floating Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-t shadow-lg">
+        <div className="container max-w-6xl">
+          <div className="flex items-center justify-between py-4">
+            <Button
+              variant="outline"
+              onClick={prevStep}
+              disabled={currentStep === 0}
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Previous
+            </Button>
 
-        <div className="flex items-center gap-2">
-          {currentStep < steps.length - 1 ? (
-            <Button
-              onClick={nextStep}
-              disabled={!validateStep(currentStep)}
-            >
-              Next
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </Button>
-          ) : (
-            <Button
-              onClick={createAgent}
-              disabled={!validateStep(currentStep) || isCreating}
-            >
-              {isCreating ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
-                  Creating...
-                </>
+            <div className="flex items-center gap-2">
+              {currentStep < steps.length - 1 ? (
+                <Button
+                  onClick={nextStep}
+                  disabled={!validateStep(currentStep)}
+                >
+                  Next
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
               ) : (
-                <>
-                  <Check className="h-4 w-4 mr-2" />
-                  Create Agent
-                </>
+                <Button
+                  onClick={createAgent}
+                  disabled={!validateStep(currentStep) || isCreating}
+                >
+                  {isCreating ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="h-4 w-4 mr-2" />
+                      Create Agent
+                    </>
+                  )}
+                </Button>
               )}
-            </Button>
-          )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
