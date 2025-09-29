@@ -217,7 +217,6 @@ export default function Landing() {
                   <div className="flex items-center gap-2 mb-2">
                     <BarChart3 className="h-5 w-5 text-primary" />
                     <h3 className="text-xl font-semibold">Maturity Assessment</h3>
-                    <Badge variant="secondary" className="ml-2">Time-to-Value: 3 Days</Badge>
                   </div>
                   <p className="text-muted-foreground leading-relaxed">
                     Transform weeks of stakeholder interviews into days. Our AI agents conduct comprehensive 
@@ -241,7 +240,6 @@ export default function Landing() {
                   <div className="flex items-center gap-2 mb-2">
                     <Users className="h-5 w-5 text-primary" />
                     <h3 className="text-xl font-semibold">Belief Audits</h3>
-                    <Badge variant="secondary" className="ml-2">Cultural Intelligence</Badge>
                   </div>
                   <p className="text-muted-foreground leading-relaxed">
                     Unlock organizational DNA at scale. Deploy intelligent belief audits that reveal hidden 
@@ -265,7 +263,6 @@ export default function Landing() {
                   <div className="flex items-center gap-2 mb-2">
                     <MessageCircle className="h-5 w-5 text-primary" />
                     <h3 className="text-xl font-semibold">Surveys at Scale</h3>
-                    <Badge variant="secondary" className="ml-2">Unlimited Scale</Badge>
                   </div>
                   <p className="text-muted-foreground leading-relaxed">
                     Execute market research and stakeholder surveys with enterprise-grade intelligence. 
