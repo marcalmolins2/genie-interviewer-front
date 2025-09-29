@@ -323,9 +323,6 @@ export default function Landing() {
       <section className="py-16 bg-gradient-to-br from-background via-muted/20 to-background">
         <div className="container">
           <div className="text-center mb-16">
-            <Badge variant="outline" className="mb-4 px-4 py-2">
-              Communication Channels
-            </Badge>
             <h2 className="text-3xl md:text-4xl font-bold mb-6">
               Deploy Across Multiple Channels
             </h2>
