@@ -79,7 +79,13 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-      },
+        },
+        perspective: {
+          '1000': '1000px',
+        },
+        rotate: {
+          'y-180': '180deg',
+        },
       borderRadius: {
         lg: "var(--radius-lg)",
         md: "var(--radius)",
@@ -101,6 +107,18 @@ export default {
           to: {
             height: "var(--radix-accordion-content-height)",
           },
+        },
+        '.perspective-1000': {
+          perspective: '1000px',
+        },
+        '.transform-style-preserve-3d': {
+          'transform-style': 'preserve-3d',
+        },
+        '.backface-hidden': {
+          'backface-visibility': 'hidden',
+        },
+        '.rotate-y-180': {
+          transform: 'rotateY(180deg)',
         },
         "accordion-up": {
           from: {
