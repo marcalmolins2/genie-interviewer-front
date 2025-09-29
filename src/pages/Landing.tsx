@@ -98,17 +98,6 @@ export default function Landing() {
                 Streamline your case team research with intelligent interview agents. 
                 Create, deploy, and analyze conversations at scale.
               </p>
-              
-              <div className="flex items-center justify-center gap-4 animate-slide-up">
-                <Link to="/login">
-                  <Button size="lg" className="gap-2">
-                    Start Building <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </Link>
-                <Button variant="outline" size="lg">
-                  View Demo
-                </Button>
-              </div>
             </div>
           </div>
         </section>
