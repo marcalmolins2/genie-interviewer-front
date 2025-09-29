@@ -340,14 +340,6 @@ export default function Landing() {
                         <CardTitle className="text-2xl mb-2 group-hover:text-primary transition-colors duration-300">
                           {channel.name}
                         </CardTitle>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="secondary" className="text-xs">
-                            Enterprise Ready
-                          </Badge>
-                          <Badge variant="outline" className="text-xs">
-                            Instant Setup
-                          </Badge>
-                        </div>
                       </div>
                     </div>
                     
