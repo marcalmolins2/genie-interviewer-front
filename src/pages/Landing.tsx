@@ -60,9 +60,7 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation & Hero Combined */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 gradient-hero opacity-20" />
-        
+      <div className="relative">
         {/* Navigation */}
         <nav className="border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/40 sticky top-0 z-50 relative">
           <div className="container flex h-16 items-center justify-between">
@@ -83,8 +81,8 @@ export default function Landing() {
         </nav>
 
         {/* Hero Section */}
-        <section className="py-12 relative">
-           <div className="container relative">
+        <section className="py-12">
+           <div className="container">
             <div className="max-w-4xl mx-auto text-center">
               <h1 className="text-5xl md:text-6xl font-bold tracking-tight mb-6 animate-fade-in">
                 Welcome to{' '}
