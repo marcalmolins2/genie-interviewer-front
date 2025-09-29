@@ -375,58 +375,6 @@ export default function Landing() {
       </section>
 
 
-      {/* Security & Compliance */}
-      <section className="py-20 bg-muted/30">
-        <div className="container">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-8">
-              Enterprise Security & Compliance
-            </h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-              <div className="flex items-start gap-3">
-                <CheckCircle className="h-6 w-6 text-success mt-1" />
-                <div className="text-left">
-                  <h3 className="font-semibold mb-2">Okta SSO Integration</h3>
-                  <p className="text-muted-foreground">
-                    Secure authentication using your existing Okta infrastructure
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-3">
-                <CheckCircle className="h-6 w-6 text-success mt-1" />
-                <div className="text-left">
-                  <h3 className="font-semibold mb-2">Data Privacy</h3>
-                  <p className="text-muted-foreground">
-                    End-to-end encryption and secure data handling practices
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-3">
-                <CheckCircle className="h-6 w-6 text-success mt-1" />
-                <div className="text-left">
-                  <h3 className="font-semibold mb-2">Audit Trail</h3>
-                  <p className="text-muted-foreground">
-                    Complete activity logging for compliance and governance
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-3">
-                <CheckCircle className="h-6 w-6 text-success mt-1" />
-                <div className="text-left">
-                  <h3 className="font-semibold mb-2">Case Code Tracking</h3>
-                  <p className="text-muted-foreground">
-                    Link interviews to specific BCG case codes for proper billing
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* CTA */}
       <section className="py-20">
