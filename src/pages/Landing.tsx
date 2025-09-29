@@ -176,11 +176,15 @@ export default function Landing() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-            <Card className="hover:shadow-lg transition-shadow flex flex-col">
-              <div className="p-6 flex-1">
+            <Card className="group relative overflow-hidden border-0 bg-gradient-to-br from-card via-card/90 to-muted/10 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              
+              <div className="p-6 flex-1 relative">
                 <div className="flex items-center gap-2 mb-3">
-                  <Sparkles className="h-5 w-5 text-primary" />
-                  <h3 className="text-xl font-semibold">Expert Deep Dive</h3>
+                  <div className="relative">
+                    <Sparkles className="h-5 w-5 text-primary transition-transform duration-300 group-hover:scale-110" />
+                  </div>
+                  <h3 className="text-xl font-semibold group-hover:text-primary transition-colors duration-300">Expert Deep Dive</h3>
                 </div>
                 <div className="text-muted-foreground leading-relaxed space-y-1">
                   <div className="flex items-center gap-2">
@@ -197,7 +201,7 @@ export default function Landing() {
                   </div>
                 </div>
               </div>
-              <div className="p-6 pt-0">
+              <div className="p-6 pt-0 relative">
                 <Link to="/login">
                   <Button className="gap-2 w-full">
                     Build This Agent <ArrowRight className="h-4 w-4" />
@@ -206,11 +210,15 @@ export default function Landing() {
               </div>
             </Card>
 
-            <Card className="hover:shadow-lg transition-shadow flex flex-col">
-              <div className="p-6 flex-1">
+            <Card className="group relative overflow-hidden border-0 bg-gradient-to-br from-card via-card/90 to-muted/10 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              
+              <div className="p-6 flex-1 relative">
                 <div className="flex items-center gap-2 mb-3">
-                  <BarChart3 className="h-5 w-5 text-primary" />
-                  <h3 className="text-xl font-semibold">Maturity Assessment</h3>
+                  <div className="relative">
+                    <BarChart3 className="h-5 w-5 text-primary transition-transform duration-300 group-hover:scale-110" />
+                  </div>
+                  <h3 className="text-xl font-semibold group-hover:text-primary transition-colors duration-300">Maturity Assessment</h3>
                 </div>
                 <div className="text-muted-foreground leading-relaxed space-y-1">
                   <div className="flex items-center gap-2">
@@ -227,7 +235,7 @@ export default function Landing() {
                   </div>
                 </div>
               </div>
-              <div className="p-6 pt-0">
+              <div className="p-6 pt-0 relative">
                 <Link to="/login">
                   <Button className="gap-2 w-full">
                     Build This Agent <ArrowRight className="h-4 w-4" />
@@ -236,11 +244,15 @@ export default function Landing() {
               </div>
             </Card>
 
-            <Card className="hover:shadow-lg transition-shadow flex flex-col">
-              <div className="p-6 flex-1">
+            <Card className="group relative overflow-hidden border-0 bg-gradient-to-br from-card via-card/90 to-muted/10 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              
+              <div className="p-6 flex-1 relative">
                 <div className="flex items-center gap-2 mb-3">
-                  <Users className="h-5 w-5 text-primary" />
-                  <h3 className="text-xl font-semibold">Belief Audits</h3>
+                  <div className="relative">
+                    <Users className="h-5 w-5 text-primary transition-transform duration-300 group-hover:scale-110" />
+                  </div>
+                  <h3 className="text-xl font-semibold group-hover:text-primary transition-colors duration-300">Belief Audits</h3>
                 </div>
                 <div className="text-muted-foreground leading-relaxed space-y-1">
                   <div className="flex items-center gap-2">
@@ -257,7 +269,7 @@ export default function Landing() {
                   </div>
                 </div>
               </div>
-              <div className="p-6 pt-0">
+              <div className="p-6 pt-0 relative">
                 <Link to="/login">
                   <Button className="gap-2 w-full">
                     Build This Agent <ArrowRight className="h-4 w-4" />
@@ -266,11 +278,15 @@ export default function Landing() {
               </div>
             </Card>
 
-            <Card className="hover:shadow-lg transition-shadow flex flex-col">
-              <div className="p-6 flex-1">
+            <Card className="group relative overflow-hidden border-0 bg-gradient-to-br from-card via-card/90 to-muted/10 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              
+              <div className="p-6 flex-1 relative">
                 <div className="flex items-center gap-2 mb-3">
-                  <MessageCircle className="h-5 w-5 text-primary" />
-                  <h3 className="text-xl font-semibold">Surveys at Scale</h3>
+                  <div className="relative">
+                    <MessageCircle className="h-5 w-5 text-primary transition-transform duration-300 group-hover:scale-110" />
+                  </div>
+                  <h3 className="text-xl font-semibold group-hover:text-primary transition-colors duration-300">Surveys at Scale</h3>
                 </div>
                 <div className="text-muted-foreground leading-relaxed space-y-1">
                   <div className="flex items-center gap-2">
@@ -287,7 +303,7 @@ export default function Landing() {
                   </div>
                 </div>
               </div>
-              <div className="p-6 pt-0">
+              <div className="p-6 pt-0 relative">
                 <Link to="/login">
                   <Button className="gap-2 w-full">
                     Build This Agent <ArrowRight className="h-4 w-4" />
