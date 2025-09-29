@@ -110,8 +110,116 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* How it Works */}
+      {/* Executive Overview */}
+      <section className="py-20">
+        <div className="container">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+              Transform Your Research with AI Interview Agents
+            </h2>
+            <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+              Genie Interviewers revolutionizes how case teams conduct research by providing intelligent AI agents 
+              that can run sophisticated interviews at scale. Our platform enables you to capture deep insights 
+              from experts, stakeholders, and customers with the nuance and adaptability of human interviewers, 
+              but with the speed and consistency of automation.
+            </p>
+            <p className="text-lg text-muted-foreground">
+              Whether you're conducting expert interviews, running assessments, or gathering feedback across 
+              large groups, our AI agents adapt their questioning in real-time to extract the most valuable insights.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Available Archetypes */}
       <section className="py-20 bg-muted/30">
+        <div className="container">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Available Interview Archetypes
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Choose from our specialized AI interviewers, each designed for specific research scenarios
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="text-xl flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                  Expert Deep Dive
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground leading-relaxed">
+                  This interviewer is able to run interviews with experts just like a human would do. 
+                  It constantly evaluates how the conversation is going and based on the goal of the interview 
+                  adapts the questions to get to the required insights (makes follow-up questions, clarifies the content, 
+                  asks for more detail). It can also be boosted with market and company knowledge to make more relevant questions.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="text-xl flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5 text-primary" />
+                  Maturity Assessment
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground leading-relaxed">
+                  This interviewer will allow to speed up the assessment phases by automating the interviews 
+                  with different company stakeholders. The agent will be fed with the relevant data that it needs 
+                  to retrieve and will conduct a dynamic interview to extract the required insights.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="text-xl flex items-center gap-2">
+                  <Users className="h-5 w-5 text-primary" />
+                  Belief Audits
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground leading-relaxed">
+                  This interviewer is able to run your belief audits at scale extracting the relevant company 
+                  insights via a highly human-like experience. Perfect for understanding organizational culture, 
+                  values, and underlying assumptions across teams and departments.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="text-xl flex items-center gap-2">
+                  <MessageCircle className="h-5 w-5 text-primary" />
+                  Surveys at Scale
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground leading-relaxed">
+                  This interviewer is able to run simple/complex surveys at scale in any type of scenario. 
+                  From quick feedback collection to comprehensive research studies, it adapts to gather 
+                  the specific data you need from large populations efficiently.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="text-center">
+            <p className="text-lg text-muted-foreground italic">
+              ... and many more specialized archetypes to come
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* How it Works */}
+      <section className="py-20">
         <div className="container">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -168,44 +276,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Archetypes */}
-      <section className="py-20 bg-muted/30">
-        <div className="container">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Interview Archetypes
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Pre-configured templates for different research scenarios
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {ARCHETYPES.slice(0, 6).map((archetype) => (
-              <Card key={archetype.id} className="hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    {archetype.title}
-                  </CardTitle>
-                  <CardDescription>{archetype.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    {archetype.useCase}
-                  </p>
-                  <div className="flex flex-wrap gap-1">
-                    {archetype.examples.slice(0, 2).map((example, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs">
-                        {example}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Pricing */}
       <section className="py-20">
