@@ -176,132 +176,124 @@ export default function Landing() {
             </p>
           </div>
           
-          <div className="space-y-6 mb-12">
-            <Card className="hover:shadow-lg transition-shadow">
-              <div className="flex items-center justify-between p-6">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Sparkles className="h-5 w-5 text-primary" />
-                    <h3 className="text-xl font-semibold">Expert Deep Dive</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+            <Card className="hover:shadow-lg transition-shadow flex flex-col">
+              <div className="p-6 flex-1">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                  <h3 className="text-xl font-semibold">Expert Deep Dive</h3>
+                </div>
+                <div className="text-muted-foreground leading-relaxed space-y-1">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                    <span className="text-sm">Conducts technical deep-dives with industry expertise</span>
                   </div>
-                  <div className="text-muted-foreground leading-relaxed space-y-1">
-                    <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
-                      <span className="text-sm">Conducts technical deep-dives with industry expertise</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
-                      <span className="text-sm">Follows up with probing questions based on responses</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
-                      <span className="text-sm">Adapts questioning style to interviewee expertise level</span>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                    <span className="text-sm">Follows up with probing questions based on responses</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                    <span className="text-sm">Adapts questioning style to interviewee expertise level</span>
                   </div>
                 </div>
-                <div className="ml-6 flex-shrink-0">
-                  <Link to="/login">
-                    <Button className="gap-2">
-                      Build This Agent <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
+              </div>
+              <div className="p-6 pt-0">
+                <Link to="/login">
+                  <Button className="gap-2 w-full">
+                    Build This Agent <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
               </div>
             </Card>
 
-            <Card className="hover:shadow-lg transition-shadow">
-              <div className="flex items-center justify-between p-6">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-3">
-                    <BarChart3 className="h-5 w-5 text-primary" />
-                    <h3 className="text-xl font-semibold">Maturity Assessment</h3>
+            <Card className="hover:shadow-lg transition-shadow flex flex-col">
+              <div className="p-6 flex-1">
+                <div className="flex items-center gap-2 mb-3">
+                  <BarChart3 className="h-5 w-5 text-primary" />
+                  <h3 className="text-xl font-semibold">Maturity Assessment</h3>
+                </div>
+                <div className="text-muted-foreground leading-relaxed space-y-1">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                    <span className="text-sm">Evaluates organizational capabilities across multiple dimensions</span>
                   </div>
-                  <div className="text-muted-foreground leading-relaxed space-y-1">
-                    <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
-                      <span className="text-sm">Evaluates organizational capabilities across multiple dimensions</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
-                      <span className="text-sm">Maintains consistent scoring framework across interviews</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
-                      <span className="text-sm">Generates comparative analysis and benchmarking insights</span>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                    <span className="text-sm">Maintains consistent scoring framework across interviews</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                    <span className="text-sm">Generates comparative analysis and benchmarking insights</span>
                   </div>
                 </div>
-                <div className="ml-6 flex-shrink-0">
-                  <Link to="/login">
-                    <Button className="gap-2">
-                      Build This Agent <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
+              </div>
+              <div className="p-6 pt-0">
+                <Link to="/login">
+                  <Button className="gap-2 w-full">
+                    Build This Agent <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
               </div>
             </Card>
 
-            <Card className="hover:shadow-lg transition-shadow">
-              <div className="flex items-center justify-between p-6">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Users className="h-5 w-5 text-primary" />
-                    <h3 className="text-xl font-semibold">Belief Audits</h3>
+            <Card className="hover:shadow-lg transition-shadow flex flex-col">
+              <div className="p-6 flex-1">
+                <div className="flex items-center gap-2 mb-3">
+                  <Users className="h-5 w-5 text-primary" />
+                  <h3 className="text-xl font-semibold">Belief Audits</h3>
+                </div>
+                <div className="text-muted-foreground leading-relaxed space-y-1">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                    <span className="text-sm">Explores underlying assumptions and mental models</span>
                   </div>
-                  <div className="text-muted-foreground leading-relaxed space-y-1">
-                    <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
-                      <span className="text-sm">Explores underlying assumptions and mental models</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
-                      <span className="text-sm">Identifies cultural patterns and organizational beliefs</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
-                      <span className="text-sm">Maps belief systems across different stakeholder groups</span>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                    <span className="text-sm">Identifies cultural patterns and organizational beliefs</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                    <span className="text-sm">Maps belief systems across different stakeholder groups</span>
                   </div>
                 </div>
-                <div className="ml-6 flex-shrink-0">
-                  <Link to="/login">
-                    <Button className="gap-2">
-                      Build This Agent <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
+              </div>
+              <div className="p-6 pt-0">
+                <Link to="/login">
+                  <Button className="gap-2 w-full">
+                    Build This Agent <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
               </div>
             </Card>
 
-            <Card className="hover:shadow-lg transition-shadow">
-              <div className="flex items-center justify-between p-6">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-3">
-                    <MessageCircle className="h-5 w-5 text-primary" />
-                    <h3 className="text-xl font-semibold">Surveys at Scale</h3>
+            <Card className="hover:shadow-lg transition-shadow flex flex-col">
+              <div className="p-6 flex-1">
+                <div className="flex items-center gap-2 mb-3">
+                  <MessageCircle className="h-5 w-5 text-primary" />
+                  <h3 className="text-xl font-semibold">Surveys at Scale</h3>
+                </div>
+                <div className="text-muted-foreground leading-relaxed space-y-1">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                    <span className="text-sm">Conducts structured interviews with standardized questions</span>
                   </div>
-                  <div className="text-muted-foreground leading-relaxed space-y-1">
-                    <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
-                      <span className="text-sm">Conducts structured interviews with standardized questions</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
-                      <span className="text-sm">Adapts question flow based on previous responses</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
-                      <span className="text-sm">Aggregates responses for statistical analysis</span>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                    <span className="text-sm">Adapts question flow based on previous responses</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                    <span className="text-sm">Aggregates responses for statistical analysis</span>
                   </div>
                 </div>
-                <div className="ml-6 flex-shrink-0">
-                  <Link to="/login">
-                    <Button className="gap-2">
-                      Build This Agent <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
+              </div>
+              <div className="p-6 pt-0">
+                <Link to="/login">
+                  <Button className="gap-2 w-full">
+                    Build This Agent <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
               </div>
             </Card>
           </div>
