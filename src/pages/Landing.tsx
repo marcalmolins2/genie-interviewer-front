@@ -190,66 +190,89 @@ export default function Landing() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
             <Card className="hover:shadow-lg transition-shadow">
               <CardHeader>
-                <CardTitle className="text-xl flex items-center gap-2">
+                <CardTitle className="text-xl flex items-center gap-2 mb-2">
                   <Sparkles className="h-5 w-5 text-primary" />
                   Expert Deep Dive
                 </CardTitle>
+                <Badge variant="secondary" className="w-fit">Enterprise Ready</Badge>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
                 <p className="text-muted-foreground leading-relaxed">
-                  This interviewer is able to run interviews with experts just like a human would do. 
-                  It constantly evaluates how the conversation is going and based on the goal of the interview 
-                  adapts the questions to get to the required insights (makes follow-up questions, clarifies the content, 
-                  asks for more detail). It can also be boosted with market and company knowledge to make more relevant questions.
+                  Accelerate strategic decision-making with AI interviewers that conduct expert consultations 
+                  with the nuance of senior partners. Reduce expert interview costs by 80% while maintaining 
+                  the depth and quality your cases demand.
                 </p>
+                <Link to="/login">
+                  <Button className="w-full gap-2">
+                    Build This Agent <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
 
             <Card className="hover:shadow-lg transition-shadow">
               <CardHeader>
-                <CardTitle className="text-xl flex items-center gap-2">
+                <CardTitle className="text-xl flex items-center gap-2 mb-2">
                   <BarChart3 className="h-5 w-5 text-primary" />
                   Maturity Assessment
                 </CardTitle>
+                <Badge variant="secondary" className="w-fit">Time-to-Value: 3 Days</Badge>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
                 <p className="text-muted-foreground leading-relaxed">
-                  This interviewer will allow to speed up the assessment phases by automating the interviews 
-                  with different company stakeholders. The agent will be fed with the relevant data that it needs 
-                  to retrieve and will conduct a dynamic interview to extract the required insights.
+                  Transform weeks of stakeholder interviews into days. Our AI agents conduct comprehensive 
+                  organizational assessments across departments, delivering consistent evaluation frameworks 
+                  and actionable maturity scorecards.
                 </p>
+                <Link to="/login">
+                  <Button className="w-full gap-2">
+                    Build This Agent <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
 
             <Card className="hover:shadow-lg transition-shadow">
               <CardHeader>
-                <CardTitle className="text-xl flex items-center gap-2">
+                <CardTitle className="text-xl flex items-center gap-2 mb-2">
                   <Users className="h-5 w-5 text-primary" />
                   Belief Audits
                 </CardTitle>
+                <Badge variant="secondary" className="w-fit">Cultural Intelligence</Badge>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
                 <p className="text-muted-foreground leading-relaxed">
-                  This interviewer is able to run your belief audits at scale extracting the relevant company 
-                  insights via a highly human-like experience. Perfect for understanding organizational culture, 
-                  values, and underlying assumptions across teams and departments.
+                  Unlock organizational DNA at scale. Deploy intelligent belief audits that reveal hidden 
+                  cultural barriers, leadership blind spots, and transformation readiness across your client's 
+                  entire organization in record time.
                 </p>
+                <Link to="/login">
+                  <Button className="w-full gap-2">
+                    Build This Agent <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
 
             <Card className="hover:shadow-lg transition-shadow">
               <CardHeader>
-                <CardTitle className="text-xl flex items-center gap-2">
+                <CardTitle className="text-xl flex items-center gap-2 mb-2">
                   <MessageCircle className="h-5 w-5 text-primary" />
                   Surveys at Scale
                 </CardTitle>
+                <Badge variant="secondary" className="w-fit">Unlimited Scale</Badge>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
                 <p className="text-muted-foreground leading-relaxed">
-                  This interviewer is able to run simple/complex surveys at scale in any type of scenario. 
-                  From quick feedback collection to comprehensive research studies, it adapts to gather 
-                  the specific data you need from large populations efficiently.
+                  Execute market research and stakeholder surveys with enterprise-grade intelligence. 
+                  Gather insights from thousands of respondents with adaptive questioning that maximizes 
+                  response quality and business impact.
                 </p>
+                <Link to="/login">
+                  <Button className="w-full gap-2">
+                    Build This Agent <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           </div>
