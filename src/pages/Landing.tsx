@@ -180,15 +180,24 @@ export default function Landing() {
             <Card className="hover:shadow-lg transition-shadow">
               <div className="flex items-center justify-between p-6">
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-2 mb-3">
                     <Sparkles className="h-5 w-5 text-primary" />
                     <h3 className="text-xl font-semibold">Expert Deep Dive</h3>
                   </div>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Accelerate strategic decision-making with AI interviewers that conduct expert consultations 
-                    with the nuance of senior partners. Reduce expert interview costs by 80% while maintaining 
-                    the depth and quality your cases demand.
-                  </p>
+                  <div className="text-muted-foreground leading-relaxed space-y-1">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                      <span className="text-sm">Conducts technical deep-dives with industry expertise</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                      <span className="text-sm">Follows up with probing questions based on responses</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                      <span className="text-sm">Adapts questioning style to interviewee expertise level</span>
+                    </div>
+                  </div>
                 </div>
                 <div className="ml-6 flex-shrink-0">
                   <Link to="/login">
@@ -203,15 +212,24 @@ export default function Landing() {
             <Card className="hover:shadow-lg transition-shadow">
               <div className="flex items-center justify-between p-6">
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-2 mb-3">
                     <BarChart3 className="h-5 w-5 text-primary" />
                     <h3 className="text-xl font-semibold">Maturity Assessment</h3>
                   </div>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Transform weeks of stakeholder interviews into days. Our AI agents conduct comprehensive 
-                    organizational assessments across departments, delivering consistent evaluation frameworks 
-                    and actionable maturity scorecards.
-                  </p>
+                  <div className="text-muted-foreground leading-relaxed space-y-1">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                      <span className="text-sm">Evaluates organizational capabilities across multiple dimensions</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                      <span className="text-sm">Maintains consistent scoring framework across interviews</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                      <span className="text-sm">Generates comparative analysis and benchmarking insights</span>
+                    </div>
+                  </div>
                 </div>
                 <div className="ml-6 flex-shrink-0">
                   <Link to="/login">
@@ -226,15 +244,24 @@ export default function Landing() {
             <Card className="hover:shadow-lg transition-shadow">
               <div className="flex items-center justify-between p-6">
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-2 mb-3">
                     <Users className="h-5 w-5 text-primary" />
                     <h3 className="text-xl font-semibold">Belief Audits</h3>
                   </div>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Unlock organizational DNA at scale. Deploy intelligent belief audits that reveal hidden 
-                    cultural barriers, leadership blind spots, and transformation readiness across your client's 
-                    entire organization in record time.
-                  </p>
+                  <div className="text-muted-foreground leading-relaxed space-y-1">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                      <span className="text-sm">Explores underlying assumptions and mental models</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                      <span className="text-sm">Identifies cultural patterns and organizational beliefs</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                      <span className="text-sm">Maps belief systems across different stakeholder groups</span>
+                    </div>
+                  </div>
                 </div>
                 <div className="ml-6 flex-shrink-0">
                   <Link to="/login">
@@ -249,15 +276,24 @@ export default function Landing() {
             <Card className="hover:shadow-lg transition-shadow">
               <div className="flex items-center justify-between p-6">
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-2 mb-3">
                     <MessageCircle className="h-5 w-5 text-primary" />
                     <h3 className="text-xl font-semibold">Surveys at Scale</h3>
                   </div>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Execute market research and stakeholder surveys with enterprise-grade intelligence. 
-                    Gather insights from thousands of respondents with adaptive questioning that maximizes 
-                    response quality and business impact.
-                  </p>
+                  <div className="text-muted-foreground leading-relaxed space-y-1">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                      <span className="text-sm">Conducts structured interviews with standardized questions</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                      <span className="text-sm">Adapts question flow based on previous responses</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                      <span className="text-sm">Aggregates responses for statistical analysis</span>
+                    </div>
+                  </div>
                 </div>
                 <div className="ml-6 flex-shrink-0">
                   <Link to="/login">
