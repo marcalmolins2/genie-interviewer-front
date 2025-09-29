@@ -194,7 +194,6 @@ export default function Landing() {
                   <div className="flex items-center gap-2 mb-2">
                     <Sparkles className="h-5 w-5 text-primary" />
                     <h3 className="text-xl font-semibold">Expert Deep Dive</h3>
-                    <Badge variant="secondary" className="ml-2">Enterprise Ready</Badge>
                   </div>
                   <p className="text-muted-foreground leading-relaxed">
                     Accelerate strategic decision-making with AI interviewers that conduct expert consultations 
