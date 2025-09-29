@@ -88,9 +88,9 @@ export default function Landing() {
            <div className="container relative">
             <div className="max-w-4xl mx-auto text-center">
               <h1 className="text-5xl md:text-6xl font-bold tracking-tight mb-6 animate-fade-in">
-                Welcome to Genie{' '}
-                <span className="bg-gradient-primary bg-clip-text text-transparent">
-                  Interviewers
+                Welcome to{' '}
+                <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  Genie Interviewers
                 </span>
               </h1>
               
