@@ -314,6 +314,38 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Available Channels */}
+      <section className="py-10">
+        <div className="container">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Multiple Communication Channels
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Deploy your interview agents across different channels to reach your audience where they are
+            </p>
+          </div>
+          
+          <div className="max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+            {channels.map((channel) => (
+              <Card key={channel.type} className="text-center hover:shadow-md transition-shadow">
+                <CardHeader>
+                  <div className="w-12 h-12 mx-auto mb-4 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <channel.icon className="h-6 w-6 text-primary" />
+                  </div>
+                  <CardTitle>{channel.name}</CardTitle>
+                  <CardDescription className="mt-2">
+                    {channel.type === 'chat' && 'Web-based text conversations with instant responses'}
+                    {channel.type === 'inbound_call' && 'Receive calls with natural voice interactions'}
+                    {channel.type === 'outbound_call' && 'Proactively reach out to interview participants'}
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* How it Works */}
       <section className="py-20">
         <div className="container">
@@ -342,36 +374,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Pricing */}
-      <section className="py-20">
-        <div className="container">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Simple, Usage-Based Pricing
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Pay only for completed interviews. No setup fees or monthly subscriptions.
-            </p>
-          </div>
-          
-          <div className="max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
-            {channels.map((channel) => (
-              <Card key={channel.type} className="text-center hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <div className="w-12 h-12 mx-auto mb-4 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <channel.icon className="h-6 w-6 text-primary" />
-                  </div>
-                  <CardTitle>{channel.name}</CardTitle>
-                  <div className="text-3xl font-bold text-primary mt-2">
-                    ${channel.price}
-                  </div>
-                  <CardDescription>per completed interview</CardDescription>
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Security & Compliance */}
       <section className="py-20 bg-muted/30">
