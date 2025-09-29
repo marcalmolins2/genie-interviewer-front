@@ -84,7 +84,7 @@ export default function Landing() {
         </nav>
 
         {/* Hero Section */}
-        <section className="py-20 relative">
+        <section className="py-12 relative">
            <div className="container relative">
             <div className="max-w-4xl mx-auto text-center">
               <h1 className="text-5xl md:text-6xl font-bold tracking-tight mb-6 animate-fade-in">
@@ -104,10 +104,10 @@ export default function Landing() {
       </div>
 
       {/* Key Features Overview */}
-      <section className="py-20">
+      <section className="py-10">
         <div className="container">
           <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
+            <div className="text-center mb-10">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
                 Transform Your Research in Three Steps
               </h2>
@@ -165,9 +165,9 @@ export default function Landing() {
       </section>
 
       {/* Available Archetypes */}
-      <section className="py-20 bg-muted/30">
+      <section className="py-10 bg-muted/30">
         <div className="container">
-          <div className="text-center mb-16">
+          <div className="text-center mb-10">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               Available Interview Archetypes
             </h2>
