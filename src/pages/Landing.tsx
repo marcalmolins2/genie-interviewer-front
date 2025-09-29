@@ -171,23 +171,6 @@ export default function Landing() {
               </div>
             </div>
 
-            {/* Visual Flow Diagram */}
-            <div className="flex items-center justify-center gap-4 md:gap-8">
-              <div className="flex flex-col items-center">
-                <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold mb-2">1</div>
-                <span className="text-sm text-muted-foreground">Setup</span>
-              </div>
-              <ArrowRight className="h-6 w-6 text-muted-foreground hidden md:block" />
-              <div className="flex flex-col items-center">
-                <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold mb-2">2</div>
-                <span className="text-sm text-muted-foreground">Interview</span>
-              </div>
-              <ArrowRight className="h-6 w-6 text-muted-foreground hidden md:block" />
-              <div className="flex flex-col items-center">
-                <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold mb-2">3</div>
-                <span className="text-sm text-muted-foreground">Analyze</span>
-              </div>
-            </div>
           </div>
         </div>
       </section>
