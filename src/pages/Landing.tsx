@@ -60,55 +60,59 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Navigation */}
-      <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className="container flex h-16 items-center justify-between">
-          <div className="flex items-center gap-2">
-            <img 
-              src="/lovable-uploads/0d665f3b-7af8-4635-bd06-54729cc704ea.png" 
-              alt="Genie Logo" 
-              className="h-10 w-auto"
-            />
-          </div>
-          
-          <div className="flex items-center gap-4">
-            <Link to="/login">
-              <Button>Get Started</Button>
-            </Link>
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero Section */}
-      <section className="py-20 relative overflow-hidden">
-        <div className="absolute inset-0 gradient-hero opacity-5" />
-        <div className="container relative">
-          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-5xl md:text-6xl font-bold tracking-tight mb-6 animate-fade-in">
-              AI-Powered Interview{' '}
-              <span className="bg-gradient-primary bg-clip-text text-transparent">
-                Agents
-              </span>
-            </h1>
+      {/* Navigation & Hero Combined */}
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 gradient-hero opacity-20" />
+        
+        {/* Navigation */}
+        <nav className="border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/40 sticky top-0 z-50 relative">
+          <div className="container flex h-16 items-center justify-between">
+            <div className="flex items-center gap-2">
+              <img 
+                src="/lovable-uploads/0d665f3b-7af8-4635-bd06-54729cc704ea.png" 
+                alt="Genie Logo" 
+                className="h-10 w-auto"
+              />
+            </div>
             
-            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto animate-slide-up">
-              Streamline your case team research with intelligent interview agents. 
-              Create, deploy, and analyze conversations at scale.
-            </p>
-            
-            <div className="flex items-center justify-center gap-4 animate-slide-up">
+            <div className="flex items-center gap-4">
               <Link to="/login">
-                <Button size="lg" className="gap-2">
-                  Start Building <ArrowRight className="h-4 w-4" />
-                </Button>
+                <Button>Get Started</Button>
               </Link>
-              <Button variant="outline" size="lg">
-                View Demo
-              </Button>
             </div>
           </div>
-        </div>
-      </section>
+        </nav>
+
+        {/* Hero Section */}
+        <section className="py-20 relative">
+           <div className="container relative">
+            <div className="max-w-4xl mx-auto text-center">
+              <h1 className="text-5xl md:text-6xl font-bold tracking-tight mb-6 animate-fade-in">
+                AI-Powered Interview{' '}
+                <span className="bg-gradient-primary bg-clip-text text-transparent">
+                  Agents
+                </span>
+              </h1>
+              
+              <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto animate-slide-up">
+                Streamline your case team research with intelligent interview agents. 
+                Create, deploy, and analyze conversations at scale.
+              </p>
+              
+              <div className="flex items-center justify-center gap-4 animate-slide-up">
+                <Link to="/login">
+                  <Button size="lg" className="gap-2">
+                    Start Building <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+                <Button variant="outline" size="lg">
+                  View Demo
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
 
       {/* Executive Overview */}
       <section className="py-20">
