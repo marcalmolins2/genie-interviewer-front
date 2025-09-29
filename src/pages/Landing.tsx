@@ -114,23 +114,80 @@ export default function Landing() {
         </section>
       </div>
 
-      {/* Executive Overview */}
+      {/* Key Features Overview */}
       <section className="py-20">
         <div className="container">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
-              Transform Your Research with AI Interview Agents
-            </h2>
-            <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-              Genie Interviewers revolutionizes how case teams conduct research by providing intelligent AI agents 
-              that can run sophisticated interviews at scale. Our platform enables you to capture deep insights 
-              from experts, stakeholders, and customers with the nuance and adaptability of human interviewers, 
-              but with the speed and consistency of automation.
-            </p>
-            <p className="text-lg text-muted-foreground">
-              Whether you're conducting expert interviews, running assessments, or gathering feedback across 
-              large groups, our AI agents adapt their questioning in real-time to extract the most valuable insights.
-            </p>
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                Transform Your Research in Three Steps
+              </h2>
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                From setup to insights - powered by cutting-edge AI technology
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+              {/* Easy Setup */}
+              <div className="text-center group">
+                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center shadow-lg transition-transform duration-300 group-hover:scale-110">
+                  <Zap className="h-10 w-10" />
+                </div>
+                <h3 className="text-xl font-semibold mb-3 transition-colors duration-300 group-hover:text-primary">
+                  Easy User-Friendly Setup
+                </h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Create professional interview agents in minutes with our intuitive wizard. 
+                  No technical expertise required - just configure and deploy.
+                </p>
+              </div>
+
+              {/* Human-like Interviewers */}
+              <div className="text-center group">
+                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-green-500 to-green-600 text-white flex items-center justify-center shadow-lg transition-transform duration-300 group-hover:scale-110">
+                  <MessageCircle className="h-10 w-10" />
+                </div>
+                <h3 className="text-xl font-semibold mb-3 transition-colors duration-300 group-hover:text-primary">
+                  Highly Human Interviewers
+                </h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Natural conversation flow with realistic human voices. 
+                  Adaptive questioning that follows up and digs deeper just like a real interviewer.
+                </p>
+              </div>
+
+              {/* Automated Insights */}
+              <div className="text-center group">
+                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 text-white flex items-center justify-center shadow-lg transition-transform duration-300 group-hover:scale-110">
+                  <BarChart3 className="h-10 w-10" />
+                </div>
+                <h3 className="text-xl font-semibold mb-3 transition-colors duration-300 group-hover:text-primary">
+                  Automated Insights Extraction
+                </h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Real-time analysis and intelligent extraction of key insights. 
+                  Transform conversations into actionable intelligence automatically.
+                </p>
+              </div>
+            </div>
+
+            {/* Visual Flow Diagram */}
+            <div className="flex items-center justify-center gap-4 md:gap-8">
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold mb-2">1</div>
+                <span className="text-sm text-muted-foreground">Setup</span>
+              </div>
+              <ArrowRight className="h-6 w-6 text-muted-foreground hidden md:block" />
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold mb-2">2</div>
+                <span className="text-sm text-muted-foreground">Interview</span>
+              </div>
+              <ArrowRight className="h-6 w-6 text-muted-foreground hidden md:block" />
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold mb-2">3</div>
+                <span className="text-sm text-muted-foreground">Analyze</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
