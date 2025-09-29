@@ -54,8 +54,7 @@ export default function Landing() {
 
   const channels = [
     { type: 'chat', icon: MessageCircle, name: 'Chat', price: PRICE_BY_CHANNEL.chat },
-    { type: 'inbound_call', icon: Phone, name: 'Inbound Call', price: PRICE_BY_CHANNEL.inbound_call },
-    { type: 'outbound_call', icon: PhoneCall, name: 'Outbound Call', price: PRICE_BY_CHANNEL.outbound_call },
+    { type: 'voice', icon: Phone, name: 'Voice', price: PRICE_BY_CHANNEL.inbound_call },
   ];
 
   return (
@@ -328,8 +327,7 @@ export default function Landing() {
                   <CardTitle>{channel.name}</CardTitle>
                   <CardDescription className="mt-2">
                     {channel.type === 'chat' && 'Web-based text conversations with instant responses'}
-                    {channel.type === 'inbound_call' && 'Receive calls with natural voice interactions'}
-                    {channel.type === 'outbound_call' && 'Proactively reach out to interview participants'}
+                    {channel.type === 'voice' && 'Conversations via phone call'}
                   </CardDescription>
                 </CardHeader>
               </Card>
