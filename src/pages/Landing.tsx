@@ -351,50 +351,10 @@ export default function Landing() {
                       </div>
                     </div>
                     
-                    <CardDescription className="text-base leading-relaxed mb-6">
+                    <CardDescription className="text-base leading-relaxed">
                       {channel.type === 'chat' && 'Web-based text conversations with instant responses. Perfect for detailed discussions and document sharing.'}
                       {channel.type === 'voice' && 'Natural phone conversations with realistic AI voices. Ideal for in-depth interviews and building rapport.'}
                     </CardDescription>
-                    
-                    <div className="space-y-3">
-                      <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                        Key Features
-                      </h4>
-                      <div className="grid grid-cols-1 gap-2">
-                        {channel.type === 'chat' && (
-                          <>
-                            <div className="flex items-center gap-2 text-sm">
-                              <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
-                              <span>Real-time conversation flow</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-sm">
-                              <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
-                              <span>Document and link sharing</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-sm">
-                              <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
-                              <span>Multi-language support</span>
-                            </div>
-                          </>
-                        )}
-                        {channel.type === 'voice' && (
-                          <>
-                            <div className="flex items-center gap-2 text-sm">
-                              <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
-                              <span>Natural voice interactions</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-sm">
-                              <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
-                              <span>Real-time transcription</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-sm">
-                              <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
-                              <span>International phone numbers</span>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </div>
                   </CardHeader>
                 </Card>
               ))}
