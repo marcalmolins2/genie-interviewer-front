@@ -306,32 +306,109 @@ export default function Landing() {
       </section>
 
       {/* Available Channels */}
-      <section className="py-10">
+      <section className="py-16 bg-gradient-to-br from-background via-muted/20 to-background">
         <div className="container">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Multiple Communication Channels
+          <div className="text-center mb-16">
+            <Badge variant="outline" className="mb-4 px-4 py-2">
+              Communication Channels
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+              Deploy Across Multiple Channels
             </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Deploy your interview agents across different channels to reach your audience where they are
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              Reach your interview participants wherever they are most comfortable. 
+              Each channel maintains the same intelligent conversation flow.
             </p>
           </div>
           
-          <div className="max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
-            {channels.map((channel) => (
-              <Card key={channel.type} className="text-center hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <div className="w-12 h-12 mx-auto mb-4 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <channel.icon className="h-6 w-6 text-primary" />
-                  </div>
-                  <CardTitle>{channel.name}</CardTitle>
-                  <CardDescription className="mt-2">
-                    {channel.type === 'chat' && 'Web-based text conversations with instant responses'}
-                    {channel.type === 'voice' && 'Conversations via phone call'}
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-            ))}
+          <div className="max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+              {channels.map((channel, index) => (
+                <Card key={channel.type} className="group relative overflow-hidden border-0 bg-gradient-to-br from-card via-card/90 to-muted/10 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  
+                  <CardHeader className="relative p-8">
+                    <div className="flex items-center gap-6 mb-6">
+                      <div className="relative">
+                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                          <channel.icon className="h-8 w-8" />
+                        </div>
+                        <div className="absolute -inset-1 bg-gradient-to-br from-primary/20 to-primary/10 rounded-2xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      </div>
+                      
+                      <div className="flex-1">
+                        <CardTitle className="text-2xl mb-2 group-hover:text-primary transition-colors duration-300">
+                          {channel.name}
+                        </CardTitle>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary" className="text-xs">
+                            Enterprise Ready
+                          </Badge>
+                          <Badge variant="outline" className="text-xs">
+                            Instant Setup
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <CardDescription className="text-base leading-relaxed mb-6">
+                      {channel.type === 'chat' && 'Web-based text conversations with instant responses. Perfect for detailed discussions and document sharing.'}
+                      {channel.type === 'voice' && 'Natural phone conversations with realistic AI voices. Ideal for in-depth interviews and building rapport.'}
+                    </CardDescription>
+                    
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+                        Key Features
+                      </h4>
+                      <div className="grid grid-cols-1 gap-2">
+                        {channel.type === 'chat' && (
+                          <>
+                            <div className="flex items-center gap-2 text-sm">
+                              <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
+                              <span>Real-time conversation flow</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
+                              <span>Document and link sharing</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
+                              <span>Multi-language support</span>
+                            </div>
+                          </>
+                        )}
+                        {channel.type === 'voice' && (
+                          <>
+                            <div className="flex items-center gap-2 text-sm">
+                              <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
+                              <span>Natural voice interactions</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
+                              <span>Real-time transcription</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
+                              <span>International phone numbers</span>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </CardHeader>
+                </Card>
+              ))}
+            </div>
+            
+            <div className="text-center p-8 rounded-2xl bg-gradient-to-r from-muted/40 via-muted/20 to-muted/40 border">
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <Zap className="h-5 w-5 text-primary" />
+                <h3 className="text-lg font-semibold">Seamless Integration</h3>
+              </div>
+              <p className="text-muted-foreground">
+                All channels share the same intelligent conversation engine, ensuring consistent interview quality across any communication method.
+              </p>
+            </div>
           </div>
         </div>
       </section>
