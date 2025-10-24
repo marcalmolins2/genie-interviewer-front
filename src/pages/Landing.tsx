@@ -81,7 +81,7 @@ export default function Landing() {
         </nav>
 
         {/* Hero Section */}
-        <section className="py-12">
+        <section className="py-16">
            <div className="container">
             <div className="max-w-4xl mx-auto text-center">
               <h1 className="text-5xl md:text-6xl font-bold tracking-tight mb-6 animate-fade-in">
@@ -92,84 +92,30 @@ export default function Landing() {
               </h1>
               
               <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto animate-slide-up">
-                Streamline your case team research with intelligent interview agents. 
-                Create, deploy, and analyze conversations at scale.
+                Your internal platform for AI-powered research interviews. Create specialized interview agents, 
+                deploy them across chat and voice channels, and extract insights from conversations.
               </p>
+              
+              <Link to="/login">
+                <Button size="lg" className="gap-2">
+                  Go to Dashboard <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
             </div>
           </div>
         </section>
       </div>
 
-      {/* Key Features Overview */}
-      <section className="py-10">
-        <div className="container">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-10">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Transform Your Research in Three Steps
-              </h2>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                From setup to insights - powered by cutting-edge AI technology
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-              {/* Easy Setup */}
-              <div className="text-center group">
-                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center shadow-lg transition-transform duration-300 group-hover:scale-110">
-                  <Zap className="h-10 w-10" />
-                </div>
-                <h3 className="text-xl font-semibold mb-3 transition-colors duration-300 group-hover:text-primary">
-                  Easy User-Friendly Setup
-                </h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  Create professional interview agents in minutes with our intuitive wizard. 
-                  No technical expertise required - just configure and deploy.
-                </p>
-              </div>
-
-              {/* Human-like Interviewers */}
-              <div className="text-center group">
-                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-green-500 to-green-600 text-white flex items-center justify-center shadow-lg transition-transform duration-300 group-hover:scale-110">
-                  <MessageCircle className="h-10 w-10" />
-                </div>
-                <h3 className="text-xl font-semibold mb-3 transition-colors duration-300 group-hover:text-primary">
-                  Highly Human Interviewers
-                </h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  Natural conversation flow with realistic human voices. 
-                  Adaptive questioning that follows up and digs deeper just like a real interviewer.
-                </p>
-              </div>
-
-              {/* Automated Insights */}
-              <div className="text-center group">
-                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 text-white flex items-center justify-center shadow-lg transition-transform duration-300 group-hover:scale-110">
-                  <BarChart3 className="h-10 w-10" />
-                </div>
-                <h3 className="text-xl font-semibold mb-3 transition-colors duration-300 group-hover:text-primary">
-                  Automated Insights Extraction
-                </h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  Real-time analysis and intelligent extraction of key insights. 
-                  Transform conversations into actionable intelligence automatically.
-                </p>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
 
       {/* Available Archetypes */}
-      <section className="py-10 bg-muted/30">
+      <section className="py-16 bg-muted/30">
         <div className="container">
-          <div className="text-center mb-10">
+          <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               Available Interview Archetypes
             </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Choose from our specialized AI interviewers, each designed for specific research scenarios
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+              Select the archetype that best fits your research needs
             </p>
           </div>
           
@@ -311,127 +257,15 @@ export default function Landing() {
             </Card>
           </div>
 
-          <div className="text-center">
-            <p className="text-lg text-muted-foreground italic">
-              ... and many more specialized archetypes to come
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Available Channels */}
-      <section className="py-16 bg-gradient-to-br from-background via-muted/20 to-background">
-        <div className="container">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
-              Deploy Across Multiple Channels
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              Reach your interview participants wherever they are most comfortable. 
-              Each channel maintains the same intelligent conversation flow.
-            </p>
-          </div>
-          
-          <div className="max-w-5xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-              {channels.map((channel, index) => (
-                <Card key={channel.type} className="group relative overflow-hidden border-0 bg-gradient-to-br from-card via-card/90 to-muted/10 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  
-                  <CardHeader className="relative p-8">
-                    <div className="flex items-center gap-6 mb-6">
-                      <div className="relative">
-                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                          <channel.icon className="h-8 w-8" />
-                        </div>
-                        <div className="absolute -inset-1 bg-gradient-to-br from-primary/20 to-primary/10 rounded-2xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      </div>
-                      
-                      <div className="flex-1">
-                        <CardTitle className="text-2xl mb-2 group-hover:text-primary transition-colors duration-300">
-                          {channel.name}
-                        </CardTitle>
-                      </div>
-                    </div>
-                    
-                    <CardDescription className="text-base leading-relaxed">
-                      {channel.type === 'chat' && 'Web-based text conversations with instant responses. Perfect for detailed discussions and document sharing.'}
-                      {channel.type === 'voice' && 'Natural phone conversations with realistic AI voices. Ideal for in-depth interviews and building rapport.'}
-                    </CardDescription>
-                  </CardHeader>
-                </Card>
-              ))}
-            </div>
-            
-            <div className="text-center p-8 rounded-2xl bg-gradient-to-r from-muted/40 via-muted/20 to-muted/40 border">
-              <div className="flex items-center justify-center gap-3 mb-4">
-                <Zap className="h-5 w-5 text-primary" />
-                <h3 className="text-lg font-semibold">Seamless Integration</h3>
-              </div>
-              <p className="text-muted-foreground">
-                All channels share the same intelligent conversation engine, ensuring consistent interview quality across any communication method.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* How it Works */}
-      <section className="py-20">
-        <div className="container">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              How It Works
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              From concept to insights in five simple steps
-            </p>
-          </div>
-          
-          <div className="max-w-4xl mx-auto">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-              {steps.map((step, index) => (
-                <div key={index} className="flex flex-col items-center text-center group">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-primary/70 text-primary-foreground flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110 shadow-lg">
-                    <step.icon className="h-8 w-8" />
-                  </div>
-                  <h3 className="font-semibold mb-2 transition-colors duration-300 group-hover:text-primary">{step.title}</h3>
-                  <p className="text-sm text-muted-foreground">{step.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-
-
-      {/* CTA */}
-      <section className="py-20">
-        <div className="container">
-          <div className="max-w-2xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Ready to Get Started?
-            </h2>
-            <p className="text-xl text-muted-foreground mb-8">
-              Join BCG case teams already using Genie Interviewers to accelerate their research.
-            </p>
-            
-            <Link to="/login">
-              <Button size="lg" className="gap-2">
-                Create Your First Agent <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t py-12 bg-muted/30">
+      <footer className="border-t py-8 bg-muted/30">
         <div className="container">
           <div className="text-center text-muted-foreground">
             <p className="text-sm">
-              © 2024 Genie Interviewers. Built for case teams with enterprise security and compliance.
+              © 2024 Genie Interviewers - BCG Internal Tool
             </p>
           </div>
         </div>
