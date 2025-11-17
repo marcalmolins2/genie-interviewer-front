@@ -71,16 +71,11 @@ export function ArchetypeCard({ archetype, selected, onSelect, className }: Arch
           <div>
             <p className="text-sm font-medium text-muted-foreground mb-2">Examples</p>
             <div className="flex flex-wrap gap-1">
-              {archetype.examples.slice(0, 2).map((example, index) => (
+              {archetype.examples.map((example, index) => (
                 <Badge key={index} variant="secondary" className="text-xs">
                   {example}
                 </Badge>
               ))}
-              {archetype.examples.length > 2 && (
-                <Badge variant="outline" className="text-xs">
-                  +{archetype.examples.length - 2} more
-                </Badge>
-              )}
             </div>
           </div>
         </div>
