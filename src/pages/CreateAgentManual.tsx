@@ -418,7 +418,7 @@ export default function CreateAgent() {
             <Card>
               <CardHeader><CardTitle>Select Channel</CardTitle></CardHeader>
               <CardContent>
-                <ChannelSelector selected={form.channel} onSelect={(channel) => updateForm({ channel })} />
+                <ChannelSelector value={form.channel} onChange={(channel) => updateForm({ channel })} />
               </CardContent>
             </Card>
             <Card>
