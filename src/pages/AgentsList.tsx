@@ -193,6 +193,16 @@ export default function AgentsList() {
                     </div>
                   </div>
                 </CardHeader>
+                
+                <CardContent className="pt-0 pb-6">
+                  <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all" onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/app/agents/${agent.id}`);
+                  }}>
+                    View Details
+                    <ChevronRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </CardContent>
               </Card>;
       })}
         </div>}
