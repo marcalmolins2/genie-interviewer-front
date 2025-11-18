@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AgentStatusBadge } from '@/components/AgentStatusBadge';
-import { Plus, Search, MoreHorizontal, Play, Pause, BarChart3, Share, Edit, MessageCircle, Phone, PhoneCall, Calendar, Users } from 'lucide-react';
+import { Plus, Search, MoreHorizontal, Edit, MessageCircle, Phone, PhoneCall, Users, Archive, Trash2 } from 'lucide-react';
 import { Agent, Channel } from '@/types';
 import { agentsService } from '@/services/agents';
 import { useToast } from '@/hooks/use-toast';
@@ -124,13 +124,54 @@ export default function AgentsList() {
         </Card> : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredAgents.map(agent => {
         const ChannelIcon = channelIcons[agent.channel as Channel];
-        return <Card key={agent.id} className="hover:shadow-md transition-all duration-200 border-border/20 bg-card">
+        return <Card key={agent.id} className="hover:shadow-md transition-all duration-200 border-border/20 bg-card cursor-pointer group" onClick={() => navigate(`/app/agents/${agent.id}`)}>
                 <CardHeader className="space-y-4 pb-6">
-                  <div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">
-                      {agent.name}
-                    </h3>
-                    <AgentStatusBadge status={agent.status} />
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
+                        {agent.name}
+                      </h3>
+                      <AgentStatusBadge status={agent.status} />
+                    </div>
+                    
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-accent">
+                          <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                        <DropdownMenuItem onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/app/agents/${agent.id}/edit`);
+                        }}>
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={(e) => {
+                          e.stopPropagation();
+                          toast({
+                            title: 'Archive',
+                            description: 'Archive functionality coming soon.'
+                          });
+                        }}>
+                          <Archive className="h-4 w-4 mr-2" />
+                          Archive
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={(e) => {
+                          e.stopPropagation();
+                          toast({
+                            title: 'Delete',
+                            description: 'Delete functionality coming soon.',
+                            variant: 'destructive'
+                          });
+                        }}>
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                   
                   <div className="space-y-3">
@@ -141,7 +182,6 @@ export default function AgentsList() {
                     
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <BarChart3 className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm text-muted-foreground">Archetype</span>
                       </div>
                       <span className="text-sm text-foreground/80 uppercase tracking-wide">
@@ -149,33 +189,7 @@ export default function AgentsList() {
                       </span>
                     </div>
                   </div>
-                  
-                  <div className="pt-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground font-medium">ACTIONS:</span>
-                      <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="sm" className="h-9 w-9 p-0 hover:bg-accent" onClick={() => navigate(`/app/agents/${agent.id}`)}>
-                          <Edit className="h-4 w-4 text-muted-foreground" />
-                        </Button>
-                        <Button variant="ghost" size="sm" className="h-9 w-9 p-0 hover:bg-accent" onClick={() => navigate(`/app/agents/${agent.id}/analyze`)}>
-                          <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                        </Button>
-                        <Button variant="ghost" size="sm" className="h-9 w-9 p-0 hover:bg-accent">
-                          <Share className="h-4 w-4 text-muted-foreground" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
                 </CardHeader>
-                
-                <CardContent className="pt-0 pb-6">
-                  <div className="flex items-center justify-between">
-                    
-                    <Button size="sm" className="h-9 w-9 p-0 rounded-md" onClick={() => navigate(`/app/agents/${agent.id}`)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
               </Card>;
       })}
         </div>}
