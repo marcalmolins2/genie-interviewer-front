@@ -233,31 +233,27 @@
   }
 
   .status-badge-live {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
-    background-color: hsl(var(--status-live) / 0.1);
-    color: hsl(var(--status-live));
-    border: 1px solid hsl(var(--status-live) / 0.2);
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold tracking-wide;
+    background-color: hsl(142 76% 36% / 0.15);
+    color: hsl(142 76% 36%);
   }
 
   .status-badge-ready {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
-    background-color: hsl(var(--status-ready) / 0.1);
-    color: hsl(var(--status-ready));
-    border: 1px solid hsl(var(--status-ready) / 0.2);
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold tracking-wide;
+    background-color: hsl(45 93% 47% / 0.15);
+    color: hsl(45 93% 47%);
   }
 
   .status-badge-paused {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
-    background-color: hsl(var(--status-paused) / 0.1);
-    color: hsl(var(--status-paused));
-    border: 1px solid hsl(var(--status-paused) / 0.2);
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold tracking-wide;
+    background-color: hsl(var(--muted));
+    color: hsl(var(--muted-foreground));
   }
 
   .status-badge-finished {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
-    background-color: hsl(var(--status-finished) / 0.1);
-    color: hsl(var(--status-finished));
-    border: 1px solid hsl(var(--status-finished) / 0.2);
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold tracking-wide;
+    background-color: hsl(var(--muted));
+    color: hsl(var(--muted-foreground));
   }
 }
 

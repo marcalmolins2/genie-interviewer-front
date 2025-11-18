@@ -174,108 +174,73 @@ export default function AgentsList() {
             const ChannelIcon = channelIcons[agent.channel as Channel];
             
             return (
-              <Card key={agent.id} className="hover:shadow-md transition-shadow">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0">
-                      <CardTitle className="text-lg truncate mb-1">
-                        <Link 
-                          to={`/app/agents/${agent.id}`}
-                          className="hover:text-primary transition-colors"
-                        >
-                          {agent.name}
-                        </Link>
-                      </CardTitle>
-                      <div className="flex items-center gap-2 mb-2">
-                        <AgentStatusBadge status={agent.status} />
-                        <Badge variant="outline" className="text-xs">
-                          {agent.archetype.replace('_', ' ')}
-                        </Badge>
-                      </div>
+              <Card key={agent.id} className="hover:shadow-lg transition-all duration-200 border-border/40">
+                <CardHeader className="pb-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <AgentStatusBadge status={agent.status} />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <ChannelIcon className="h-3.5 w-3.5" />
+                      <span>Phone No</span>
                     </div>
                     
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => navigate(`/app/agents/${agent.id}`)}>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={() => handleToggleStatus(agent)}
-                          disabled={agent.status === 'finished'}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <BarChart3 className="h-3.5 w-3.5" />
+                        <span>Archetype</span>
+                      </div>
+                      <span className="text-sm text-muted-foreground uppercase tracking-wide">
+                        {agent.archetype.replace('_', ' ')}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 pt-4 border-t border-border/40">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs text-muted-foreground">ACTIONS:</span>
+                      <div className="flex items-center gap-1">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          onClick={() => navigate(`/app/agents/${agent.id}`)}
                         >
-                          {agent.status === 'live' ? (
-                            <>
-                              <Pause className="mr-2 h-4 w-4" />
-                              Pause
-                            </>
-                          ) : (
-                            <>
-                              <Play className="mr-2 h-4 w-4" />
-                              Resume
-                            </>
-                          )}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate(`/app/agents/${agent.id}/analyze`)}>
-                          <BarChart3 className="mr-2 h-4 w-4" />
-                          Analyze
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Share className="mr-2 h-4 w-4" />
-                          Share
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          onClick={() => navigate(`/app/agents/${agent.id}/analyze`)}
+                        >
+                          <BarChart3 className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                        >
+                          <Share className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 </CardHeader>
                 
-                <CardContent className="space-y-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <ChannelIcon className="h-4 w-4" />
-                      <span className="capitalize">
-                        {agent.channel.replace('_', ' ')}
-                      </span>
+                <CardContent className="pt-0">
+                  <div className="flex items-center justify-between">
+                    <div className="text-xs text-muted-foreground">
+                      CREATED: {formatDate(agent.createdAt)}
                     </div>
-                    <span className="font-medium">
-                      ${agent.pricePerInterviewUsd}/interview
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Calendar className="h-4 w-4" />
-                      <span>Created</span>
-                    </div>
-                    <span>{formatDate(agent.createdAt)}</span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <BarChart3 className="h-4 w-4" />
-                      <span>Interviews</span>
-                    </div>
-                    <span className="font-medium">{agent.interviewsCount}</span>
-                  </div>
-                  
-                  <div className="flex gap-2 pt-2">
-                    <Link to={`/app/agents/${agent.id}`} className="flex-1">
-                      <Button variant="outline" size="sm" className="w-full">
-                        View Details
-                      </Button>
-                    </Link>
-                    <Link to={`/app/agents/${agent.id}/analyze`}>
-                      <Button variant="outline" size="sm">
-                        <BarChart3 className="h-4 w-4" />
-                      </Button>
-                    </Link>
+                    <Button 
+                      size="sm"
+                      className="h-8 rounded-md"
+                      onClick={() => navigate(`/app/agents/${agent.id}`)}
+                    >
+                      <Edit className="h-3.5 w-3.5" />
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
