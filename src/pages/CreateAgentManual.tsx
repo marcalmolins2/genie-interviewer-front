@@ -202,7 +202,7 @@ export default function CreateAgent() {
               <CardContent className="space-y-4">
                 <div>
                   <Label htmlFor="name">Agent Name *</Label>
-                  <Input id="name" value={form.name} onChange={(e) => updateForm({ name: e.target.value })} placeholder="e.g., EU Battery Expert Deep-Dive" className="mt-1" />
+                  <Input id="name" value={form.name} onChange={(e) => updateForm({ name: e.target.value })} placeholder="e.g., Sam" className="mt-1" />
                 </div>
                 <div>
                   <Label htmlFor="language">Language</Label>
