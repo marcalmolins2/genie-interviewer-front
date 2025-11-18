@@ -126,14 +126,11 @@ export default function AgentsList() {
         const ChannelIcon = channelIcons[agent.channel as Channel];
         return <Card key={agent.id} className="hover:shadow-md transition-all duration-200 border-border/20 bg-card">
                 <CardHeader className="space-y-4 pb-6">
-                  <div className="flex items-start justify-between">
-                    <AgentStatusBadge status={agent.status} />
-                  </div>
-                  
                   <div>
-                    <h3 className="text-lg font-semibold text-foreground mb-4">
+                    <h3 className="text-lg font-semibold text-foreground mb-2">
                       {agent.name}
                     </h3>
+                    <AgentStatusBadge status={agent.status} />
                   </div>
                   
                   <div className="space-y-3">
