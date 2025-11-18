@@ -504,31 +504,33 @@ export default function CreateAgent() {
                 </div>
               )}
               {currentStep < steps.length - 1 ? (
-                <Button 
-                  onClick={() => {
-                    if (!validateStep(currentStep)) {
-                      setShowValidation(true);
-                    } else {
-                      nextStep();
-                    }
-                  }} 
-                  disabled={!validateStep(currentStep)}
-                >
-                  Next<ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
+                <div onClick={() => {
+                  if (!validateStep(currentStep)) {
+                    setShowValidation(true);
+                  }
+                }}>
+                  <Button 
+                    onClick={nextStep} 
+                    disabled={!validateStep(currentStep)}
+                    className={!validateStep(currentStep) ? 'pointer-events-none' : ''}
+                  >
+                    Next<ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </div>
               ) : (
-                <Button 
-                  onClick={() => {
-                    if (!validateStep(currentStep) && !isCreating) {
-                      setShowValidation(true);
-                    } else {
-                      createAgent();
-                    }
-                  }} 
-                  disabled={!validateStep(currentStep) || isCreating}
-                >
-                  {isCreating ? 'Creating...' : 'Generate Phone Number'}
-                </Button>
+                <div onClick={() => {
+                  if (!validateStep(currentStep) && !isCreating) {
+                    setShowValidation(true);
+                  }
+                }}>
+                  <Button 
+                    onClick={createAgent} 
+                    disabled={!validateStep(currentStep) || isCreating}
+                    className={!validateStep(currentStep) || isCreating ? 'pointer-events-none' : ''}
+                  >
+                    {isCreating ? 'Creating...' : 'Generate Phone Number'}
+                  </Button>
+                </div>
               )}
             </div>
           </div>
