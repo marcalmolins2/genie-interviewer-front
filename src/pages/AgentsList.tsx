@@ -132,44 +132,44 @@ export default function AgentsList() {
                         <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
                           {agent.name}
                         </h3>
-                        <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all opacity-0 group-hover:opacity-100" />
+                        
                       </div>
                       <AgentStatusBadge status={agent.status} />
                     </div>
                     
                     <DropdownMenu>
-                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                      <DropdownMenuTrigger asChild onClick={e => e.stopPropagation()}>
                         <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-accent">
                           <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                        <DropdownMenuItem onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/app/agents/${agent.id}/edit`);
-                        }}>
+                      <DropdownMenuContent align="end" onClick={e => e.stopPropagation()}>
+                        <DropdownMenuItem onClick={e => {
+                    e.stopPropagation();
+                    navigate(`/app/agents/${agent.id}/edit`);
+                  }}>
                           <Edit className="h-4 w-4 mr-2" />
                           Edit
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={(e) => {
-                          e.stopPropagation();
-                          toast({
-                            title: 'Archive',
-                            description: 'Archive functionality coming soon.'
-                          });
-                        }}>
+                        <DropdownMenuItem onClick={e => {
+                    e.stopPropagation();
+                    toast({
+                      title: 'Archive',
+                      description: 'Archive functionality coming soon.'
+                    });
+                  }}>
                           <Archive className="h-4 w-4 mr-2" />
                           Archive
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={(e) => {
-                          e.stopPropagation();
-                          toast({
-                            title: 'Delete',
-                            description: 'Delete functionality coming soon.',
-                            variant: 'destructive'
-                          });
-                        }}>
+                        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={e => {
+                    e.stopPropagation();
+                    toast({
+                      title: 'Delete',
+                      description: 'Delete functionality coming soon.',
+                      variant: 'destructive'
+                    });
+                  }}>
                           <Trash2 className="h-4 w-4 mr-2" />
                           Delete
                         </DropdownMenuItem>
@@ -195,10 +195,10 @@ export default function AgentsList() {
                 </CardHeader>
                 
                 <CardContent className="pt-0 pb-6">
-                  <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all" onClick={(e) => {
-                    e.stopPropagation();
-                    navigate(`/app/agents/${agent.id}`);
-                  }}>
+                  <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all" onClick={e => {
+              e.stopPropagation();
+              navigate(`/app/agents/${agent.id}`);
+            }}>
                     View Details
                     <ChevronRight className="h-4 w-4 ml-2" />
                   </Button>
