@@ -103,6 +103,35 @@ export default function CreateAgent() {
     }
   };
 
+  const getValidationMessage = (step: number): string => {
+    const missingFields: string[] = [];
+    
+    switch (step) {
+      case 0:
+        if (form.projectTitle.trim().length < 3) missingFields.push('Project Title (min 3 characters)');
+        if (form.projectDescription.trim().length < 10) missingFields.push('Project Description (min 10 characters)');
+        break;
+      case 1:
+        if (!form.archetype) missingFields.push('Archetype');
+        if (form.name.trim().length < 3) missingFields.push('Agent Name (min 3 characters)');
+        break;
+      case 2:
+        if (!form.guideStructured && form.interviewGuide.trim().length < 10) {
+          missingFields.push('Interview Guide (min 10 characters)');
+        }
+        if (form.knowledgeText.trim().length === 0 && form.knowledgeFiles.length === 0) {
+          missingFields.push('Knowledge Base (add text or files)');
+        }
+        break;
+      case 5:
+        if (form.caseCode.trim().length === 0) missingFields.push('Case Code');
+        break;
+    }
+    
+    if (missingFields.length === 0) return '';
+    return `Required: ${missingFields.join(', ')}`;
+  };
+
   const nextStep = () => {
     if (validateStep(currentStep) && currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
@@ -460,18 +489,25 @@ export default function CreateAgent() {
       </div>
       <div className="container mx-auto px-4 pb-32">{renderStepContent()}</div>
       <div className="fixed bottom-0 left-0 right-0 bg-card border-t p-4">
-        <div className="container mx-auto flex justify-between items-center">
-          <Button variant="outline" onClick={prevStep} disabled={currentStep === 0}>
-            <ArrowLeft className="h-4 w-4 mr-2" />Previous
-          </Button>
-          <div className="text-sm text-muted-foreground">Step {currentStep + 1} of {steps.length}</div>
-          {currentStep < steps.length - 1 ? (
-            <Button onClick={nextStep} disabled={!validateStep(currentStep)}>Next<ArrowRight className="h-4 w-4 ml-2" /></Button>
-          ) : (
-            <Button onClick={createAgent} disabled={!validateStep(currentStep) || isCreating}>
-              {isCreating ? 'Creating...' : 'Generate Phone Number'}
-            </Button>
+        <div className="container mx-auto">
+          {!validateStep(currentStep) && getValidationMessage(currentStep) && (
+            <div className="mb-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md px-4 py-2">
+              {getValidationMessage(currentStep)}
+            </div>
           )}
+          <div className="flex justify-between items-center">
+            <Button variant="outline" onClick={prevStep} disabled={currentStep === 0}>
+              <ArrowLeft className="h-4 w-4 mr-2" />Previous
+            </Button>
+            <div className="text-sm text-muted-foreground">Step {currentStep + 1} of {steps.length}</div>
+            {currentStep < steps.length - 1 ? (
+              <Button onClick={nextStep} disabled={!validateStep(currentStep)}>Next<ArrowRight className="h-4 w-4 ml-2" /></Button>
+            ) : (
+              <Button onClick={createAgent} disabled={!validateStep(currentStep) || isCreating}>
+                {isCreating ? 'Creating...' : 'Generate Phone Number'}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </div>
