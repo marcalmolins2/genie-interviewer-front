@@ -28,7 +28,7 @@ export interface InterviewGuide {
 }
 
 export interface GuideSchema {
-  intro: string;
+  intro?: string;
   objectives: string[];
   sections: {
     title: string;
@@ -42,7 +42,7 @@ export interface GuideSchema {
       followUps?: string[]; // dynamic prompts
     }[];
   }[];
-  closing: string;
+  closing?: string;
 }
 
 export interface KnowledgeAsset {

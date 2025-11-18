@@ -29,8 +29,7 @@ import {
   ChevronDown,
   ChevronRight,
   FileText,
-  Target,
-  MessageCircle
+  Target
 } from 'lucide-react';
 import { GuideSchema } from '@/types';
 
@@ -60,10 +59,8 @@ export function InterviewGuideEditor({ guide, onChange }: InterviewGuideEditorPr
   });
 
   const defaultGuide: GuideSchema = {
-    intro: "Welcome to our interview. We appreciate your time and expertise.",
     objectives: ["Gather valuable insights", "Understand key perspectives"],
-    sections: [],
-    closing: "Thank you for your participation in this research."
+    sections: []
   };
 
   const currentGuide = guide || defaultGuide;
@@ -209,25 +206,6 @@ export function InterviewGuideEditor({ guide, onChange }: InterviewGuideEditorPr
 
   return (
     <div className="space-y-6">
-      {/* Introduction */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MessageCircle className="h-5 w-5" />
-            Introduction
-          </CardTitle>
-          <CardDescription>Welcome message for interview participants</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Textarea
-            value={currentGuide.intro}
-            onChange={(e) => updateGuide({ intro: e.target.value })}
-            placeholder="Enter your interview introduction..."
-            className="min-h-[80px]"
-          />
-        </CardContent>
-      </Card>
-
       {/* Objectives */}
       <Card>
         <CardHeader>
@@ -372,22 +350,6 @@ export function InterviewGuideEditor({ guide, onChange }: InterviewGuideEditorPr
             <Plus className="h-4 w-4 mr-2" />
             Add Section
           </Button>
-        </CardContent>
-      </Card>
-
-      {/* Closing */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Closing Message</CardTitle>
-          <CardDescription>Thank you message for participants</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Textarea
-            value={currentGuide.closing}
-            onChange={(e) => updateGuide({ closing: e.target.value })}
-            placeholder="Enter your closing message..."
-            className="min-h-[80px]"
-          />
         </CardContent>
       </Card>
 
