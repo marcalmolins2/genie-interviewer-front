@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AgentStatusBadge } from '@/components/AgentStatusBadge';
-import { Plus, Search, MoreHorizontal, Edit, MessageCircle, Phone, PhoneCall, Users, Archive, Trash2 } from 'lucide-react';
+import { Plus, Search, MoreHorizontal, Edit, MessageCircle, Phone, PhoneCall, Users, Archive, Trash2, ChevronRight } from 'lucide-react';
 import { Agent, Channel } from '@/types';
 import { agentsService } from '@/services/agents';
 import { useToast } from '@/hooks/use-toast';
@@ -124,13 +124,16 @@ export default function AgentsList() {
         </Card> : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredAgents.map(agent => {
         const ChannelIcon = channelIcons[agent.channel as Channel];
-        return <Card key={agent.id} className="hover:shadow-md transition-all duration-200 border-border/20 bg-card cursor-pointer group" onClick={() => navigate(`/app/agents/${agent.id}`)}>
+        return <Card key={agent.id} className="hover:shadow-lg hover:border-primary/30 hover:bg-accent/5 transition-all duration-200 border-border/20 bg-card cursor-pointer group" onClick={() => navigate(`/app/agents/${agent.id}`)}>
                 <CardHeader className="space-y-4 pb-6">
                   <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
-                        {agent.name}
-                      </h3>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
+                          {agent.name}
+                        </h3>
+                        <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all opacity-0 group-hover:opacity-100" />
+                      </div>
                       <AgentStatusBadge status={agent.status} />
                     </div>
                     
