@@ -15,6 +15,7 @@ import { Switch } from '@/components/ui/switch';
 import { ARCHETYPES, Channel, Archetype, PRICE_BY_CHANNEL, GuideSchema } from '@/types';
 import { agentsService } from '@/services/agents';
 import { useToast } from '@/hooks/use-toast';
+import { RichTextEditor } from '@/components/RichTextEditor';
 
 
 interface CreateAgentForm {
@@ -104,8 +105,7 @@ export default function CreateAgent() {
     switch (step) {
       case 0: return form.projectTitle.trim().length >= 3 && form.projectDescription.trim().length >= 10;
       case 1: return form.archetype !== null && form.name.trim().length >= 3;
-      case 2: return form.interviewGuide.trim().length >= 10 &&
-                     (form.knowledgeText.trim().length > 0 || form.knowledgeFiles.length > 0);
+      case 2: return form.interviewGuide.trim().length >= 10;
       case 3: return true;
       case 4: return true;
       case 5: return form.caseCode.trim().length > 0;
@@ -351,12 +351,10 @@ export default function CreateAgent() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Textarea
-                    id="screenerQuestions"
+                  <RichTextEditor
                     value={form.screenerQuestions}
-                    onChange={(e) => updateForm({ screenerQuestions: e.target.value })}
-                    placeholder="Example:&#10;1. Are you over 18 years old?&#10;2. Have you used our product in the last 6 months?&#10;3. Do you have decision-making authority?"
-                    className="min-h-[150px]"
+                    onChange={(value) => updateForm({ screenerQuestions: value })}
+                    placeholder="Example: Are you over 18 years old? Have you used our product in the last 6 months?"
                   />
                 </CardContent>
               </Card>
@@ -372,12 +370,10 @@ export default function CreateAgent() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Textarea
-                    id="introductionQuestions"
+                  <RichTextEditor
                     value={form.introductionQuestions}
-                    onChange={(e) => updateForm({ introductionQuestions: e.target.value })}
-                    placeholder="Example:&#10;1. Tell me a bit about yourself and your role.&#10;2. How long have you been in this industry?&#10;3. What brought you to this interview today?"
-                    className="min-h-[150px]"
+                    onChange={(value) => updateForm({ introductionQuestions: value })}
+                    placeholder="Example: Tell me a bit about yourself and your role. How long have you been in this industry?"
                   />
                 </CardContent>
               </Card>
@@ -392,12 +388,10 @@ export default function CreateAgent() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Textarea
-                  id="interviewGuide"
+                <RichTextEditor
                   value={form.interviewGuide}
-                  onChange={(e) => updateForm({ interviewGuide: e.target.value })}
-                  placeholder="Example:&#10;&#10;Section 1: Current Experience&#10;1. How do you currently solve [problem]?&#10;2. What challenges do you face?&#10;3. What works well in your current process?&#10;&#10;Section 2: Product Feedback&#10;1. What's your overall impression?&#10;2. Which features do you use most?&#10;3. What would you improve?"
-                  className="min-h-[300px]"
+                  onChange={(value) => updateForm({ interviewGuide: value })}
+                  placeholder="Structure your interview in sections with questions..."
                 />
               </CardContent>
             </Card>
@@ -424,9 +418,9 @@ export default function CreateAgent() {
             {/* Knowledge Base */}
             <Card>
               <CardHeader>
-                <CardTitle>Knowledge Base *</CardTitle>
+                <CardTitle>Knowledge Base</CardTitle>
                 <CardDescription>
-                  Background information and documents the agent can reference during the interview to provide context or answer questions.
+                  Background information and documents the agent can reference during the interview to provide context or answer questions (optional).
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">

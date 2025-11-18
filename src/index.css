@@ -255,6 +255,54 @@
     background-color: hsl(var(--muted));
     color: hsl(var(--muted-foreground));
   }
+
+  /* Rich Text Editor Styles */
+  .rich-text-editor .ql-toolbar {
+    @apply rounded-t-md border-border bg-muted/30;
+  }
+
+  .rich-text-editor .ql-container {
+    @apply rounded-b-md border-border bg-background;
+    font-family: inherit;
+  }
+
+  .rich-text-editor .ql-editor {
+    @apply text-foreground;
+    min-height: 150px;
+    font-size: 14px;
+  }
+
+  .rich-text-editor .ql-editor.ql-blank::before {
+    @apply text-muted-foreground;
+    font-style: normal;
+  }
+
+  .rich-text-editor .ql-stroke {
+    stroke: hsl(var(--foreground));
+  }
+
+  .rich-text-editor .ql-fill {
+    fill: hsl(var(--foreground));
+  }
+
+  .rich-text-editor .ql-picker-label {
+    @apply text-foreground;
+  }
+
+  .rich-text-editor .ql-toolbar button:hover,
+  .rich-text-editor .ql-toolbar button.ql-active {
+    @apply text-primary;
+  }
+
+  .rich-text-editor .ql-toolbar button:hover .ql-stroke,
+  .rich-text-editor .ql-toolbar button.ql-active .ql-stroke {
+    stroke: hsl(var(--primary));
+  }
+
+  .rich-text-editor .ql-toolbar button:hover .ql-fill,
+  .rich-text-editor .ql-toolbar button.ql-active .ql-fill {
+    fill: hsl(var(--primary));
+  }
 }
 
 @layer base {
