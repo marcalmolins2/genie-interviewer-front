@@ -8,19 +8,19 @@ interface AgentStatusBadgeProps {
 
 const statusConfig = {
   live: {
-    label: 'Live',
+    label: 'LIVE',
     className: 'status-badge-live',
   },
   ready_to_test: {
-    label: 'Ready to Test',
+    label: 'DRAFT',
     className: 'status-badge-ready',
   },
   paused: {
-    label: 'Paused',
+    label: 'PAUSED',
     className: 'status-badge-paused',
   },
   finished: {
-    label: 'Finished',
+    label: 'FINISHED',
     className: 'status-badge-finished',
   },
 };
