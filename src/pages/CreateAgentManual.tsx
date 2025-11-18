@@ -15,7 +15,7 @@ import { Switch } from '@/components/ui/switch';
 import { ARCHETYPES, Channel, Archetype, PRICE_BY_CHANNEL, GuideSchema } from '@/types';
 import { agentsService } from '@/services/agents';
 import { useToast } from '@/hooks/use-toast';
-import { InterviewGuideEditor } from '@/components/InterviewGuideEditor';
+
 
 interface CreateAgentForm {
   projectTitle: string;
@@ -26,9 +26,10 @@ interface CreateAgentForm {
   language: string;
   voiceId: string;
   channel: Channel;
+  targetDuration: string;
+  introContext: string;
   enableScreener: boolean;
   screenerQuestions: string;
-  introContext: string;
   introductionQuestions: string;
   interviewGuide: string;
   guideStructured: GuideSchema | null;
@@ -78,9 +79,10 @@ export default function CreateAgent() {
     language: 'en',
     voiceId: 'voice-1',
     channel: 'inbound_call',
+    targetDuration: '20',
+    introContext: '',
     enableScreener: false,
     screenerQuestions: '',
-    introContext: '',
     introductionQuestions: '',
     interviewGuide: '',
     guideStructured: null,
@@ -102,7 +104,7 @@ export default function CreateAgent() {
     switch (step) {
       case 0: return form.projectTitle.trim().length >= 3 && form.projectDescription.trim().length >= 10;
       case 1: return form.archetype !== null && form.name.trim().length >= 3;
-      case 2: return (form.guideStructured !== null || form.interviewGuide.trim().length >= 10) &&
+      case 2: return form.interviewGuide.trim().length >= 10 &&
                      (form.knowledgeText.trim().length > 0 || form.knowledgeFiles.length > 0);
       case 3: return true;
       case 4: return true;
@@ -275,6 +277,48 @@ export default function CreateAgent() {
               <p className="text-muted-foreground">Configure the interview flow, questions, and knowledge base.</p>
             </div>
             
+            {/* Target Duration */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Target Interview Duration</CardTitle>
+                <CardDescription>
+                  Estimated time for completing the interview
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    id="targetDuration"
+                    value={form.targetDuration}
+                    onChange={(e) => updateForm({ targetDuration: e.target.value })}
+                    placeholder="20"
+                    className="w-24"
+                  />
+                  <span className="text-sm text-muted-foreground">minutes</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Introduction */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Introduction</CardTitle>
+                <CardDescription>
+                  Opening message and context. The agent uses this to greet participants, explain the interview purpose, and set expectations.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Textarea
+                  id="introContext"
+                  value={form.introContext}
+                  onChange={(e) => updateForm({ introContext: e.target.value })}
+                  placeholder="Example: Thank you for joining us today. This interview will take about 20 minutes. We'll be discussing your experience with our product and gathering feedback to improve our services."
+                  className="min-h-[100px]"
+                />
+              </CardContent>
+            </Card>
+            
             {/* Enable Screener */}
             <Card>
               <CardHeader>
@@ -318,25 +362,6 @@ export default function CreateAgent() {
               </Card>
             )}
 
-            {/* Introduction Context */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Introduction Context</CardTitle>
-                <CardDescription>
-                  Background information and greeting the agent uses to introduce the interview. Sets the tone and explains the purpose.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Textarea
-                  id="introContext"
-                  value={form.introContext}
-                  onChange={(e) => updateForm({ introContext: e.target.value })}
-                  placeholder="Example: Thank you for joining us today. This interview will take about 20 minutes. We'll be discussing your experience with our product and gathering feedback to improve our services."
-                  className="min-h-[100px]"
-                />
-              </CardContent>
-            </Card>
-
             {/* Introduction Questions (conditional - only if no screener) */}
             {!form.enableScreener && (
               <Card>
@@ -363,28 +388,24 @@ export default function CreateAgent() {
               <CardHeader>
                 <CardTitle>Interview Guide *</CardTitle>
                 <CardDescription>
-                  The main body of your interview. Structured questions that explore your research objectives in depth.
+                  The main body of your interview. Structure your questions in sections to explore your research topics in depth.
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <InterviewGuideEditor guide={form.guideStructured} onChange={(guide) => updateForm({ guideStructured: guide })} />
-                <div className="mt-4">
-                  <Label htmlFor="interviewGuide">Or paste a text guide</Label>
-                  <Textarea
-                    id="interviewGuide"
-                    value={form.interviewGuide}
-                    onChange={(e) => updateForm({ interviewGuide: e.target.value })}
-                    placeholder="Paste your interview guide here..."
-                    className="mt-1 min-h-[150px]"
-                  />
-                </div>
+                <Textarea
+                  id="interviewGuide"
+                  value={form.interviewGuide}
+                  onChange={(e) => updateForm({ interviewGuide: e.target.value })}
+                  placeholder="Example:&#10;&#10;Section 1: Current Experience&#10;1. How do you currently solve [problem]?&#10;2. What challenges do you face?&#10;3. What works well in your current process?&#10;&#10;Section 2: Product Feedback&#10;1. What's your overall impression?&#10;2. Which features do you use most?&#10;3. What would you improve?"
+                  className="min-h-[300px]"
+                />
               </CardContent>
             </Card>
 
             {/* Closing Context */}
             <Card>
               <CardHeader>
-                <CardTitle>Closing Context</CardTitle>
+                <CardTitle>Closing</CardTitle>
                 <CardDescription>
                   Final remarks and next steps. Thank participants and explain what happens after the interview concludes.
                 </CardDescription>
