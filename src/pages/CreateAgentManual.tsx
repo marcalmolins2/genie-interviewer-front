@@ -83,6 +83,7 @@ export default function CreateAgent() {
     caseCode: '',
   });
   const [isCreating, setIsCreating] = useState(false);
+  const [showValidation, setShowValidation] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -135,6 +136,7 @@ export default function CreateAgent() {
   const nextStep = () => {
     if (validateStep(currentStep) && currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
+      setShowValidation(false);
     }
   };
 
@@ -489,46 +491,47 @@ export default function CreateAgent() {
       </div>
       <div className="container mx-auto px-4 pb-32">{renderStepContent()}</div>
       <div className="fixed bottom-0 left-0 right-0 bg-card border-t p-4">
-        <div className="container mx-auto flex justify-between items-center">
-          <Button variant="outline" onClick={prevStep} disabled={currentStep === 0}>
-            <ArrowLeft className="h-4 w-4 mr-2" />Previous
-          </Button>
-          <div className="text-sm text-muted-foreground">Step {currentStep + 1} of {steps.length}</div>
-          {currentStep < steps.length - 1 ? (
-            <div onClick={() => {
-              if (!validateStep(currentStep)) {
-                const message = getValidationMessage(currentStep);
-                if (message) {
-                  toast({
-                    title: 'Required fields missing',
-                    description: message,
-                    variant: 'destructive'
-                  });
-                }
-              }
-            }}>
-              <Button onClick={nextStep} disabled={!validateStep(currentStep)} className={!validateStep(currentStep) ? 'pointer-events-none' : ''}>
-                Next<ArrowRight className="h-4 w-4 ml-2" />
-              </Button>
+        <div className="container mx-auto">
+          <div className="flex justify-between items-center">
+            <Button variant="outline" onClick={prevStep} disabled={currentStep === 0}>
+              <ArrowLeft className="h-4 w-4 mr-2" />Previous
+            </Button>
+            <div className="text-sm text-muted-foreground">Step {currentStep + 1} of {steps.length}</div>
+            <div className="relative">
+              {!validateStep(currentStep) && showValidation && getValidationMessage(currentStep) && (
+                <div className="absolute bottom-full right-0 mb-2 w-64 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-md px-3 py-2 text-xs text-amber-900 dark:text-amber-200">
+                  {getValidationMessage(currentStep)}
+                </div>
+              )}
+              {currentStep < steps.length - 1 ? (
+                <Button 
+                  onClick={() => {
+                    if (!validateStep(currentStep)) {
+                      setShowValidation(true);
+                    } else {
+                      nextStep();
+                    }
+                  }} 
+                  disabled={!validateStep(currentStep)}
+                >
+                  Next<ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              ) : (
+                <Button 
+                  onClick={() => {
+                    if (!validateStep(currentStep) && !isCreating) {
+                      setShowValidation(true);
+                    } else {
+                      createAgent();
+                    }
+                  }} 
+                  disabled={!validateStep(currentStep) || isCreating}
+                >
+                  {isCreating ? 'Creating...' : 'Generate Phone Number'}
+                </Button>
+              )}
             </div>
-          ) : (
-            <div onClick={() => {
-              if (!validateStep(currentStep) && !isCreating) {
-                const message = getValidationMessage(currentStep);
-                if (message) {
-                  toast({
-                    title: 'Required fields missing',
-                    description: message,
-                    variant: 'destructive'
-                  });
-                }
-              }
-            }}>
-              <Button onClick={createAgent} disabled={!validateStep(currentStep) || isCreating} className={!validateStep(currentStep) ? 'pointer-events-none' : ''}>
-                {isCreating ? 'Creating...' : 'Generate Phone Number'}
-              </Button>
-            </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
