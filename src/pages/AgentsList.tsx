@@ -4,61 +4,34 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AgentStatusBadge } from '@/components/AgentStatusBadge';
-import { 
-  Plus, 
-  Search, 
-  MoreHorizontal, 
-  Play, 
-  Pause, 
-  BarChart3, 
-  Share, 
-  Edit,
-  MessageCircle,
-  Phone,
-  PhoneCall,
-  Calendar,
-  Users
-} from 'lucide-react';
+import { Plus, Search, MoreHorizontal, Play, Pause, BarChart3, Share, Edit, MessageCircle, Phone, PhoneCall, Calendar, Users } from 'lucide-react';
 import { Agent, Channel } from '@/types';
 import { agentsService } from '@/services/agents';
 import { useToast } from '@/hooks/use-toast';
-
 const channelIcons = {
   chat: MessageCircle,
   inbound_call: Phone,
-  outbound_call: PhoneCall,
+  outbound_call: PhoneCall
 };
-
 export default function AgentsList() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [filteredAgents, setFilteredAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
-  const { toast } = useToast();
-
+  const {
+    toast
+  } = useToast();
   useEffect(() => {
     loadAgents();
   }, []);
-
   useEffect(() => {
     // Filter agents based on search query
-    const filtered = agents.filter(agent =>
-      agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      agent.archetype.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filtered = agents.filter(agent => agent.name.toLowerCase().includes(searchQuery.toLowerCase()) || agent.archetype.toLowerCase().includes(searchQuery.toLowerCase()));
     setFilteredAgents(filtered);
   }, [agents, searchQuery]);
-
   const loadAgents = async () => {
     try {
       const data = await agentsService.getAgents();
@@ -67,31 +40,28 @@ export default function AgentsList() {
       toast({
         title: 'Error',
         description: 'Failed to load agents. Please try again.',
-        variant: 'destructive',
+        variant: 'destructive'
       });
     } finally {
       setLoading(false);
     }
   };
-
   const handleToggleStatus = async (agent: Agent) => {
     try {
       const updatedAgent = await agentsService.toggleAgentStatus(agent.id);
       setAgents(prev => prev.map(a => a.id === agent.id ? updatedAgent : a));
-      
       toast({
         title: 'Success',
-        description: `Agent ${updatedAgent.status === 'live' ? 'resumed' : 'paused'} successfully.`,
+        description: `Agent ${updatedAgent.status === 'live' ? 'resumed' : 'paused'} successfully.`
       });
     } catch (error) {
       toast({
         title: 'Error',
         description: 'Failed to update agent status.',
-        variant: 'destructive',
+        variant: 'destructive'
       });
     }
   };
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       day: 'numeric',
@@ -99,19 +69,14 @@ export default function AgentsList() {
       year: 'numeric'
     });
   };
-
   if (loading) {
-    return (
-      <div className="container py-8">
+    return <div className="container py-8">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="container py-8 space-y-6">
+  return <div className="container py-8 space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -135,18 +100,12 @@ export default function AgentsList() {
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search agents..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
+          <Input placeholder="Search agents..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-10" />
         </div>
       </div>
 
       {/* Agents Grid */}
-      {filteredAgents.length === 0 ? (
-        <Card className="p-12 text-center">
+      {filteredAgents.length === 0 ? <Card className="p-12 text-center">
           <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-4">
             <Users className="h-12 w-12 text-muted-foreground" />
           </div>
@@ -154,27 +113,18 @@ export default function AgentsList() {
             {searchQuery ? 'No agents found' : 'No agents yet'}
           </CardTitle>
           <CardDescription className="mb-6">
-            {searchQuery 
-              ? 'Try adjusting your search terms'
-              : 'Create your first interview agent to get started'
-            }
+            {searchQuery ? 'Try adjusting your search terms' : 'Create your first interview agent to get started'}
           </CardDescription>
-          {!searchQuery && (
-            <Link to="/app/agents/new/assisted">
+          {!searchQuery && <Link to="/app/agents/new/assisted">
               <Button className="gap-2">
                 <Plus className="h-4 w-4" />
                 Create Your First Agent
               </Button>
-            </Link>
-          )}
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredAgents.map((agent) => {
-            const ChannelIcon = channelIcons[agent.channel as Channel];
-            
-            return (
-              <Card key={agent.id} className="hover:shadow-md transition-all duration-200 border-border/20 bg-card">
+            </Link>}
+        </Card> : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredAgents.map(agent => {
+        const ChannelIcon = channelIcons[agent.channel as Channel];
+        return <Card key={agent.id} className="hover:shadow-md transition-all duration-200 border-border/20 bg-card">
                 <CardHeader className="space-y-4 pb-6">
                   <div className="flex items-start justify-between">
                     <AgentStatusBadge status={agent.status} />
@@ -207,27 +157,13 @@ export default function AgentsList() {
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-muted-foreground font-medium">ACTIONS:</span>
                       <div className="flex items-center gap-1">
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          className="h-9 w-9 p-0 hover:bg-accent"
-                          onClick={() => navigate(`/app/agents/${agent.id}`)}
-                        >
+                        <Button variant="ghost" size="sm" className="h-9 w-9 p-0 hover:bg-accent" onClick={() => navigate(`/app/agents/${agent.id}`)}>
                           <Edit className="h-4 w-4 text-muted-foreground" />
                         </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          className="h-9 w-9 p-0 hover:bg-accent"
-                          onClick={() => navigate(`/app/agents/${agent.id}/analyze`)}
-                        >
+                        <Button variant="ghost" size="sm" className="h-9 w-9 p-0 hover:bg-accent" onClick={() => navigate(`/app/agents/${agent.id}/analyze`)}>
                           <BarChart3 className="h-4 w-4 text-muted-foreground" />
                         </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          className="h-9 w-9 p-0 hover:bg-accent"
-                        >
+                        <Button variant="ghost" size="sm" className="h-9 w-9 p-0 hover:bg-accent">
                           <Share className="h-4 w-4 text-muted-foreground" />
                         </Button>
                       </div>
@@ -237,23 +173,14 @@ export default function AgentsList() {
                 
                 <CardContent className="pt-0 pb-6">
                   <div className="flex items-center justify-between">
-                    <div className="text-xs text-muted-foreground font-medium">
-                      CREATED: {formatDate(agent.createdAt)}
-                    </div>
-                    <Button 
-                      size="sm"
-                      className="h-9 w-9 p-0 rounded-md"
-                      onClick={() => navigate(`/app/agents/${agent.id}`)}
-                    >
+                    
+                    <Button size="sm" className="h-9 w-9 p-0 rounded-md" onClick={() => navigate(`/app/agents/${agent.id}`)}>
                       <Edit className="h-4 w-4" />
                     </Button>
                   </div>
                 </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
+              </Card>;
+      })}
+        </div>}
+    </div>;
 }
