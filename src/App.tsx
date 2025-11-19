@@ -6,8 +6,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import AppLayout from "./pages/AppLayout";
+import AgentsLayout from "./pages/AgentsLayout";
 import AgentsList from "./pages/AgentsList";
 import AgentsTrash from "./pages/AgentsTrash";
+import AgentsArchive from "./pages/AgentsArchive";
 import AgentCreationSelector from "./pages/AgentCreationSelector";
 import CreateAgentManual from "./pages/CreateAgentManual";
 import CreateAgentAssisted from "./pages/CreateAgentAssisted";
@@ -28,8 +30,11 @@ const App = () => (
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/app" element={<AppLayout />}>
-            <Route path="agents" element={<AgentsList />} />
-            <Route path="agents/trash" element={<AgentsTrash />} />
+            <Route path="agents" element={<AgentsLayout />}>
+              <Route index element={<AgentsList />} />
+              <Route path="trash" element={<AgentsTrash />} />
+              <Route path="archive" element={<AgentsArchive />} />
+            </Route>
             <Route path="agents/new" element={<AgentCreationSelector />} />
             <Route path="agents/new/manual" element={<CreateAgentManual />} />
             <Route path="agents/new/assisted" element={<CreateAgentAssisted />} />
