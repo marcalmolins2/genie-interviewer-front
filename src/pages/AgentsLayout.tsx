@@ -23,7 +23,7 @@ export default function AgentsLayout() {
 
   return (
     <SidebarProvider>
-      <div className="flex w-full">
+      <div className="flex w-full min-h-[calc(100vh-4rem)]">
         <Sidebar className="border-r">
           <SidebarContent>
             <SidebarGroup>
