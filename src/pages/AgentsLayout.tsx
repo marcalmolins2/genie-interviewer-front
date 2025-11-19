@@ -23,7 +23,7 @@ export default function AgentsLayout() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="flex w-full">
         <Sidebar className="border-r">
           <SidebarContent>
             <SidebarGroup>
@@ -48,8 +48,10 @@ export default function AgentsLayout() {
           </SidebarContent>
         </Sidebar>
 
-        <main className="flex-1 container py-8">
-          <Outlet />
+        <main className="flex-1 py-8">
+          <div className="container">
+            <Outlet />
+          </div>
         </main>
       </div>
     </SidebarProvider>
