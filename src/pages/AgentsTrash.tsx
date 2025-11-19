@@ -98,24 +98,11 @@ const AgentsTrash = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/app/agents")}
-              className="gap-2"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Agents
-            </Button>
-          </div>
-          <h1 className="text-3xl font-bold tracking-tight">Trash</h1>
-          <p className="text-muted-foreground mt-1">
-            Agents will be permanently deleted after 30 days
-          </p>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Trash</h1>
+        <p className="text-muted-foreground mt-1">
+          Agents will be permanently deleted after 30 days
+        </p>
       </div>
 
       {agents.length === 0 ? (

@@ -18,6 +18,7 @@ export interface Agent {
   contact: { phoneNumber?: string; chatUrl?: string; chatPassword?: string };
   credentialsReady: boolean; // to show when phone/url is generated
   deletedAt?: string; // ISO timestamp when moved to trash
+  archivedAt?: string; // ISO timestamp when archived
 }
 
 export interface InterviewGuide {

@@ -758,6 +758,30 @@ export const agentsService = {
   async getTrashedAgents(): Promise<Agent[]> {
     await delay(500);
     return mockAgents.filter(agent => agent.deletedAt);
+  },
+
+  // Archive operations
+  async archiveAgent(agentId: string): Promise<Agent> {
+    await delay(400);
+    const agent = mockAgents.find(a => a.id === agentId);
+    if (!agent) throw new Error('Agent not found');
+    
+    agent.archivedAt = new Date().toISOString();
+    return agent;
+  },
+
+  async unarchiveAgent(agentId: string): Promise<Agent> {
+    await delay(400);
+    const agent = mockAgents.find(a => a.id === agentId);
+    if (!agent) throw new Error('Agent not found');
+    
+    delete agent.archivedAt;
+    return agent;
+  },
+
+  async getArchivedAgents(): Promise<Agent[]> {
+    await delay(500);
+    return mockAgents.filter(agent => agent.archivedAt && !agent.deletedAt);
   }
 };
 

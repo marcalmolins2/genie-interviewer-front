@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AgentStatusBadge } from '@/components/AgentStatusBadge';
-import { Plus, Search, MoreHorizontal, Edit, MessageCircle, Phone, PhoneCall, Users, Archive, Trash2, ChevronRight } from 'lucide-react';
+import { Plus, Search, MoreHorizontal, Edit, MessageCircle, Phone, PhoneCall, Users, Archive as ArchiveIcon, Trash2, ChevronRight } from 'lucide-react';
 import { Agent, Channel } from '@/types';
 import { agentsService } from '@/services/agents';
 import { useToast } from '@/hooks/use-toast';
@@ -62,6 +62,41 @@ export default function AgentsList() {
       });
     }
   };
+
+  const handleMoveToTrash = async (agentId: string) => {
+    try {
+      await agentsService.moveToTrash(agentId);
+      toast({
+        title: 'Agent moved to trash',
+        description: 'The agent will be permanently deleted after 30 days.'
+      });
+      loadAgents();
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to move agent to trash.',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleArchive = async (agentId: string) => {
+    try {
+      await agentsService.archiveAgent(agentId);
+      toast({
+        title: 'Agent archived',
+        description: 'The agent has been moved to archive.'
+      });
+      loadAgents();
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to archive agent.',
+        variant: 'destructive'
+      });
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       day: 'numeric',
@@ -80,7 +115,7 @@ export default function AgentsList() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">My Agents</h1>
+          <h1 className="text-3xl font-bold">Overview</h1>
           <p className="text-muted-foreground">
             Manage your interview agents and view performance
           </p>
