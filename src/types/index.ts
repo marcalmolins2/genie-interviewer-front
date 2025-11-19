@@ -17,6 +17,7 @@ export interface Agent {
   pricePerInterviewUsd: number; // computed from channel
   contact: { phoneNumber?: string; chatUrl?: string; chatPassword?: string };
   credentialsReady: boolean; // to show when phone/url is generated
+  deletedAt?: string; // ISO timestamp when moved to trash
 }
 
 export interface InterviewGuide {
