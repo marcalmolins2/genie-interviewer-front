@@ -102,6 +102,14 @@ export default function AgentsList() {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input placeholder="Search agents..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-10" />
         </div>
+        <Button
+          variant="outline"
+          onClick={() => navigate("/app/agents/trash")}
+          className="gap-2"
+        >
+          <Trash2 className="w-4 h-4" />
+          Trash
+        </Button>
       </div>
 
       {/* Agents Grid */}
@@ -151,27 +159,26 @@ export default function AgentsList() {
                           <Edit className="h-4 w-4 mr-2" />
                           Edit
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={e => {
-                    e.stopPropagation();
-                    toast({
-                      title: 'Archive',
-                      description: 'Archive functionality coming soon.'
-                    });
-                  }}>
-                          <Archive className="h-4 w-4 mr-2" />
-                          Archive
-                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={e => {
+                        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={async e => {
                     e.stopPropagation();
-                    toast({
-                      title: 'Delete',
-                      description: 'Delete functionality coming soon.',
-                      variant: 'destructive'
-                    });
+                    try {
+                      await agentsService.moveToTrash(agent.id);
+                      toast({
+                        title: 'Moved to trash',
+                        description: 'Agent moved to trash. It will be permanently deleted in 30 days.'
+                      });
+                      loadAgents();
+                    } catch (error) {
+                      toast({
+                        title: 'Error',
+                        description: 'Failed to move agent to trash',
+                        variant: 'destructive'
+                      });
+                    }
                   }}>
                           <Trash2 className="h-4 w-4 mr-2" />
-                          Delete
+                          Move to Trash
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

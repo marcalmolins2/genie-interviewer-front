@@ -527,10 +527,21 @@ const mockInterviews: InterviewSummary[] = [
 
 // API Service Functions
 export const agentsService = {
-  // Get all agents
+  // Get all agents (excludes deleted and auto-removes items deleted > 30 days ago)
   async getAgents(): Promise<Agent[]> {
     await delay(500);
-    return [...mockAgents];
+    // Auto-cleanup agents deleted more than 30 days ago
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const indicesToRemove = mockAgents
+      .map((agent, index) => ({ agent, index }))
+      .filter(({ agent }) => agent.deletedAt && new Date(agent.deletedAt) < thirtyDaysAgo)
+      .map(({ index }) => index);
+    
+    // Remove from end to start to maintain correct indices
+    indicesToRemove.reverse().forEach(index => mockAgents.splice(index, 1));
+    
+    // Return only non-deleted agents
+    return mockAgents.filter(agent => !agent.deletedAt);
   },
 
   // Get single agent
@@ -706,6 +717,47 @@ export const agentsService = {
     if (assetIndex !== -1) {
       mockKnowledgeAssets.splice(assetIndex, 1);
     }
+  },
+
+  // Trash operations
+  async moveToTrash(agentId: string): Promise<Agent> {
+    await delay(400);
+    const agent = mockAgents.find(a => a.id === agentId);
+    if (!agent) throw new Error('Agent not found');
+    
+    agent.deletedAt = new Date().toISOString();
+    return agent;
+  },
+
+  async restoreAgent(agentId: string): Promise<Agent> {
+    await delay(400);
+    const agent = mockAgents.find(a => a.id === agentId);
+    if (!agent) throw new Error('Agent not found');
+    
+    delete agent.deletedAt;
+    return agent;
+  },
+
+  async permanentlyDeleteAgent(agentId: string): Promise<void> {
+    await delay(500);
+    const agentIndex = mockAgents.findIndex(a => a.id === agentId);
+    if (agentIndex === -1) throw new Error('Agent not found');
+    
+    mockAgents.splice(agentIndex, 1);
+    
+    // Also remove associated data
+    const guideIndex = mockInterviewGuides.findIndex(g => g.agentId === agentId);
+    if (guideIndex !== -1) mockInterviewGuides.splice(guideIndex, 1);
+    
+    const assetIndices = mockKnowledgeAssets
+      .map((asset, index) => asset.agentId === agentId ? index : -1)
+      .filter(index => index !== -1);
+    assetIndices.reverse().forEach(index => mockKnowledgeAssets.splice(index, 1));
+  },
+
+  async getTrashedAgents(): Promise<Agent[]> {
+    await delay(500);
+    return mockAgents.filter(agent => agent.deletedAt);
   }
 };
 
