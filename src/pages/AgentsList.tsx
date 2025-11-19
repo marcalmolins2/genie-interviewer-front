@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { AgentStatusBadge } from '@/components/AgentStatusBadge';
 import { Plus, Search, MoreHorizontal, Edit, MessageCircle, Phone, PhoneCall, Users, Archive as ArchiveIcon, Trash2, ChevronRight } from 'lucide-react';
 import { Agent, Channel } from '@/types';
@@ -20,6 +21,8 @@ export default function AgentsList() {
   const [filteredAgents, setFilteredAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
+  const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const navigate = useNavigate();
   const {
     toast
@@ -80,13 +83,16 @@ export default function AgentsList() {
     }
   };
 
-  const handleArchive = async (agentId: string) => {
+  const handleArchive = async () => {
+    if (!selectedAgentId) return;
+    
     try {
-      await agentsService.archiveAgent(agentId);
+      await agentsService.archiveAgent(selectedAgentId);
       toast({
-        title: 'Agent archived',
-        description: 'The agent has been moved to archive.'
+        description: 'Archived'
       });
+      setArchiveDialogOpen(false);
+      setSelectedAgentId(null);
       loadAgents();
     } catch (error) {
       toast({
@@ -95,6 +101,11 @@ export default function AgentsList() {
         variant: 'destructive'
       });
     }
+  };
+
+  const openArchiveDialog = (agentId: string) => {
+    setSelectedAgentId(agentId);
+    setArchiveDialogOpen(true);
   };
 
   const formatDate = (dateString: string) => {
@@ -193,6 +204,13 @@ export default function AgentsList() {
                           Edit
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={e => {
+                    e.stopPropagation();
+                    openArchiveDialog(agent.id);
+                  }}>
+                          <ArchiveIcon className="h-4 w-4 mr-2" />
+                          Archive
+                        </DropdownMenuItem>
                         <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={async e => {
                     e.stopPropagation();
                     try {
@@ -246,5 +264,21 @@ export default function AgentsList() {
               </Card>;
       })}
         </div>}
+
+      {/* Archive Confirmation Dialog */}
+      <AlertDialog open={archiveDialogOpen} onOpenChange={setArchiveDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Archive interviewer</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will hide the interviewer from your overview and disable new calls
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleArchive}>Archive</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>;
 }

@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, RotateCcw, Archive as ArchiveIcon } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Loader2, RotateCcw, Archive as ArchiveIcon, Eye, Copy, Trash2 } from "lucide-react";
 import { Agent } from "@/types";
 import { agentsService } from "@/services/agents";
 import { toast } from "@/hooks/use-toast";
@@ -13,6 +14,8 @@ const AgentsArchive = () => {
   const navigate = useNavigate();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [unarchiveDialogOpen, setUnarchiveDialogOpen] = useState(false);
+  const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
 
   const loadArchivedAgents = async () => {
     try {
@@ -35,13 +38,16 @@ const AgentsArchive = () => {
     loadArchivedAgents();
   }, []);
 
-  const handleUnarchive = async (agentId: string) => {
+  const handleUnarchive = async () => {
+    if (!selectedAgentId) return;
+    
     try {
-      await agentsService.unarchiveAgent(agentId);
+      await agentsService.unarchiveAgent(selectedAgentId);
       toast({
-        title: "Agent unarchived",
-        description: "The agent has been restored to your active agents",
+        description: "Unarchived",
       });
+      setUnarchiveDialogOpen(false);
+      setSelectedAgentId(null);
       loadArchivedAgents();
     } catch (error) {
       console.error("Failed to unarchive agent:", error);
@@ -51,6 +57,11 @@ const AgentsArchive = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const openUnarchiveDialog = (agentId: string) => {
+    setSelectedAgentId(agentId);
+    setUnarchiveDialogOpen(true);
   };
 
   const formatDate = (dateString: string) => {
@@ -121,11 +132,11 @@ const AgentsArchive = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 sm:flex-col sm:items-end">
+                <div className="flex flex-wrap items-center gap-2">
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleUnarchive(agent.id)}
+                    onClick={() => openUnarchiveDialog(agent.id)}
                     className="gap-2"
                   >
                     <RotateCcw className="w-4 h-4" />
@@ -136,8 +147,49 @@ const AgentsArchive = () => {
                     variant="ghost"
                     size="sm"
                     onClick={() => navigate(`/app/agents/${agent.id}`)}
+                    className="gap-2"
                   >
-                    View Details
+                    <Eye className="w-4 h-4" />
+                    View
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      // TODO: Implement duplicate functionality
+                      toast({
+                        description: "Duplicate functionality coming soon",
+                      });
+                    }}
+                    className="gap-2"
+                  >
+                    <Copy className="w-4 h-4" />
+                    Duplicate
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={async () => {
+                      try {
+                        await agentsService.moveToTrash(agent.id);
+                        toast({
+                          description: "Moved to trash",
+                        });
+                        loadArchivedAgents();
+                      } catch (error) {
+                        toast({
+                          title: "Error",
+                          description: "Failed to delete agent",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                    className="gap-2 text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete
                   </Button>
                 </div>
               </div>
@@ -145,6 +197,22 @@ const AgentsArchive = () => {
           ))}
         </div>
       )}
+
+      {/* Unarchive Confirmation Dialog */}
+      <AlertDialog open={unarchiveDialogOpen} onOpenChange={setUnarchiveDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unarchive interviewer</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will restore the interviewer in Paused state
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleUnarchive}>Unarchive</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
