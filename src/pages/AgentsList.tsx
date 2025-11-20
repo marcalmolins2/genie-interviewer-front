@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,8 +8,12 @@ import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { AgentStatusBadge } from '@/components/AgentStatusBadge';
-import { Plus, Search, MoreHorizontal, Edit, MessageCircle, Phone, PhoneCall, Users, Archive as ArchiveIcon, Trash2, ChevronRight } from 'lucide-react';
-import { Agent, Channel } from '@/types';
+import { Plus, Search, MoreHorizontal, Edit, MessageCircle, Phone, PhoneCall, Users, Archive as ArchiveIcon, Trash2, ChevronRight, Filter, X } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { Agent, Channel, AgentStatus } from '@/types';
 import { agentsService } from '@/services/agents';
 import { useToast } from '@/hooks/use-toast';
 const channelIcons = {
@@ -21,6 +26,9 @@ export default function AgentsList() {
   const [filteredAgents, setFilteredAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedStatuses, setSelectedStatuses] = useState<AgentStatus[]>([]);
+  const [selectedChannels, setSelectedChannels] = useState<Channel[]>([]);
+  const [selectedArchetypes, setSelectedArchetypes] = useState<string[]>([]);
   const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -31,10 +39,29 @@ export default function AgentsList() {
     loadAgents();
   }, []);
   useEffect(() => {
-    // Filter agents based on search query
-    const filtered = agents.filter(agent => agent.name.toLowerCase().includes(searchQuery.toLowerCase()) || agent.archetype.toLowerCase().includes(searchQuery.toLowerCase()));
+    // Filter agents based on search query and filters
+    let filtered = agents.filter(agent => 
+      agent.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      agent.archetype.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    // Apply status filter
+    if (selectedStatuses.length > 0) {
+      filtered = filtered.filter(agent => selectedStatuses.includes(agent.status));
+    }
+
+    // Apply channel filter
+    if (selectedChannels.length > 0) {
+      filtered = filtered.filter(agent => selectedChannels.includes(agent.channel));
+    }
+
+    // Apply archetype filter
+    if (selectedArchetypes.length > 0) {
+      filtered = filtered.filter(agent => selectedArchetypes.includes(agent.archetype));
+    }
+
     setFilteredAgents(filtered);
-  }, [agents, searchQuery]);
+  }, [agents, searchQuery, selectedStatuses, selectedChannels, selectedArchetypes]);
   const loadAgents = async () => {
     try {
       const data = await agentsService.getAgents();
@@ -146,14 +173,194 @@ export default function AgentsList() {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input placeholder="Search agents..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-10" />
         </div>
-        <Button
-          variant="outline"
-          onClick={() => navigate("/app/agents/trash")}
-          className="gap-2"
-        >
-          <Trash2 className="w-4 h-4" />
-          Trash
-        </Button>
+        
+        <div className="flex gap-2">
+          {/* Status Filter */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                <Filter className="h-4 w-4" />
+                Status
+                {selectedStatuses.length > 0 && (
+                  <Badge variant="secondary" className="ml-1 px-1 min-w-5 h-5">
+                    {selectedStatuses.length}
+                  </Badge>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-56" align="start">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium text-sm">Status</h4>
+                  {selectedStatuses.length > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-auto p-0 text-xs"
+                      onClick={() => setSelectedStatuses([])}
+                    >
+                      Clear
+                    </Button>
+                  )}
+                </div>
+                <Separator />
+                <div className="space-y-2">
+                  {(['live', 'paused', 'ready_to_test', 'finished'] as AgentStatus[]).map((status) => (
+                    <div key={status} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`status-${status}`}
+                        checked={selectedStatuses.includes(status)}
+                        onCheckedChange={(checked) => {
+                          setSelectedStatuses(
+                            checked
+                              ? [...selectedStatuses, status]
+                              : selectedStatuses.filter((s) => s !== status)
+                          );
+                        }}
+                      />
+                      <Label
+                        htmlFor={`status-${status}`}
+                        className="text-sm font-normal cursor-pointer"
+                      >
+                        {status.replace('_', ' ').charAt(0).toUpperCase() + status.replace('_', ' ').slice(1)}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          {/* Channel Filter */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                <Filter className="h-4 w-4" />
+                Channel
+                {selectedChannels.length > 0 && (
+                  <Badge variant="secondary" className="ml-1 px-1 min-w-5 h-5">
+                    {selectedChannels.length}
+                  </Badge>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-56" align="start">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium text-sm">Channel</h4>
+                  {selectedChannels.length > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-auto p-0 text-xs"
+                      onClick={() => setSelectedChannels([])}
+                    >
+                      Clear
+                    </Button>
+                  )}
+                </div>
+                <Separator />
+                <div className="space-y-2">
+                  {(['chat', 'inbound_call', 'outbound_call'] as Channel[]).map((channel) => (
+                    <div key={channel} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`channel-${channel}`}
+                        checked={selectedChannels.includes(channel)}
+                        onCheckedChange={(checked) => {
+                          setSelectedChannels(
+                            checked
+                              ? [...selectedChannels, channel]
+                              : selectedChannels.filter((c) => c !== channel)
+                          );
+                        }}
+                      />
+                      <Label
+                        htmlFor={`channel-${channel}`}
+                        className="text-sm font-normal cursor-pointer flex items-center gap-2"
+                      >
+                        {React.createElement(channelIcons[channel], { className: "h-4 w-4" })}
+                        {channel.replace('_', ' ').charAt(0).toUpperCase() + channel.replace('_', ' ').slice(1)}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          {/* Archetype Filter */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                <Filter className="h-4 w-4" />
+                Archetype
+                {selectedArchetypes.length > 0 && (
+                  <Badge variant="secondary" className="ml-1 px-1 min-w-5 h-5">
+                    {selectedArchetypes.length}
+                  </Badge>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64" align="start">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium text-sm">Archetype</h4>
+                  {selectedArchetypes.length > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-auto p-0 text-xs"
+                      onClick={() => setSelectedArchetypes([])}
+                    >
+                      Clear
+                    </Button>
+                  )}
+                </div>
+                <Separator />
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {['expert_deep_dive', 'client_stakeholder', 'customer_user', 'rapid_survey', 'diagnostic', 'investigative', 'panel_moderator'].map((archetype) => (
+                    <div key={archetype} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`archetype-${archetype}`}
+                        checked={selectedArchetypes.includes(archetype)}
+                        onCheckedChange={(checked) => {
+                          setSelectedArchetypes(
+                            checked
+                              ? [...selectedArchetypes, archetype]
+                              : selectedArchetypes.filter((a) => a !== archetype)
+                          );
+                        }}
+                      />
+                      <Label
+                        htmlFor={`archetype-${archetype}`}
+                        className="text-sm font-normal cursor-pointer"
+                      >
+                        {archetype.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          {/* Clear All Filters */}
+          {(selectedStatuses.length > 0 || selectedChannels.length > 0 || selectedArchetypes.length > 0) && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setSelectedStatuses([]);
+                setSelectedChannels([]);
+                setSelectedArchetypes([]);
+              }}
+              className="gap-2"
+            >
+              <X className="h-4 w-4" />
+              Clear all
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Agents Grid */}
