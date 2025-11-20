@@ -8,9 +8,12 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarProvider,
+  SidebarTrigger,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import { Link } from 'react-router-dom';
 import { LayoutGrid, Trash2, Archive } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const navigation = [
   { name: 'Overview', href: '/app/agents', icon: LayoutGrid },
@@ -18,37 +21,59 @@ const navigation = [
   { name: 'Archive', href: '/app/agents/archive', icon: Archive },
 ];
 
-export default function AgentsLayout() {
+function AgentsSidebar() {
   const location = useLocation();
+  const { open } = useSidebar();
 
   return (
-    <SidebarProvider>
-      <div className="flex w-full">
-        <Sidebar className="border-r h-[calc(100vh-4rem)] sticky top-16">
-          <SidebarContent>
-            <SidebarGroup>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {navigation.map((item) => {
-                    const isActive = location.pathname === item.href;
-                    return (
-                      <SidebarMenuItem key={item.name}>
-                        <SidebarMenuButton asChild isActive={isActive}>
-                          <Link to={item.href}>
-                            <item.icon className="h-4 w-4" />
-                            <span>{item.name}</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
-                  })}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </SidebarContent>
-        </Sidebar>
+    <Sidebar className="border-r h-[calc(100vh-4rem)] sticky top-16 transition-all duration-300">
+      <div className="p-2">
+        <SidebarTrigger className="w-full" />
+      </div>
+      
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <TooltipProvider>
+              <SidebarMenu>
+                {navigation.map((item) => {
+                  const isActive = location.pathname === item.href;
+                  return (
+                    <SidebarMenuItem key={item.name}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <SidebarMenuButton asChild isActive={isActive}>
+                            <Link to={item.href}>
+                              <item.icon className="h-4 w-4" />
+                              {open && <span>{item.name}</span>}
+                            </Link>
+                          </SidebarMenuButton>
+                        </TooltipTrigger>
+                        {!open && (
+                          <TooltipContent side="right">
+                            <p>{item.name}</p>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </TooltipProvider>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+    </Sidebar>
+  );
+}
 
-        <main className="flex-1 py-8">
+export default function AgentsLayout() {
+  return (
+    <SidebarProvider defaultOpen={true}>
+      <div className="flex w-full">
+        <AgentsSidebar />
+
+        <main className="flex-1 py-8 min-h-[calc(100vh-4rem)]">
           <div className="container">
             <Outlet />
           </div>
