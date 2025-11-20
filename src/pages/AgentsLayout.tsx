@@ -26,7 +26,7 @@ function AgentsSidebar() {
   const { open } = useSidebar();
 
   return (
-    <Sidebar className="border-r h-[calc(100vh-4rem)] sticky top-16 transition-all duration-300">
+    <Sidebar collapsible="icon" className="border-r h-[calc(100vh-4rem)] sticky top-16 transition-all duration-300">
       <div className="p-2">
         <SidebarTrigger className="w-full" />
       </div>
