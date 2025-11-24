@@ -160,9 +160,8 @@ export default function CreateAgent() {
   };
 
   const goToStep = (stepIndex: number) => {
-    // Can only go to completed steps or the next uncompleted step
-    const maxAllowedStep = Math.max(...completedSteps, 0) + 1;
-    if (stepIndex <= maxAllowedStep && stepIndex < steps.length) {
+    // Can only go to completed steps
+    if (completedSteps.includes(stepIndex) && stepIndex < steps.length) {
       setCurrentStep(stepIndex);
       setShowValidation(false);
     }
