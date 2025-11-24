@@ -776,6 +776,7 @@ export const agentsService = {
     if (!agent) throw new Error('Agent not found');
     
     delete agent.archivedAt;
+    agent.status = 'paused';
     return agent;
   },
 
