@@ -160,8 +160,13 @@ export default function CreateAgent() {
   };
 
   const goToStep = (stepIndex: number) => {
-    // Can only go to completed steps
-    if (completedSteps.includes(stepIndex) && stepIndex < steps.length) {
+    // Can go to completed steps or to review step if all previous steps are completed
+    const allPreviousStepsCompleted = stepIndex === 3 && 
+      completedSteps.includes(0) && 
+      completedSteps.includes(1) && 
+      completedSteps.includes(2);
+    
+    if ((completedSteps.includes(stepIndex) || allPreviousStepsCompleted) && stepIndex < steps.length) {
       setCurrentStep(stepIndex);
       setShowValidation(false);
     }
