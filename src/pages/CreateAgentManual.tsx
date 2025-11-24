@@ -71,6 +71,7 @@ const steps = [
 
 export default function CreateAgent() {
   const [currentStep, setCurrentStep] = useState(0);
+  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [form, setForm] = useState<CreateAgentForm>({
     projectTitle: '',
     projectDescription: '',
@@ -93,6 +94,7 @@ export default function CreateAgent() {
     caseCode: '',
   });
   const [isCreating, setIsCreating] = useState(false);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -144,6 +146,10 @@ export default function CreateAgent() {
 
   const nextStep = () => {
     if (validateStep(currentStep) && currentStep < steps.length - 1) {
+      // Mark current step as completed
+      if (!completedSteps.includes(currentStep)) {
+        setCompletedSteps([...completedSteps, currentStep]);
+      }
       setCurrentStep(currentStep + 1);
       setShowValidation(false);
     }
@@ -151,6 +157,38 @@ export default function CreateAgent() {
 
   const prevStep = () => {
     if (currentStep > 0) setCurrentStep(currentStep - 1);
+  };
+
+  const goToStep = (stepIndex: number) => {
+    // Can only go to completed steps or the next uncompleted step
+    const maxAllowedStep = Math.max(...completedSteps, 0) + 1;
+    if (stepIndex <= maxAllowedStep && stepIndex < steps.length) {
+      setCurrentStep(stepIndex);
+      setShowValidation(false);
+    }
+  };
+
+  const saveDraft = async () => {
+    if (!validateStep(0)) {
+      toast({ 
+        title: 'Cannot save draft', 
+        description: 'Please complete the project details first.', 
+        variant: 'destructive' 
+      });
+      return;
+    }
+    
+    setIsSavingDraft(true);
+    try {
+      // Simulate saving draft - in real implementation, this would save to backend
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      localStorage.setItem('agent_draft', JSON.stringify({ form, completedSteps, currentStep }));
+      toast({ title: 'Draft saved', description: 'Your progress has been saved.' });
+    } catch (error) {
+      toast({ title: 'Error', description: 'Failed to save draft.', variant: 'destructive' });
+    } finally {
+      setIsSavingDraft(false);
+    }
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -474,8 +512,17 @@ export default function CreateAgent() {
               <p className="text-muted-foreground">Review all details before testing.</p>
             </div>
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                 <CardTitle>Project Details</CardTitle>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => goToStep(0)}
+                  className="gap-2"
+                >
+                  <Edit className="h-4 w-4" />
+                  Edit
+                </Button>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
@@ -494,8 +541,17 @@ export default function CreateAgent() {
             </Card>
 
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                 <CardTitle>Interviewer Configuration</CardTitle>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => goToStep(1)}
+                  className="gap-2"
+                >
+                  <Edit className="h-4 w-4" />
+                  Edit
+                </Button>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
@@ -518,34 +574,62 @@ export default function CreateAgent() {
             </Card>
 
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                 <CardTitle>Interview Content</CardTitle>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => goToStep(2)}
+                  className="gap-2"
+                >
+                  <Edit className="h-4 w-4" />
+                  Edit
+                </Button>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
+                  <Label className="text-muted-foreground">Target Duration</Label>
+                  <p className="font-medium">{form.targetDuration} minutes</p>
+                </div>
+                <div>
                   <Label className="text-muted-foreground">Intro Context</Label>
-                  <p className="font-medium">{form.introContext}</p>
+                  <p className="font-medium">{form.introContext || 'Not provided'}</p>
+                </div>
+                {form.enableScreener && (
+                  <div>
+                    <Label className="text-muted-foreground">Screener Questions</Label>
+                    <p className="font-medium">{form.screenerQuestions.substring(0, 100)}{form.screenerQuestions.length > 100 ? '...' : ''}</p>
+                  </div>
+                )}
+                {!form.enableScreener && form.introductionQuestions && (
+                  <div>
+                    <Label className="text-muted-foreground">Introduction Questions</Label>
+                    <p className="font-medium">{form.introductionQuestions.substring(0, 100)}{form.introductionQuestions.length > 100 ? '...' : ''}</p>
+                  </div>
+                )}
+                <div>
+                  <Label className="text-muted-foreground">Interview Guide</Label>
+                  <p className="font-medium">{form.interviewGuide.substring(0, 100)}{form.interviewGuide.length > 100 ? '...' : ''}</p>
                 </div>
                 <div>
                   <Label className="text-muted-foreground">Close Context</Label>
-                  <p className="font-medium">{form.closeContext}</p>
+                  <p className="font-medium">{form.closeContext || 'Not provided'}</p>
                 </div>
-                <div>
-                  <Label className="text-muted-foreground">Interview Guide</Label>
-                  <p className="font-medium">{form.interviewGuide.substring(0, 100)}...</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Knowledge Base</Label>
-                  <p className="font-medium">{form.knowledgeText.substring(0, 100)}...</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Uploaded Files</Label>
-                  <ul className="list-disc pl-4">
-                    {form.knowledgeFiles.map((file, index) => (
-                      <li key={index}>{file.name}</li>
-                    ))}
-                  </ul>
-                </div>
+                {(form.knowledgeText || form.knowledgeFiles.length > 0) && (
+                  <div>
+                    <Label className="text-muted-foreground">Knowledge Base</Label>
+                    {form.knowledgeText && (
+                      <p className="font-medium">{form.knowledgeText.substring(0, 100)}{form.knowledgeText.length > 100 ? '...' : ''}</p>
+                    )}
+                    {form.knowledgeFiles.length > 0 && (
+                      <ul className="list-disc pl-4 mt-2">
+                        {form.knowledgeFiles.map((file, index) => (
+                          <li key={index} className="text-sm">{file.name}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -618,15 +702,31 @@ export default function CreateAgent() {
         </div>
       </div>
       <div className="container mx-auto px-4 py-8">
-        <Stepper steps={steps} currentStep={currentStep} />
+        <Stepper 
+          steps={steps} 
+          currentStep={currentStep} 
+          completedSteps={completedSteps}
+          onStepClick={goToStep}
+        />
       </div>
       <div className="container mx-auto px-4 pb-32">{renderStepContent()}</div>
       <div className="fixed bottom-0 left-0 right-0 bg-card border-t p-4">
         <div className="container mx-auto">
           <div className="flex justify-between items-center">
-            <Button variant="outline" onClick={prevStep} disabled={currentStep === 0}>
-              <ArrowLeft className="h-4 w-4 mr-2" />Previous
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={prevStep} disabled={currentStep === 0}>
+                <ArrowLeft className="h-4 w-4 mr-2" />Previous
+              </Button>
+              {completedSteps.includes(0) && (
+                <Button 
+                  variant="secondary" 
+                  onClick={saveDraft} 
+                  disabled={isSavingDraft}
+                >
+                  {isSavingDraft ? 'Saving...' : 'Save Draft'}
+                </Button>
+              )}
+            </div>
             <div className="text-sm text-muted-foreground">Step {currentStep + 1} of {steps.length}</div>
             <div className="relative">
               {!validateStep(currentStep) && showValidation && getValidationMessage(currentStep) && (
