@@ -540,8 +540,8 @@ export const agentsService = {
     // Remove from end to start to maintain correct indices
     indicesToRemove.reverse().forEach(index => mockAgents.splice(index, 1));
     
-    // Return only non-deleted agents
-    return mockAgents.filter(agent => !agent.deletedAt);
+    // Return only non-deleted and non-archived agents
+    return mockAgents.filter(agent => !agent.deletedAt && !agent.archivedAt);
   },
 
   // Get single agent
