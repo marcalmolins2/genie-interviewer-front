@@ -21,6 +21,7 @@ import {
   X
 } from 'lucide-react';
 import { User as UserType } from '@/types';
+import { ChatBot } from '@/components/ChatBot';
 
 export default function AppLayout() {
   const [user, setUser] = useState<UserType | null>(null);
@@ -130,6 +131,9 @@ export default function AppLayout() {
       <main className="flex-1">
         <Outlet />
       </main>
+      
+      {/* Chat Assistant */}
+      <ChatBot />
     </div>
   );
 }
