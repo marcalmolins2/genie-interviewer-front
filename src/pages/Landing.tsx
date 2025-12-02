@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import WaitlistDialog from '@/components/WaitlistDialog';
 import { 
   ArrowRight, 
   Zap, 
@@ -15,7 +16,8 @@ import {
   Settings,
   Play,
   Rocket,
-  TrendingUp
+  TrendingUp,
+  LogIn
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ARCHETYPES, PRICE_BY_CHANNEL } from '@/types';
@@ -112,11 +114,20 @@ export default function Landing() {
             />
           </div>
           
-          <Link to="/login">
-            <Button size="lg" className="gap-2">
-              Get Started <ArrowRight className="h-4 w-4" />
-            </Button>
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link to="/login">
+              <Button variant="outline" className="gap-2">
+                <LogIn className="h-4 w-4" />
+                Log in
+              </Button>
+            </Link>
+            <WaitlistDialog>
+              <Button className="gap-2">
+                <Sparkles className="h-4 w-4" />
+                Join the Alpha
+              </Button>
+            </WaitlistDialog>
+          </div>
         </div>
       </nav>
 
@@ -147,10 +158,17 @@ export default function Landing() {
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-scale-in">
               <Link to="/login">
-                <Button size="lg" className="gap-2 text-lg px-8 h-14">
-                  Launch Dashboard <ArrowRight className="h-5 w-5" />
+                <Button size="lg" variant="outline" className="gap-2 text-lg px-8 h-14">
+                  <LogIn className="h-5 w-5" />
+                  Log in
                 </Button>
               </Link>
+              <WaitlistDialog>
+                <Button size="lg" className="gap-2 text-lg px-8 h-14">
+                  <Sparkles className="h-5 w-5" />
+                  Join the Alpha
+                </Button>
+              </WaitlistDialog>
             </div>
 
             {/* Trust Indicator */}
@@ -291,23 +309,30 @@ export default function Landing() {
                     ))}
                   </div>
                   
-                  <Link to="/login">
+                  <WaitlistDialog>
                     <Button className="w-full gap-2 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                      Build This Agent <ArrowRight className="h-4 w-4" />
+                      Request Access <ArrowRight className="h-4 w-4" />
                     </Button>
-                  </Link>
+                  </WaitlistDialog>
                 </CardContent>
               </Card>
             ))}
           </div>
 
           {/* CTA */}
-          <div className="text-center mt-16">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-16">
             <Link to="/login">
-              <Button size="lg" className="gap-2 text-lg px-8 h-14">
-                Start Creating Agents <ArrowRight className="h-5 w-5" />
+              <Button size="lg" variant="outline" className="gap-2 text-lg px-8 h-14">
+                <LogIn className="h-5 w-5" />
+                Log in
               </Button>
             </Link>
+            <WaitlistDialog>
+              <Button size="lg" className="gap-2 text-lg px-8 h-14">
+                <Sparkles className="h-5 w-5" />
+                Join the Alpha
+              </Button>
+            </WaitlistDialog>
           </div>
         </div>
       </section>
