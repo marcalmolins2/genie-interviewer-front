@@ -270,8 +270,7 @@ const mockInterviewGuides: InterviewGuide[] = [
         }
       ],
       closing: "Thank you for sharing your insights on GenAI in strategy consulting. Your perspective helps us understand this rapidly evolving landscape."
-    },
-    validation: { complete: true, issues: [] }
+    }
   },
   {
     id: 'guide-1',
@@ -338,8 +337,7 @@ Thank you for your participation in this research.`,
         }
       ],
       closing: "Thank you for your participation in this research."
-    },
-    validation: { complete: true, issues: [] }
+    }
   },
   {
     id: 'guide-2',
@@ -380,8 +378,7 @@ Thank you!`,
         }
       ],
       closing: "Thank you!"
-    },
-    validation: { complete: true, issues: [] }
+    }
   }
 ];
 
@@ -694,8 +691,7 @@ export const agentsService = {
         id: `guide-${Date.now()}`,
         agentId,
         rawText: guideText,
-        structured: structured || undefined,
-        validation: { complete: guideText.length > 50 || !!structured, issues: [] }
+        structured: structured || undefined
       };
       mockInterviewGuides.push(newGuide);
       return newGuide;
@@ -704,8 +700,7 @@ export const agentsService = {
       mockInterviewGuides[guideIndex] = {
         ...mockInterviewGuides[guideIndex],
         rawText: guideText,
-        structured: structured || mockInterviewGuides[guideIndex].structured,
-        validation: { complete: guideText.length > 50 || !!structured, issues: [] }
+        structured: structured || mockInterviewGuides[guideIndex].structured
       };
       return mockInterviewGuides[guideIndex];
     }

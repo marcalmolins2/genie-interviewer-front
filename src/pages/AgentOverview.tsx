@@ -578,18 +578,6 @@ export default function AgentOverview() {
                     <p className="text-sm text-muted-foreground">No guide content available</p>
                   )}
                   
-                  <div className="flex items-center justify-between pt-2 border-t">
-                    <div className="flex items-center gap-2">
-                      {guide.validation.complete ? (
-                        <CheckCircle className="h-4 w-4 text-success" />
-                      ) : (
-                        <div className="h-4 w-4 rounded-full border-2 border-muted-foreground"></div>
-                      )}
-                      <span className="text-sm text-muted-foreground">
-                        {guide.validation.complete ? 'Guide validated' : 'Validation pending'}
-                      </span>
-                    </div>
-                  </div>
                 </div>
               ) : (
                 <div className="text-center py-4">

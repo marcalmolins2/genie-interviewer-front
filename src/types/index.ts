@@ -27,7 +27,6 @@ export interface InterviewGuide {
   agentId: string;
   rawText?: string;
   structured?: GuideSchema;
-  validation: { complete: boolean; issues: string[] };
 }
 
 export interface GuideSchema {
