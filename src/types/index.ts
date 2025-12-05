@@ -98,6 +98,50 @@ export interface User {
   organizationId: string;
 }
 
+// Session-level insights types
+export interface SessionDetail {
+  id: string;
+  agentId: string;
+  startedAt: string;
+  durationSec: number;
+  completed: boolean;
+  respondentId?: string;
+  channel: Channel;
+  transcript: CleanedTranscript;
+}
+
+export interface CleanedTranscript {
+  sections: TranscriptSection[];
+}
+
+export interface TranscriptSection {
+  id: string;
+  question: string;
+  answer: AnswerContent;
+  timestamp?: string;
+}
+
+export interface AnswerContent {
+  summary?: string;
+  bulletPoints: string[];
+  rawText?: string;
+}
+
+export interface QAConversation {
+  id: string;
+  sessionId: string;
+  createdAt: string;
+  updatedAt: string;
+  messages: QAMessage[];
+}
+
+export interface QAMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+}
+
 // Pricing constants
 export const PRICE_BY_CHANNEL: Record<Channel, number> = {
   chat: 10,

@@ -569,7 +569,7 @@ SLIDE 4: Recommendations
                         <Button 
                           variant="outline" 
                           size="sm"
-                          onClick={() => handleViewTranscript(interview)}
+                          onClick={() => navigate(`/app/agents/${agentId}/sessions/${interview.id}`)}
                           disabled={!interview.completed}
                         >
                           View Transcript

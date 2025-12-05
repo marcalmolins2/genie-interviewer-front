@@ -16,6 +16,7 @@ import CreateAgentAssisted from "./pages/CreateAgentAssisted";
 import AgentOverview from "./pages/AgentOverview";
 import EditAgent from "./pages/EditAgent";
 import AgentAnalyze from "./pages/AgentAnalyze";
+import SessionDetail from "./pages/SessionDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,6 +42,7 @@ const App = () => (
             <Route path="agents/:agentId" element={<AgentOverview />} />
             <Route path="agents/:agentId/edit" element={<EditAgent />} />
             <Route path="agents/:agentId/analyze" element={<AgentAnalyze />} />
+            <Route path="agents/:agentId/sessions/:sessionId" element={<SessionDetail />} />
           </Route>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
