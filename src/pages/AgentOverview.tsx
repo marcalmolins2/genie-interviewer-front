@@ -532,20 +532,15 @@ export default function AgentOverview() {
                       </div>
                       
                       <div>
-                        <h4 className="font-medium text-sm mb-2">Question Sections ({guide.structured.sections.length})</h4>
+                        <h4 className="font-medium text-sm mb-2">Interview Sections ({guide.structured.sections.length})</h4>
                         <div className="space-y-2">
                           {guide.structured.sections.map((section, idx) => (
-                            <div key={idx} className="bg-muted rounded-md overflow-hidden">
+                            <div key={idx} className="border border-border rounded-md overflow-hidden">
                               <button
                                 onClick={() => toggleSection(idx)}
-                                className="w-full p-3 text-left hover:bg-muted/80 transition-colors flex items-center justify-between"
+                                className="w-full p-3 text-left hover:bg-muted/50 transition-colors flex items-center justify-between"
                               >
-                                <div>
-                                  <p className="font-medium text-sm">{section.title}</p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {section.questions.length} question{section.questions.length !== 1 ? 's' : ''}
-                                  </p>
-                                </div>
+                                <p className="font-medium text-sm">{section.title}</p>
                                 {expandedSections.has(idx) ? (
                                   <ChevronDown className="h-4 w-4 text-muted-foreground" />
                                 ) : (
@@ -554,54 +549,15 @@ export default function AgentOverview() {
                               </button>
                               
                               {expandedSections.has(idx) && (
-                                <div className="px-3 pb-3 border-t border-background/50">
-                                  <div className="space-y-3 pt-3">
-                                    {section.questions.map((question, qIdx) => (
-                                      <div key={question.id} className="bg-background p-3 rounded-md">
-                                        <div className="flex items-start gap-2 mb-2">
-                                          <span className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded font-medium">
-                                            Q{qIdx + 1}
-                                          </span>
-                                          <div className="flex-1">
-                                            <p className="text-sm font-medium">{question.prompt}</p>
-                                            <div className="flex items-center gap-2 mt-1">
-                                              <span className="text-xs bg-muted px-2 py-0.5 rounded capitalize">
-                                                {question.type.replace('_', ' ')}
-                                              </span>
-                                              {question.required && (
-                                                <span className="text-xs bg-destructive/10 text-destructive px-2 py-0.5 rounded">
-                                                  Required
-                                                </span>
-                                              )}
-                                            </div>
-                                          </div>
-                                        </div>
-                                        
-                                        {question.type === 'scale' && question.scale && (
-                                          <div className="text-xs text-muted-foreground ml-2">
-                                            Scale: {question.scale.min} - {question.scale.max}
-                                            {question.scale.labels && (
-                                              <span className="ml-2">
-                                                ({question.scale.labels[question.scale.min]} to {question.scale.labels[question.scale.max]})
-                                              </span>
-                                            )}
-                                          </div>
-                                        )}
-                                        
-                                        {(question.type === 'multi' || question.type === 'single') && question.options && (
-                                          <div className="text-xs text-muted-foreground ml-2">
-                                            Options: {question.options.join(', ')}
-                                          </div>
-                                        )}
-                                        
-                                        {question.followUps && question.followUps.length > 0 && (
-                                          <div className="text-xs text-muted-foreground ml-2">
-                                            Follow-ups: {question.followUps.length} configured
-                                          </div>
-                                        )}
-                                      </div>
+                                <div className="px-3 pb-3 border-t border-border">
+                                  <ul className="space-y-2 pt-3">
+                                    {section.questions.map((question) => (
+                                      <li key={question.id} className="text-sm text-muted-foreground flex items-start gap-2">
+                                        <span className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5 flex-shrink-0"></span>
+                                        <span>{question.prompt}</span>
+                                      </li>
                                     ))}
-                                  </div>
+                                  </ul>
                                 </div>
                               )}
                             </div>
