@@ -77,18 +77,18 @@ export default function AgentsList() {
       setLoading(false);
     }
   };
-  const handleToggleStatus = async (agent: Agent) => {
+  const handleActivate = async (agent: Agent) => {
     try {
-      const updatedAgent = await agentsService.toggleAgentStatus(agent.id);
+      const updatedAgent = await agentsService.activateAgent(agent.id);
       setAgents(prev => prev.map(a => a.id === agent.id ? updatedAgent : a));
       toast({
         title: 'Success',
-        description: `Agent ${updatedAgent.status === 'live' ? 'resumed' : 'paused'} successfully.`
+        description: 'Agent activated successfully.'
       });
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Failed to update agent status.',
+        description: 'Failed to activate agent.',
         variant: 'destructive'
       });
     }
@@ -224,7 +224,7 @@ export default function AgentsList() {
                     </AccordionTrigger>
                     <AccordionContent className="pb-3">
                       <div className="space-y-2 pt-2">
-                        {(['live', 'paused', 'ready_to_test', 'finished'] as AgentStatus[]).map((status) => (
+                        {(['live', 'suspended', 'ready_to_test', 'finished'] as AgentStatus[]).map((status) => (
                           <div key={status} className="flex items-center space-x-2">
                             <Checkbox
                               id={`status-${status}`}

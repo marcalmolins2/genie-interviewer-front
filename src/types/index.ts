@@ -1,6 +1,6 @@
 // Core Types for Genie Interviewers
 
-export type AgentStatus = 'live' | 'ready_to_test' | 'paused' | 'finished';
+export type AgentStatus = 'live' | 'ready_to_test' | 'suspended' | 'finished';
 export type Channel = 'chat' | 'inbound_call' | 'outbound_call';
 export type Archetype = 'expert_deep_dive' | 'client_stakeholder' | 'customer_user' | 'rapid_survey' | 'diagnostic' | 'investigative' | 'panel_moderator';
 
@@ -19,6 +19,7 @@ export interface Agent {
   credentialsReady: boolean; // to show when phone/url is generated
   deletedAt?: string; // ISO timestamp when moved to trash
   archivedAt?: string; // ISO timestamp when archived
+  hasActiveCall?: boolean; // true when an interview call is in progress
 }
 
 export interface InterviewGuide {

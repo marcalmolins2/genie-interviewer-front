@@ -49,13 +49,28 @@ const mockAgents: Agent[] = [
     name: 'Customer Feedback Portal',
     archetype: 'customer_user',
     createdAt: '2024-12-05T09:15:00Z',
-    status: 'paused',
+    status: 'suspended',
     language: 'en',
     channel: 'chat',
     interviewsCount: 23,
     pricePerInterviewUsd: PRICE_BY_CHANNEL.chat,
     contact: { chatUrl: 'https://chat.genie/efgh', chatPassword: 'FEEDBACK-2024' },
     credentialsReady: true,
+    hasActiveCall: false,
+  },
+  {
+    id: 'agent-4',
+    name: 'Active Call Demo Agent',
+    archetype: 'diagnostic',
+    createdAt: '2024-12-01T11:00:00Z',
+    status: 'live',
+    language: 'en',
+    channel: 'inbound_call',
+    interviewsCount: 5,
+    pricePerInterviewUsd: PRICE_BY_CHANNEL.inbound_call,
+    contact: { phoneNumber: '+1 (555) 111-2222' },
+    credentialsReady: true,
+    hasActiveCall: true, // Mock: this agent has an ongoing call
   }
 ];
 
@@ -615,15 +630,13 @@ export const agentsService = {
     return { status: 'live' };
   },
 
-  // Pause/Resume agent
-  async toggleAgentStatus(agentId: string): Promise<Agent> {
+  // Activate agent (from suspended to live)
+  async activateAgent(agentId: string): Promise<Agent> {
     await delay(400);
     const agent = mockAgents.find(a => a.id === agentId);
     if (!agent) throw new Error('Agent not found');
     
-    if (agent.status === 'live') {
-      agent.status = 'paused';
-    } else if (agent.status === 'paused') {
+    if (agent.status === 'suspended') {
       agent.status = 'live';
     }
     
@@ -726,6 +739,10 @@ export const agentsService = {
     if (!agent) throw new Error('Agent not found');
     
     agent.deletedAt = new Date().toISOString();
+    // Auto-suspend when moving to trash
+    if (agent.status === 'live') {
+      agent.status = 'suspended';
+    }
     return agent;
   },
 
@@ -767,6 +784,10 @@ export const agentsService = {
     if (!agent) throw new Error('Agent not found');
     
     agent.archivedAt = new Date().toISOString();
+    // Auto-suspend when archiving
+    if (agent.status === 'live') {
+      agent.status = 'suspended';
+    }
     return agent;
   },
 
@@ -776,7 +797,8 @@ export const agentsService = {
     if (!agent) throw new Error('Agent not found');
     
     delete agent.archivedAt;
-    agent.status = 'paused';
+    // Remain suspended - user must manually reactivate
+    agent.status = 'suspended';
     return agent;
   },
 
