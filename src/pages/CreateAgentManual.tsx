@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,6 +40,8 @@ interface CreateAgentForm {
   caseCode: string;
 }
 
+type FieldErrors = Record<string, string>;
+
 const languages = [
   { value: 'en', label: 'English' },
   { value: 'es', label: 'Spanish' },
@@ -55,9 +57,10 @@ const voices = [
 ];
 
 const engagementTypes = [
-  { value: 'client-work', label: 'Client Work' },
-  { value: 'internal', label: 'Internal' },
-  { value: 'research', label: 'Research' },
+  { value: 'internal-work', label: 'Internal work' },
+  { value: 'commercial-proposal', label: 'Commercial proposal' },
+  { value: 'client-investment', label: 'Client investment' },
+  { value: 'client-work', label: 'Client work' },
 ];
 
 const steps = [
@@ -69,13 +72,108 @@ const steps = [
   { id: 'deploy', title: 'Deploy', description: 'Generate number' },
 ];
 
+// Validation helper functions
+const PROJECT_TITLE_PATTERN = /^[a-zA-Z0-9\s.,\-_'&()]+$/;
+const AGENT_NAME_PATTERN = /^[a-zA-Z\s-]*$/;
+
+const validateProjectTitle = (value: string): string => {
+  const trimmed = value.trim();
+  if (!trimmed) return 'Project title is required';
+  if (trimmed.length < 3) return 'Project title must be at least 3 characters';
+  if (trimmed.length > 80) return 'Project title must be shorter than 80 characters';
+  if (!PROJECT_TITLE_PATTERN.test(trimmed)) return 'Project title contains invalid characters';
+  return '';
+};
+
+const validateProjectDescription = (value: string): string => {
+  const trimmed = value.trim();
+  if (trimmed.length > 2000) return 'Project description must be shorter than 2000 characters';
+  return '';
+};
+
+const validateAgentName = (value: string): string => {
+  const trimmed = value.trim();
+  if (!trimmed) return ''; // Optional field
+  if (trimmed.length < 2) return 'Agent name must be at least 2 characters';
+  if (trimmed.length > 20) return 'Agent name must be shorter than 20 characters';
+  if (!AGENT_NAME_PATTERN.test(trimmed)) return 'Agent name can only contain letters, spaces, and dashes';
+  return '';
+};
+
+const validateTargetDuration = (value: string): string => {
+  if (!value.trim()) return 'Target interview duration is required';
+  const num = Number(value);
+  if (isNaN(num)) return 'Duration must be a number in minutes';
+  if (!Number.isInteger(num)) return 'Duration must be a whole number';
+  if (num < 3) return 'Interviews must be at least 3 minutes';
+  if (num > 60) return 'Interviews cannot be longer than 60 minutes';
+  return '';
+};
+
+const validateIntroContext = (value: string): string => {
+  const trimmed = value.trim();
+  if (trimmed.length > 600) return 'Introduction context must be shorter than 600 characters';
+  return '';
+};
+
+const validateScreenerQuestions = (value: string): string => {
+  const trimmed = value.trim();
+  if (!trimmed) return 'Screener / warm-up questions are required';
+  if (trimmed.length < 10) return 'Screener questions must be at least 10 characters';
+  if (trimmed.length > 2000) return 'Screener text must be shorter than 2,000 characters';
+  return '';
+};
+
+const validateIntroductionQuestions = (value: string): string => {
+  const trimmed = value.trim();
+  if (!trimmed) return 'Introduction questions are required';
+  if (trimmed.length < 10) return 'Introduction questions must be at least 10 characters';
+  if (trimmed.length > 2000) return 'Introduction questions must be shorter than 2,000 characters';
+  return '';
+};
+
+const validateInterviewGuide = (value: string): string => {
+  const trimmed = value.trim();
+  if (!trimmed) return 'Interview guide is required';
+  if (trimmed.length > 10000) return 'Interview guide must be shorter than 10,000 characters';
+  return '';
+};
+
+const validateCloseContext = (value: string): string => {
+  const trimmed = value.trim();
+  if (trimmed.length > 600) return 'Closing context must be shorter than 600 characters';
+  return '';
+};
+
+const validateKnowledgeText = (value: string): string => {
+  const trimmed = value.trim();
+  if (trimmed.length > 10000) return 'Knowledge base text must be shorter than 10,000 characters';
+  return '';
+};
+
+// Character counter component
+const CharacterCounter = ({ current, max, error }: { current: number; max: number; error?: string }) => (
+  <div className="flex justify-between items-center mt-1">
+    <span className="text-xs text-destructive">{error}</span>
+    <span className={`text-xs ${current > max ? 'text-destructive' : 'text-muted-foreground'}`}>
+      {current}/{max}
+    </span>
+  </div>
+);
+
+// Inline error component
+const FieldError = ({ error }: { error?: string }) => {
+  if (!error) return null;
+  return <p className="text-xs text-destructive mt-1">{error}</p>;
+};
+
 export default function CreateAgent() {
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [form, setForm] = useState<CreateAgentForm>({
     projectTitle: '',
     projectDescription: '',
-    engagementType: 'client-work',
+    engagementType: 'internal-work',
     name: '',
     archetype: null,
     language: 'en',
@@ -93,6 +191,7 @@ export default function CreateAgent() {
     knowledgeFiles: [],
     caseCode: '',
   });
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [isCreating, setIsCreating] = useState(false);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
@@ -103,11 +202,47 @@ export default function CreateAgent() {
     setForm(prev => ({ ...prev, ...updates }));
   };
 
+  const validateField = useCallback((field: string, value: string) => {
+    let error = '';
+    switch (field) {
+      case 'projectTitle': error = validateProjectTitle(value); break;
+      case 'projectDescription': error = validateProjectDescription(value); break;
+      case 'name': error = validateAgentName(value); break;
+      case 'targetDuration': error = validateTargetDuration(value); break;
+      case 'introContext': error = validateIntroContext(value); break;
+      case 'screenerQuestions': error = validateScreenerQuestions(value); break;
+      case 'introductionQuestions': error = validateIntroductionQuestions(value); break;
+      case 'interviewGuide': error = validateInterviewGuide(value); break;
+      case 'closeContext': error = validateCloseContext(value); break;
+      case 'knowledgeText': error = validateKnowledgeText(value); break;
+    }
+    setFieldErrors(prev => ({ ...prev, [field]: error }));
+    return error;
+  }, []);
+
+  const handleFieldChange = (field: string, value: string) => {
+    updateForm({ [field]: value } as Partial<CreateAgentForm>);
+    validateField(field, value);
+  };
+
   const validateStep = (step: number): boolean => {
     switch (step) {
-      case 0: return form.projectTitle.trim().length >= 3 && form.projectDescription.trim().length >= 10;
-      case 1: return form.archetype !== null && form.name.trim().length >= 3;
-      case 2: return form.interviewGuide.trim().length >= 10;
+      case 0: 
+        return !validateProjectTitle(form.projectTitle) && 
+               !validateProjectDescription(form.projectDescription);
+      case 1: 
+        return form.archetype !== null && !validateAgentName(form.name);
+      case 2: {
+        const durationValid = !validateTargetDuration(form.targetDuration);
+        const introContextValid = !validateIntroContext(form.introContext);
+        const questionsValid = form.enableScreener 
+          ? !validateScreenerQuestions(form.screenerQuestions)
+          : !validateIntroductionQuestions(form.introductionQuestions);
+        const guideValid = !validateInterviewGuide(form.interviewGuide);
+        const closeContextValid = !validateCloseContext(form.closeContext);
+        const knowledgeValid = !validateKnowledgeText(form.knowledgeText);
+        return durationValid && introContextValid && questionsValid && guideValid && closeContextValid && knowledgeValid;
+      }
       case 3: return true;
       case 4: return true;
       case 5: return form.caseCode.trim().length > 0;
@@ -119,34 +254,46 @@ export default function CreateAgent() {
     const missingFields: string[] = [];
     
     switch (step) {
-      case 0:
-        if (form.projectTitle.trim().length < 3) missingFields.push('Project Title (min 3 characters)');
-        if (form.projectDescription.trim().length < 10) missingFields.push('Project Description (min 10 characters)');
+      case 0: {
+        const titleError = validateProjectTitle(form.projectTitle);
+        const descError = validateProjectDescription(form.projectDescription);
+        if (titleError) missingFields.push(titleError);
+        if (descError) missingFields.push(descError);
         break;
-      case 1:
-        if (!form.archetype) missingFields.push('Archetype');
-        if (form.name.trim().length < 3) missingFields.push('Agent Name (min 3 characters)');
+      }
+      case 1: {
+        if (!form.archetype) missingFields.push('Archetype selection is required');
+        const nameError = validateAgentName(form.name);
+        if (nameError) missingFields.push(nameError);
         break;
-      case 2:
-        if (!form.guideStructured && form.interviewGuide.trim().length < 10) {
-          missingFields.push('Interview Guide (min 10 characters)');
+      }
+      case 2: {
+        const durationError = validateTargetDuration(form.targetDuration);
+        if (durationError) missingFields.push(durationError);
+        
+        if (form.enableScreener) {
+          const screenerError = validateScreenerQuestions(form.screenerQuestions);
+          if (screenerError) missingFields.push(screenerError);
+        } else {
+          const introQError = validateIntroductionQuestions(form.introductionQuestions);
+          if (introQError) missingFields.push(introQError);
         }
-        if (form.knowledgeText.trim().length === 0 && form.knowledgeFiles.length === 0) {
-          missingFields.push('Knowledge Base (add text or files)');
-        }
+        
+        const guideError = validateInterviewGuide(form.interviewGuide);
+        if (guideError) missingFields.push(guideError);
         break;
+      }
       case 5:
-        if (form.caseCode.trim().length === 0) missingFields.push('Case Code');
+        if (form.caseCode.trim().length === 0) missingFields.push('Case Code is required');
         break;
     }
     
     if (missingFields.length === 0) return '';
-    return `Required: ${missingFields.join(', ')}`;
+    return missingFields[0]; // Show first error
   };
 
   const nextStep = () => {
     if (validateStep(currentStep) && currentStep < steps.length - 1) {
-      // Mark current step as completed
       if (!completedSteps.includes(currentStep)) {
         setCompletedSteps([...completedSteps, currentStep]);
       }
@@ -160,7 +307,6 @@ export default function CreateAgent() {
   };
 
   const goToStep = (stepIndex: number) => {
-    // Can go to completed steps or to review step if all previous steps are completed
     const allPreviousStepsCompleted = stepIndex === 3 && 
       completedSteps.includes(0) && 
       completedSteps.includes(1) && 
@@ -184,7 +330,6 @@ export default function CreateAgent() {
     
     setIsSavingDraft(true);
     try {
-      // Simulate saving draft - in real implementation, this would save to backend
       await new Promise(resolve => setTimeout(resolve, 1000));
       localStorage.setItem('agent_draft', JSON.stringify({ form, completedSteps, currentStep }));
       toast({ title: 'Draft saved', description: 'Your progress has been saved.' });
@@ -241,14 +386,30 @@ export default function CreateAgent() {
               <CardContent className="space-y-4 pt-6">
                 <div>
                   <Label htmlFor="projectTitle">Project Title *</Label>
-                  <Input id="projectTitle" value={form.projectTitle} onChange={(e) => updateForm({ projectTitle: e.target.value })} placeholder="e.g., EU Battery Market Research 2024" className="mt-1" />
+                  <Input 
+                    id="projectTitle" 
+                    value={form.projectTitle} 
+                    onChange={(e) => handleFieldChange('projectTitle', e.target.value)} 
+                    placeholder="e.g., EU Battery Market Research 2024" 
+                    className={`mt-1 ${fieldErrors.projectTitle ? 'border-destructive' : ''}`}
+                    maxLength={80}
+                  />
+                  <CharacterCounter current={form.projectTitle.length} max={80} error={fieldErrors.projectTitle} />
                 </div>
                 <div>
-                  <Label htmlFor="projectDescription">Project Description *</Label>
-                  <Textarea id="projectDescription" value={form.projectDescription} onChange={(e) => updateForm({ projectDescription: e.target.value })} placeholder="Describe the purpose and scope of this project..." className="mt-1 min-h-[100px]" />
+                  <Label htmlFor="projectDescription">Project Description</Label>
+                  <Textarea 
+                    id="projectDescription" 
+                    value={form.projectDescription} 
+                    onChange={(e) => handleFieldChange('projectDescription', e.target.value)} 
+                    placeholder="Describe the purpose and scope of this project..." 
+                    className={`mt-1 min-h-[100px] ${fieldErrors.projectDescription ? 'border-destructive' : ''}`}
+                    maxLength={2000}
+                  />
+                  <CharacterCounter current={form.projectDescription.length} max={2000} error={fieldErrors.projectDescription} />
                 </div>
                 <div>
-                  <Label htmlFor="engagementType">Engagement Type</Label>
+                  <Label htmlFor="engagementType">Engagement Type *</Label>
                   <Select value={form.engagementType} onValueChange={(value) => updateForm({ engagementType: value })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -283,11 +444,19 @@ export default function CreateAgent() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="name">Agent Name *</Label>
-                  <Input id="name" value={form.name} onChange={(e) => updateForm({ name: e.target.value })} placeholder="e.g., Sam" className="mt-1" />
+                  <Label htmlFor="name">Agent Name</Label>
+                  <Input 
+                    id="name" 
+                    value={form.name} 
+                    onChange={(e) => handleFieldChange('name', e.target.value)} 
+                    placeholder="e.g., Sam" 
+                    className={`mt-1 ${fieldErrors.name ? 'border-destructive' : ''}`}
+                    maxLength={20}
+                  />
+                  <CharacterCounter current={form.name.length} max={20} error={fieldErrors.name} />
                 </div>
                 <div>
-                  <Label htmlFor="language">Language</Label>
+                  <Label htmlFor="language">Language *</Label>
                   <Select value={form.language} onValueChange={(value) => updateForm({ language: value })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -322,9 +491,9 @@ export default function CreateAgent() {
             {/* Target Duration */}
             <Card>
               <CardHeader>
-                <CardTitle>Target Interview Duration</CardTitle>
+                <CardTitle>Target Interview Duration *</CardTitle>
                 <CardDescription>
-                  Estimated time for completing the interview
+                  Estimated time for completing the interview (3-60 minutes)
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -333,12 +502,15 @@ export default function CreateAgent() {
                     type="number"
                     id="targetDuration"
                     value={form.targetDuration}
-                    onChange={(e) => updateForm({ targetDuration: e.target.value })}
+                    onChange={(e) => handleFieldChange('targetDuration', e.target.value)}
                     placeholder="20"
-                    className="w-24"
+                    className={`w-24 ${fieldErrors.targetDuration ? 'border-destructive' : ''}`}
+                    min={3}
+                    max={60}
                   />
                   <span className="text-sm text-muted-foreground">minutes</span>
                 </div>
+                <FieldError error={fieldErrors.targetDuration} />
               </CardContent>
             </Card>
 
@@ -347,17 +519,19 @@ export default function CreateAgent() {
               <CardHeader>
                 <CardTitle>Introduction</CardTitle>
                 <CardDescription>
-                  Opening message and context. The agent uses this to greet participants, explain the interview purpose, and set expectations.
+                  Opening message and context. The agent uses this to greet participants, explain the interview purpose, and set expectations. Leave empty to use default.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Textarea
                   id="introContext"
                   value={form.introContext}
-                  onChange={(e) => updateForm({ introContext: e.target.value })}
+                  onChange={(e) => handleFieldChange('introContext', e.target.value)}
                   placeholder="Example: Thank you for joining us today. This interview will take about 20 minutes. We'll be discussing your experience with our product and gathering feedback to improve our services."
-                  className="min-h-[100px]"
+                  className={`min-h-[100px] ${fieldErrors.introContext ? 'border-destructive' : ''}`}
+                  maxLength={600}
                 />
+                <CharacterCounter current={form.introContext.length} max={600} error={fieldErrors.introContext} />
               </CardContent>
             </Card>
             
@@ -387,7 +561,7 @@ export default function CreateAgent() {
             {form.enableScreener && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Screener Questions</CardTitle>
+                  <CardTitle>Screener Questions *</CardTitle>
                   <CardDescription>
                     Questions asked at the start to qualify participants. Use these to filter out unqualified respondents before the main interview begins.
                   </CardDescription>
@@ -395,9 +569,10 @@ export default function CreateAgent() {
                 <CardContent>
                   <RichTextEditor
                     value={form.screenerQuestions}
-                    onChange={(value) => updateForm({ screenerQuestions: value })}
+                    onChange={(value) => handleFieldChange('screenerQuestions', value)}
                     placeholder="Example: Are you over 18 years old? Have you used our product in the last 6 months?"
                   />
+                  <CharacterCounter current={form.screenerQuestions.length} max={2000} error={fieldErrors.screenerQuestions} />
                 </CardContent>
               </Card>
             )}
@@ -406,7 +581,7 @@ export default function CreateAgent() {
             {!form.enableScreener && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Introduction Questions</CardTitle>
+                  <CardTitle>Introduction Questions *</CardTitle>
                   <CardDescription>
                     Warm-up questions to build rapport and ease into the interview. These are asked after the introduction when no screener is used.
                   </CardDescription>
@@ -414,9 +589,10 @@ export default function CreateAgent() {
                 <CardContent>
                   <RichTextEditor
                     value={form.introductionQuestions}
-                    onChange={(value) => updateForm({ introductionQuestions: value })}
+                    onChange={(value) => handleFieldChange('introductionQuestions', value)}
                     placeholder="Example: Tell me a bit about yourself and your role. How long have you been in this industry?"
                   />
+                  <CharacterCounter current={form.introductionQuestions.length} max={2000} error={fieldErrors.introductionQuestions} />
                 </CardContent>
               </Card>
             )}
@@ -432,9 +608,10 @@ export default function CreateAgent() {
               <CardContent>
                 <RichTextEditor
                   value={form.interviewGuide}
-                  onChange={(value) => updateForm({ interviewGuide: value })}
+                  onChange={(value) => handleFieldChange('interviewGuide', value)}
                   placeholder="Structure your interview in sections with questions..."
                 />
+                <CharacterCounter current={form.interviewGuide.length} max={10000} error={fieldErrors.interviewGuide} />
               </CardContent>
             </Card>
 
@@ -443,17 +620,19 @@ export default function CreateAgent() {
               <CardHeader>
                 <CardTitle>Closing</CardTitle>
                 <CardDescription>
-                  Final remarks and next steps. Thank participants and explain what happens after the interview concludes.
+                  Final remarks and next steps. Thank participants and explain what happens after the interview concludes. Leave empty to use default.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Textarea
                   id="closeContext"
                   value={form.closeContext}
-                  onChange={(e) => updateForm({ closeContext: e.target.value })}
+                  onChange={(e) => handleFieldChange('closeContext', e.target.value)}
                   placeholder="Example: Thank you for your time and valuable insights. Your feedback will help us improve our product. You'll receive a summary via email within 48 hours, and we may reach out for follow-up questions."
-                  className="min-h-[100px]"
+                  className={`min-h-[100px] ${fieldErrors.closeContext ? 'border-destructive' : ''}`}
+                  maxLength={600}
                 />
+                <CharacterCounter current={form.closeContext.length} max={600} error={fieldErrors.closeContext} />
               </CardContent>
             </Card>
 
@@ -471,10 +650,12 @@ export default function CreateAgent() {
                   <Textarea
                     id="knowledgeText"
                     value={form.knowledgeText}
-                    onChange={(e) => updateForm({ knowledgeText: e.target.value })}
+                    onChange={(e) => handleFieldChange('knowledgeText', e.target.value)}
                     placeholder="Add background information, product details, company context, etc."
-                    className="mt-1 min-h-[120px]"
+                    className={`mt-1 min-h-[120px] ${fieldErrors.knowledgeText ? 'border-destructive' : ''}`}
+                    maxLength={10000}
                   />
+                  <CharacterCounter current={form.knowledgeText.length} max={10000} error={fieldErrors.knowledgeText} />
                 </div>
                 <div>
                   <Label>Upload Files</Label>
@@ -535,11 +716,11 @@ export default function CreateAgent() {
                 </div>
                 <div>
                   <Label className="text-muted-foreground">Project Description</Label>
-                  <p className="font-medium">{form.projectDescription}</p>
+                  <p className="font-medium">{form.projectDescription || 'Not provided'}</p>
                 </div>
                 <div>
                   <Label className="text-muted-foreground">Engagement Type</Label>
-                  <p className="font-medium">{form.engagementType}</p>
+                  <p className="font-medium">{engagementTypes.find(t => t.value === form.engagementType)?.label}</p>
                 </div>
               </CardContent>
             </Card>
@@ -564,7 +745,7 @@ export default function CreateAgent() {
                 </div>
                 <div>
                   <Label className="text-muted-foreground">Agent Name</Label>
-                  <p className="font-medium">{form.name}</p>
+                  <p className="font-medium">{form.name || 'Not provided'}</p>
                 </div>
                 <div>
                   <Label className="text-muted-foreground">Language</Label>
@@ -597,7 +778,7 @@ export default function CreateAgent() {
                 </div>
                 <div>
                   <Label className="text-muted-foreground">Intro Context</Label>
-                  <p className="font-medium">{form.introContext || 'Not provided'}</p>
+                  <p className="font-medium">{form.introContext || 'Using default'}</p>
                 </div>
                 {form.enableScreener && (
                   <div>
@@ -617,7 +798,7 @@ export default function CreateAgent() {
                 </div>
                 <div>
                   <Label className="text-muted-foreground">Close Context</Label>
-                  <p className="font-medium">{form.closeContext || 'Not provided'}</p>
+                  <p className="font-medium">{form.closeContext || 'Using default'}</p>
                 </div>
                 {(form.knowledgeText || form.knowledgeFiles.length > 0) && (
                   <div>
