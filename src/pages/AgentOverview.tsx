@@ -20,7 +20,6 @@ import {
   ArrowLeft,
   Edit,
   Play,
-  Pause,
   BarChart3,
   Share,
   Copy,
@@ -42,11 +41,18 @@ import {
   X,
   UserPlus,
   Crown,
-  Eye
+  Eye,
+  AlertCircle
 } from 'lucide-react';
 import { Agent, InterviewGuide, KnowledgeAsset } from '@/types';
 import { agentsService } from '@/services/agents';
 import { useToast } from '@/hooks/use-toast';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 export default function AgentOverview() {
   const { agentId } = useParams<{ agentId: string }>();
@@ -121,21 +127,21 @@ export default function AgentOverview() {
     }
   };
 
-  const handleToggleStatus = async () => {
+  const handleActivate = async () => {
     if (!agent) return;
     
     try {
-      const updatedAgent = await agentsService.toggleAgentStatus(agent.id);
+      const updatedAgent = await agentsService.activateAgent(agent.id);
       setAgent(updatedAgent);
       
       toast({
         title: 'Success',
-        description: `Agent ${updatedAgent.status === 'live' ? 'resumed' : 'paused'} successfully.`,
+        description: 'Agent activated successfully.',
       });
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Failed to update agent status.',
+        description: 'Failed to activate agent.',
         variant: 'destructive',
       });
     }
@@ -291,10 +297,31 @@ export default function AgentOverview() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => navigate(`/app/agents/${agent.id}/edit`)}>
-            <Edit className="h-4 w-4 mr-2" />
-            Edit
-          </Button>
+          {agent.hasActiveCall ? (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <Button variant="outline" size="sm" disabled className="opacity-50 cursor-not-allowed">
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    Cannot edit while a call is in progress
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : (
+            <Button variant="outline" size="sm" onClick={() => navigate(`/app/agents/${agent.id}/edit`)}>
+              <Edit className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
+          )}
           
           {agent.status === 'ready_to_test' && (
             <Dialog open={deployDialogOpen} onOpenChange={setDeployDialogOpen}>
@@ -351,23 +378,13 @@ export default function AgentOverview() {
             </Dialog>
           )}
           
-          {(agent.status === 'live' || agent.status === 'paused') && (
+          {agent.status === 'suspended' && (
             <Button
-              variant={agent.status === 'live' ? 'outline' : 'default'}
               size="sm"
-              onClick={handleToggleStatus}
+              onClick={handleActivate}
             >
-              {agent.status === 'live' ? (
-                <>
-                  <Pause className="h-4 w-4 mr-2" />
-                  Pause
-                </>
-              ) : (
-                <>
-                  <Play className="h-4 w-4 mr-2" />
-                  Resume
-                </>
-              )}
+              <Play className="h-4 w-4 mr-2" />
+              Activate
             </Button>
           )}
           

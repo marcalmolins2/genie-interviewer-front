@@ -45,7 +45,7 @@
     /* Status Colors */
     --status-live: 142 76% 36%;
     --status-ready: 199 89% 48%;
-    --status-paused: 38 92% 50%;
+    --status-suspended: 38 92% 50%;
     --status-finished: 215 16% 47%;
 
     /* Interactive Elements */
@@ -127,7 +127,7 @@
     /* Status Colors - Dark Mode */
     --status-live: 142 76% 46%;
     --status-ready: 199 89% 58%;
-    --status-paused: 38 92% 60%;
+    --status-suspended: 38 92% 60%;
     --status-finished: 215 16% 67%;
 
     /* Interactive Elements - Dark Mode */
@@ -244,7 +244,7 @@
     color: hsl(45 93% 47%);
   }
 
-  .status-badge-paused {
+  .status-badge-suspended {
     @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold tracking-wide;
     background-color: hsl(var(--muted));
     color: hsl(var(--muted-foreground));

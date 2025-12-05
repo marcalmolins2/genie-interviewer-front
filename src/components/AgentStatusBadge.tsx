@@ -15,9 +15,9 @@ const statusConfig = {
     label: 'DRAFT',
     className: 'status-badge-ready',
   },
-  paused: {
-    label: 'PAUSED',
-    className: 'status-badge-paused',
+  suspended: {
+    label: 'SUSPENDED',
+    className: 'status-badge-suspended',
   },
   finished: {
     label: 'FINISHED',
