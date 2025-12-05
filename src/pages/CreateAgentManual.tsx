@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Stepper } from '@/components/Stepper';
 import { ArchetypeCard } from '@/components/ArchetypeCard';
 import { ChannelSelector } from '@/components/ChannelSelector';
@@ -409,13 +410,24 @@ export default function CreateAgent() {
                   <CharacterCounter current={form.projectDescription.length} max={2000} error={fieldErrors.projectDescription} />
                 </div>
                 <div>
-                  <Label htmlFor="engagementType">Engagement Type *</Label>
-                  <Select value={form.engagementType} onValueChange={(value) => updateForm({ engagementType: value })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {engagementTypes.map((type) => (<SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>))}
-                    </SelectContent>
-                  </Select>
+                  <Label>Engagement Type *</Label>
+                  <ToggleGroup 
+                    type="single" 
+                    value={form.engagementType} 
+                    onValueChange={(value) => value && updateForm({ engagementType: value })}
+                    className="mt-2 justify-start w-full"
+                  >
+                    {engagementTypes.map((type) => (
+                      <ToggleGroupItem 
+                        key={type.value} 
+                        value={type.value}
+                        variant="outline"
+                        className="flex-1 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                      >
+                        {type.label}
+                      </ToggleGroupItem>
+                    ))}
+                  </ToggleGroup>
                 </div>
               </CardContent>
             </Card>
