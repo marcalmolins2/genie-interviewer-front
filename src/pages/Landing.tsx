@@ -51,13 +51,14 @@ export default function Landing() {
                   Log In
                 </Button>
               </Link>
-            </div>
-
-            <div className="mt-6 animate-scale-in">
               <WaitlistDialog>
-                <button className="text-white/60 hover:text-white/90 text-sm underline underline-offset-4 transition-colors">
-                  Don't have access? Join the waitlist
-                </button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-white/30 bg-white/5 hover:bg-white/10 text-white px-12 py-6 text-lg rounded-full w-full sm:w-auto"
+                >
+                  Join the Waitlist
+                </Button>
               </WaitlistDialog>
             </div>
           </div>
