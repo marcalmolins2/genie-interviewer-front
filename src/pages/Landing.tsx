@@ -1,8 +1,8 @@
-import { Button } from '@/components/ui/button';
-import WaitlistDialog from '@/components/WaitlistDialog';
-import { Link } from 'react-router-dom';
-import genieLogo from '@/assets/genie-g-logo.png';
-import { Clock, Users, Brain, Settings, Play, BarChart3, ArrowRight } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import WaitlistDialog from "@/components/WaitlistDialog";
+import { Link } from "react-router-dom";
+import genieLogo from "@/assets/genie-g-logo.png";
+import { Clock, Users, Brain, Settings, Play, BarChart3, ArrowRight } from "lucide-react";
 
 export default function Landing() {
   return (
@@ -14,9 +14,7 @@ export default function Landing() {
             <span className="text-2xl text-white genie-logo">genie</span>
             <span className="genie-logo-ai text-white/70">AI</span>
           </div>
-          <div className="text-white font-bold text-xl tracking-wider">
-            BCG X
-          </div>
+          <div className="text-white font-bold text-xl tracking-wider">BCG X</div>
         </div>
       </nav>
 
@@ -25,9 +23,9 @@ export default function Landing() {
         <div className="w-full max-w-[1400px] mx-auto px-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Left Side - Genie "g" Graphic */}
           <div className="relative flex items-center justify-center lg:justify-start animate-fade-in">
-            <img 
-              src={genieLogo} 
-              alt="Genie AI" 
+            <img
+              src={genieLogo}
+              alt="Genie AI"
               className="w-[300px] h-auto lg:w-[420px] drop-shadow-[0_0_60px_rgba(100,200,150,0.3)]"
             />
           </div>
@@ -39,18 +37,18 @@ export default function Landing() {
               <br />
               <span className="text-primary">at Scale</span>
             </h1>
-            
+
             <p className="text-xl text-white/70 mb-10 max-w-lg animate-slide-up">
               Get the richness of one-on-one conversations at the scale your projects demand.
             </p>
-            
+
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start animate-scale-in">
               <Link to="/login">
-                <Button 
-                  size="lg" 
+                <Button
+                  size="lg"
                   className="bg-primary hover:bg-primary-dark text-primary-foreground px-12 py-6 text-lg rounded-full w-full sm:w-auto"
                 >
-                  Sign In with SSO
+                  Log In
                 </Button>
               </Link>
             </div>
@@ -69,10 +67,8 @@ export default function Landing() {
       {/* Benefits Section */}
       <section className="py-24 bg-[hsl(168,35%,15%)]">
         <div className="max-w-[1400px] mx-auto px-8">
-          <h2 className="text-3xl md:text-4xl font-serif text-white text-center mb-16">
-            Why Teams Choose Genie
-          </h2>
-          
+          <h2 className="text-3xl md:text-4xl font-serif text-white text-center mb-16">Why Teams Choose Genie</h2>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Benefit 1 */}
             <div className="bg-white/5 border border-white/10 rounded-2xl p-8 hover:bg-white/10 transition-colors">
@@ -113,17 +109,15 @@ export default function Landing() {
       {/* How It Works Section */}
       <section className="py-24">
         <div className="max-w-[1400px] mx-auto px-8">
-          <h2 className="text-3xl md:text-4xl font-serif text-white text-center mb-4">
-            How It Works
-          </h2>
+          <h2 className="text-3xl md:text-4xl font-serif text-white text-center mb-4">How It Works</h2>
           <p className="text-white/60 text-center mb-16 text-lg">
             Launch your first AI interviewer in three simple steps
           </p>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
             {/* Connecting line (desktop only) */}
             <div className="hidden md:block absolute top-14 left-1/4 right-1/4 h-0.5 bg-gradient-to-r from-primary/50 via-primary to-primary/50" />
-            
+
             {/* Step 1 */}
             <div className="text-center relative">
               <div className="w-28 h-28 rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center mx-auto mb-6 relative z-10 bg-[hsl(168,35%,18%)]">
@@ -166,24 +160,20 @@ export default function Landing() {
       {/* Use Cases Section */}
       <section className="py-24 bg-[hsl(168,35%,15%)]">
         <div className="max-w-[1400px] mx-auto px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-serif text-white mb-4">
-            Great For
-          </h2>
-          <p className="text-white/60 mb-12 text-lg">
-            Genie excels across a variety of qualitative research needs
-          </p>
-          
+          <h2 className="text-3xl md:text-4xl font-serif text-white mb-4">Great For</h2>
+          <p className="text-white/60 mb-12 text-lg">Genie excels across a variety of qualitative research needs</p>
+
           <div className="flex flex-wrap justify-center gap-4">
             {[
-              'Expert Deep Dives',
-              'Customer Research',
-              'Client Stakeholder Interviews',
-              'Rapid Diagnostic Calls',
-              'Market Exploration',
-              'User Discovery',
-              'Internal Feedback'
+              "Expert Deep Dives",
+              "Customer Research",
+              "Client Stakeholder Interviews",
+              "Rapid Diagnostic Calls",
+              "Market Exploration",
+              "User Discovery",
+              "Internal Feedback",
             ].map((useCase) => (
-              <span 
+              <span
                 key={useCase}
                 className="px-6 py-3 bg-white/5 border border-white/20 rounded-full text-white/80 hover:bg-white/10 hover:text-white transition-colors"
               >
@@ -197,15 +187,13 @@ export default function Landing() {
       {/* CTA Section */}
       <section className="py-24">
         <div className="max-w-[800px] mx-auto px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-serif text-white mb-6">
-            Ready to get started?
-          </h2>
+          <h2 className="text-3xl md:text-4xl font-serif text-white mb-6">Ready to get started?</h2>
           <p className="text-white/60 mb-10 text-lg">
             Launch your first AI interviewer today and discover insights at scale.
           </p>
           <Link to="/login">
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="bg-primary hover:bg-primary-dark text-primary-foreground px-12 py-6 text-lg rounded-full group"
             >
               Sign In with SSO
@@ -222,9 +210,7 @@ export default function Landing() {
             <span className="text-lg text-white/60 genie-logo">genie</span>
             <span className="text-sm text-white/40 ml-1">AI</span>
           </div>
-          <p className="text-sm text-white/50">
-            © Genie 2025 · Built by BCG X
-          </p>
+          <p className="text-sm text-white/50">© Genie 2025 · Built by BCG X</p>
         </div>
       </footer>
     </div>
