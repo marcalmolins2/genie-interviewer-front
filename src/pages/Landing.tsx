@@ -57,7 +57,7 @@ export default function Landing() {
                   variant="outline"
                   className="border-white/30 bg-white/5 hover:bg-white/10 text-white px-12 py-6 text-lg rounded-full w-full sm:w-auto"
                 >
-                  Join the Waitlist
+                  Join the Alpha
                 </Button>
               </WaitlistDialog>
             </div>
