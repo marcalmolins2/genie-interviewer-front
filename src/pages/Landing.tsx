@@ -192,15 +192,25 @@ export default function Landing() {
           <p className="text-white/60 mb-10 text-lg">
             Launch your first AI interviewer today and discover insights at scale.
           </p>
-          <Link to="/login">
-            <Button
-              size="lg"
-              className="bg-primary hover:bg-primary-dark text-primary-foreground px-12 py-6 text-lg rounded-full group"
-            >
-              Sign In with SSO
-              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Button>
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link to="/login">
+              <Button
+                size="lg"
+                className="bg-primary hover:bg-primary-dark text-primary-foreground px-12 py-6 text-lg rounded-full w-full sm:w-auto"
+              >
+                Log In
+              </Button>
+            </Link>
+            <WaitlistDialog>
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-white/30 bg-white/5 hover:bg-white/10 text-white px-12 py-6 text-lg rounded-full w-full sm:w-auto"
+              >
+                Join the Alpha
+              </Button>
+            </WaitlistDialog>
+          </div>
         </div>
       </section>
 
