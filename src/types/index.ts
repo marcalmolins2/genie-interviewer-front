@@ -4,6 +4,48 @@ export type AgentStatus = 'live' | 'ready_to_test' | 'suspended' | 'finished';
 export type Channel = 'chat' | 'inbound_call' | 'outbound_call';
 export type Archetype = 'expert_deep_dive' | 'client_stakeholder' | 'customer_user' | 'rapid_survey' | 'diagnostic' | 'investigative' | 'panel_moderator';
 
+// Agent permission types
+export type AgentPermission = 'viewer' | 'editor' | 'owner';
+
+export interface AgentCollaborator {
+  id: string;
+  agentId: string;
+  userId: string;
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    avatar?: string;
+    department?: string;
+  };
+  permission: AgentPermission;
+  invitedBy?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Permission descriptions for UI
+export const AGENT_PERMISSIONS: Record<AgentPermission, {
+  label: string;
+  description: string;
+  capabilities: string[];
+}> = {
+  viewer: {
+    label: 'Viewer',
+    description: 'View configuration and insights only',
+    capabilities: ['View agent configuration', 'View interview insights', 'View analytics']
+  },
+  editor: {
+    label: 'Editor',
+    description: 'Edit agent configuration',
+    capabilities: ['All Viewer capabilities', 'Edit agent configuration', 'Manage interview guide', 'Manage knowledge base']
+  },
+  owner: {
+    label: 'Owner',
+    description: 'Full control over agent',
+    capabilities: ['All Editor capabilities', 'Invite/remove collaborators', 'Change permissions', 'Archive or delete agent', 'Transfer ownership']
+  }
+};
 export interface Agent {
   id: string;
   name: string;

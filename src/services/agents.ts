@@ -1,6 +1,95 @@
 // Mock Service Layer for Agents API
-import { Agent, InterviewGuide, KnowledgeAsset, AudienceUpload, Share, InterviewSummary, GuideSchema, PRICE_BY_CHANNEL } from '@/types';
+import { Agent, InterviewGuide, KnowledgeAsset, AudienceUpload, Share, InterviewSummary, GuideSchema, PRICE_BY_CHANNEL, AgentCollaborator, AgentPermission } from '@/types';
 
+// Current user ID (mock - in production this would come from auth)
+const CURRENT_USER_ID = 'current-user-1';
+const CURRENT_USER = {
+  id: 'current-user-1',
+  name: 'You (Current User)',
+  email: 'your.email@bcg.com',
+  department: 'Strategy'
+};
+
+// Mock Okta users for sharing
+const mockOktaUsers = [
+  { id: 'user-1', name: 'Sarah Chen', email: 'sarah.chen@bcg.com', department: 'Strategy' },
+  { id: 'user-2', name: 'Michael Rodriguez', email: 'michael.rodriguez@bcg.com', department: 'Operations' },
+  { id: 'user-3', name: 'Emma Johnson', email: 'emma.johnson@bcg.com', department: 'Digital' },
+  { id: 'user-4', name: 'David Kim', email: 'david.kim@bcg.com', department: 'Technology' },
+  { id: 'user-5', name: 'Lisa Wang', email: 'lisa.wang@bcg.com', department: 'Marketing' },
+  { id: 'user-6', name: 'James Thompson', email: 'james.thompson@bcg.com', department: 'Finance' },
+  { id: 'user-7', name: 'Ana Garcia', email: 'ana.garcia@bcg.com', department: 'Strategy' },
+  { id: 'user-8', name: 'Robert Lee', email: 'robert.lee@bcg.com', department: 'Operations' },
+];
+
+// Mock collaborators data - current user is owner of all agents by default
+const mockCollaborators: AgentCollaborator[] = [
+  {
+    id: 'collab-1',
+    agentId: 'agent-1',
+    userId: CURRENT_USER_ID,
+    user: CURRENT_USER,
+    permission: 'owner',
+    createdAt: '2024-12-01T10:00:00Z',
+    updatedAt: '2024-12-01T10:00:00Z'
+  },
+  {
+    id: 'collab-2',
+    agentId: 'agent-1',
+    userId: 'user-1',
+    user: mockOktaUsers[0],
+    permission: 'editor',
+    invitedBy: CURRENT_USER_ID,
+    createdAt: '2024-12-02T14:00:00Z',
+    updatedAt: '2024-12-02T14:00:00Z'
+  },
+  {
+    id: 'collab-3',
+    agentId: 'agent-1',
+    userId: 'user-2',
+    user: mockOktaUsers[1],
+    permission: 'viewer',
+    invitedBy: CURRENT_USER_ID,
+    createdAt: '2024-12-03T09:00:00Z',
+    updatedAt: '2024-12-03T09:00:00Z'
+  },
+  {
+    id: 'collab-4',
+    agentId: 'agent-genai-strategy',
+    userId: CURRENT_USER_ID,
+    user: CURRENT_USER,
+    permission: 'owner',
+    createdAt: '2024-11-25T08:00:00Z',
+    updatedAt: '2024-11-25T08:00:00Z'
+  },
+  {
+    id: 'collab-5',
+    agentId: 'agent-2',
+    userId: CURRENT_USER_ID,
+    user: CURRENT_USER,
+    permission: 'owner',
+    createdAt: '2024-11-28T14:30:00Z',
+    updatedAt: '2024-11-28T14:30:00Z'
+  },
+  {
+    id: 'collab-6',
+    agentId: 'agent-3',
+    userId: CURRENT_USER_ID,
+    user: CURRENT_USER,
+    permission: 'owner',
+    createdAt: '2024-12-05T09:15:00Z',
+    updatedAt: '2024-12-05T09:15:00Z'
+  },
+  {
+    id: 'collab-7',
+    agentId: 'agent-4',
+    userId: CURRENT_USER_ID,
+    user: CURRENT_USER,
+    permission: 'owner',
+    createdAt: '2024-12-01T11:00:00Z',
+    updatedAt: '2024-12-01T11:00:00Z'
+  }
+];
 // Mock data
 const mockAgents: Agent[] = [
   {
@@ -800,6 +889,161 @@ export const agentsService = {
   async getArchivedAgents(): Promise<Agent[]> {
     await delay(500);
     return mockAgents.filter(agent => agent.archivedAt && !agent.deletedAt);
+  },
+
+  // ============= Collaborator Management =============
+
+  // Get collaborators for an agent
+  async getAgentCollaborators(agentId: string): Promise<AgentCollaborator[]> {
+    await delay(300);
+    return mockCollaborators.filter(c => c.agentId === agentId);
+  },
+
+  // Get current user's permission on an agent
+  async getUserPermission(agentId: string): Promise<AgentPermission | null> {
+    await delay(200);
+    const collab = mockCollaborators.find(
+      c => c.agentId === agentId && c.userId === CURRENT_USER_ID
+    );
+    return collab?.permission || null;
+  },
+
+  // Search available users to invite
+  async searchUsers(query: string, agentId: string): Promise<typeof mockOktaUsers> {
+    await delay(200);
+    const existingUserIds = mockCollaborators
+      .filter(c => c.agentId === agentId)
+      .map(c => c.userId);
+    
+    return mockOktaUsers.filter(user => 
+      !existingUserIds.includes(user.id) &&
+      (user.name.toLowerCase().includes(query.toLowerCase()) ||
+       user.email.toLowerCase().includes(query.toLowerCase()) ||
+       user.department.toLowerCase().includes(query.toLowerCase()))
+    );
+  },
+
+  // Invite collaborator (owner only)
+  async inviteCollaborator(agentId: string, userId: string, permission: AgentPermission): Promise<AgentCollaborator> {
+    await delay(400);
+    
+    // Check if current user is owner
+    const currentUserCollab = mockCollaborators.find(
+      c => c.agentId === agentId && c.userId === CURRENT_USER_ID
+    );
+    if (currentUserCollab?.permission !== 'owner') {
+      throw new Error('Only owners can invite collaborators');
+    }
+
+    // Check if user already has access
+    const existing = mockCollaborators.find(
+      c => c.agentId === agentId && c.userId === userId
+    );
+    if (existing) {
+      throw new Error('User already has access to this agent');
+    }
+
+    // Find the user to invite
+    const userToInvite = mockOktaUsers.find(u => u.id === userId);
+    if (!userToInvite) {
+      throw new Error('User not found');
+    }
+
+    const newCollab: AgentCollaborator = {
+      id: `collab-${Date.now()}`,
+      agentId,
+      userId,
+      user: userToInvite,
+      permission,
+      invitedBy: CURRENT_USER_ID,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    mockCollaborators.push(newCollab);
+    return newCollab;
+  },
+
+  // Update collaborator permission (owner only)
+  async updateCollaboratorPermission(collaboratorId: string, permission: AgentPermission): Promise<AgentCollaborator> {
+    await delay(300);
+    
+    const collab = mockCollaborators.find(c => c.id === collaboratorId);
+    if (!collab) {
+      throw new Error('Collaborator not found');
+    }
+
+    // Check if current user is owner
+    const currentUserCollab = mockCollaborators.find(
+      c => c.agentId === collab.agentId && c.userId === CURRENT_USER_ID
+    );
+    if (currentUserCollab?.permission !== 'owner') {
+      throw new Error('Only owners can change permissions');
+    }
+
+    // Cannot change own permission
+    if (collab.userId === CURRENT_USER_ID) {
+      throw new Error('Cannot change your own permission');
+    }
+
+    collab.permission = permission;
+    collab.updatedAt = new Date().toISOString();
+    return collab;
+  },
+
+  // Remove collaborator (owner only)
+  async removeCollaborator(collaboratorId: string): Promise<void> {
+    await delay(300);
+    
+    const collabIndex = mockCollaborators.findIndex(c => c.id === collaboratorId);
+    if (collabIndex === -1) {
+      throw new Error('Collaborator not found');
+    }
+
+    const collab = mockCollaborators[collabIndex];
+
+    // Check if current user is owner
+    const currentUserCollab = mockCollaborators.find(
+      c => c.agentId === collab.agentId && c.userId === CURRENT_USER_ID
+    );
+    if (currentUserCollab?.permission !== 'owner') {
+      throw new Error('Only owners can remove collaborators');
+    }
+
+    // Cannot remove self
+    if (collab.userId === CURRENT_USER_ID) {
+      throw new Error('Cannot remove yourself. Transfer ownership first.');
+    }
+
+    mockCollaborators.splice(collabIndex, 1);
+  },
+
+  // Transfer ownership (owner only)
+  async transferOwnership(agentId: string, newOwnerId: string): Promise<void> {
+    await delay(400);
+    
+    // Check if current user is owner
+    const currentOwnerCollab = mockCollaborators.find(
+      c => c.agentId === agentId && c.userId === CURRENT_USER_ID && c.permission === 'owner'
+    );
+    if (!currentOwnerCollab) {
+      throw new Error('Only owners can transfer ownership');
+    }
+
+    // Find the new owner
+    const newOwnerCollab = mockCollaborators.find(
+      c => c.agentId === agentId && c.userId === newOwnerId
+    );
+    if (!newOwnerCollab) {
+      throw new Error('New owner must be an existing collaborator');
+    }
+
+    // Transfer ownership
+    currentOwnerCollab.permission = 'editor';
+    currentOwnerCollab.updatedAt = new Date().toISOString();
+    
+    newOwnerCollab.permission = 'owner';
+    newOwnerCollab.updatedAt = new Date().toISOString();
   }
 };
 
