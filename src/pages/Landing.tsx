@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import WaitlistDialog from "@/components/WaitlistDialog";
 import { Link } from "react-router-dom";
 import genieLogo from "@/assets/genie-g-logo.png";
-import { Clock, Users, Brain, Settings, Play, BarChart3, ArrowRight } from "lucide-react";
+import { Clock, Users, Brain, Settings, Play, BarChart3, Lightbulb, Target, MessageSquare, Briefcase } from "lucide-react";
 
 export default function Landing() {
   return (
@@ -160,27 +160,54 @@ export default function Landing() {
 
       {/* Use Cases Section */}
       <section className="py-24 bg-[hsl(168,35%,15%)]">
-        <div className="max-w-[1400px] mx-auto px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-serif text-white mb-4">Great For</h2>
-          <p className="text-white/60 mb-12 text-lg">Genie excels across a variety of qualitative research needs</p>
+        <div className="max-w-[1400px] mx-auto px-8">
+          <h2 className="text-3xl md:text-4xl font-serif text-white text-center mb-4">Great For</h2>
+          <p className="text-white/60 text-center mb-12 text-lg">Genie excels across a variety of qualitative research needs</p>
 
-          <div className="flex flex-wrap justify-center gap-4">
-            {[
-              "Expert Deep Dives",
-              "Customer Research",
-              "Client Stakeholder Interviews",
-              "Rapid Diagnostic Calls",
-              "Market Exploration",
-              "User Discovery",
-              "Internal Feedback",
-            ].map((useCase) => (
-              <span
-                key={useCase}
-                className="px-6 py-3 bg-white/5 border border-white/20 rounded-full text-white/80 hover:bg-white/10 hover:text-white transition-colors"
-              >
-                {useCase}
-              </span>
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Expert Interviews */}
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-8 hover:bg-white/10 transition-colors">
+              <div className="w-14 h-14 rounded-xl bg-primary/20 flex items-center justify-center mb-6">
+                <Lightbulb className="w-7 h-7 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-3">Expert Interviews</h3>
+              <p className="text-white/60 leading-relaxed">
+                Conduct in-depth conversations with industry specialists. Capture nuanced perspectives and domain expertise consistently across multiple experts.
+              </p>
+            </div>
+
+            {/* Maturity Assessments */}
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-8 hover:bg-white/10 transition-colors">
+              <div className="w-14 h-14 rounded-xl bg-primary/20 flex items-center justify-center mb-6">
+                <Target className="w-7 h-7 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-3">Maturity Assessments</h3>
+              <p className="text-white/60 leading-relaxed">
+                Evaluate organizational capabilities at scale. Gather candid feedback from stakeholders across functions to benchmark and identify improvement areas.
+              </p>
+            </div>
+
+            {/* Customer Research */}
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-8 hover:bg-white/10 transition-colors">
+              <div className="w-14 h-14 rounded-xl bg-primary/20 flex items-center justify-center mb-6">
+                <MessageSquare className="w-7 h-7 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-3">Customer Research</h3>
+              <p className="text-white/60 leading-relaxed">
+                Understand your customers deeply through natural conversations. Uncover needs, pain points, and opportunities without the constraints of traditional surveys.
+              </p>
+            </div>
+
+            {/* Client Stakeholder Interviews */}
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-8 hover:bg-white/10 transition-colors">
+              <div className="w-14 h-14 rounded-xl bg-primary/20 flex items-center justify-center mb-6">
+                <Briefcase className="w-7 h-7 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-3">Client Stakeholder Interviews</h3>
+              <p className="text-white/60 leading-relaxed">
+                Engage client stakeholders efficiently during discovery phases. Build alignment and gather diverse viewpoints across departments and seniority levels.
+              </p>
+            </div>
           </div>
         </div>
       </section>
