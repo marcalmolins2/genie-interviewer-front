@@ -19,7 +19,7 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section */}
-      <section className="min-h-[85vh] flex items-center pt-20 relative">
+      <section className="min-h-[75vh] flex items-center pt-20 relative">
         <div className="w-full max-w-[1400px] mx-auto px-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Left Side - Genie "g" Graphic */}
           <div className="relative flex items-center justify-center lg:justify-start animate-fade-in">
