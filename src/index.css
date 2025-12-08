@@ -2,11 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Genie Interviewers Design System - Enterprise B2B Aesthetic */
+/* Genie AI Design System - Dark Teal Aesthetic */
 
 @layer base {
   :root {
-    /* Core Background & Surfaces */
+    /* Core Background & Surfaces - Light Mode */
     --background: 210 15% 97%;
     --foreground: 215 20% 12%;
     
@@ -14,11 +14,18 @@
     --surface-elevated: 210 10% 99%;
     --surface-muted: 210 15% 96%;
 
-    /* Brand Colors - Professional Blue Palette */
-    --primary: 215 85% 45%;
+    /* Brand Colors - Genie Teal/Green */
+    --primary: 258 55% 65%;
     --primary-foreground: 0 0% 100%;
-    --primary-light: 215 75% 85%;
-    --primary-dark: 215 90% 35%;
+    --primary-light: 258 55% 80%;
+    --primary-dark: 258 55% 50%;
+
+    /* Genie Brand Colors */
+    --genie-teal: 168 35% 25%;
+    --genie-teal-light: 168 30% 35%;
+    --genie-green: 120 50% 50%;
+    --genie-mint: 160 45% 60%;
+    --genie-purple: 258 55% 65%;
 
     /* Action Colors */
     --success: 142 76% 36%;
@@ -51,19 +58,20 @@
     /* Interactive Elements */
     --border: 215 20% 88%;
     --input: 215 20% 88%;
-    --ring: 215 85% 45%;
+    --ring: 258 55% 65%;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(215 85% 45%), hsl(199 89% 48%));
+    --gradient-primary: linear-gradient(135deg, hsl(258 55% 65%), hsl(199 89% 48%));
     --gradient-surface: linear-gradient(180deg, hsl(210 15% 99%), hsl(210 15% 97%));
-    --gradient-hero: linear-gradient(135deg, hsl(215 85% 45%), hsl(199 89% 48%), hsl(142 76% 36%));
+    --gradient-hero: linear-gradient(135deg, hsl(168 35% 25%), hsl(168 30% 20%));
+    --gradient-genie: linear-gradient(180deg, hsl(168 35% 22%), hsl(168 40% 18%));
 
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 hsl(215 20% 12% / 0.05);
     --shadow: 0 4px 6px -1px hsl(215 20% 12% / 0.1), 0 2px 4px -1px hsl(215 20% 12% / 0.06);
     --shadow-md: 0 10px 15px -3px hsl(215 20% 12% / 0.1), 0 4px 6px -2px hsl(215 20% 12% / 0.05);
     --shadow-lg: 0 20px 25px -5px hsl(215 20% 12% / 0.1), 0 10px 10px -5px hsl(215 20% 12% / 0.04);
-    --shadow-glow: 0 0 20px hsl(215 85% 45% / 0.3);
+    --shadow-glow: 0 0 20px hsl(258 55% 65% / 0.3);
 
     /* Spacing & Sizing */
     --radius: 0.75rem;
@@ -71,36 +79,29 @@
     --radius-lg: 1rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
-    /* Core Background & Surfaces - Dark Mode */
-    --background: 215 28% 8%;
-    --foreground: 210 40% 98%;
+    /* Core Background & Surfaces - Dark Mode (Genie Dark Teal) */
+    --background: 168 35% 12%;
+    --foreground: 160 20% 95%;
     
-    --surface: 215 25% 10%;
-    --surface-elevated: 215 20% 12%;
-    --surface-muted: 215 25% 15%;
+    --surface: 168 30% 14%;
+    --surface-elevated: 168 25% 16%;
+    --surface-muted: 168 30% 18%;
 
-    /* Brand Colors - Dark Mode Adjusted */
-    --primary: 215 85% 55%;
+    /* Brand Colors - Genie Purple Button */
+    --primary: 258 55% 65%;
     --primary-foreground: 0 0% 100%;
-    --primary-light: 215 75% 75%;
-    --primary-dark: 215 90% 45%;
+    --primary-light: 258 55% 75%;
+    --primary-dark: 258 55% 55%;
 
     /* Action Colors - Dark Mode */
     --success: 142 76% 46%;
@@ -109,43 +110,54 @@
     --info: 199 89% 58%;
 
     /* Neutral System - Dark Mode */
-    --card: 215 25% 10%;
-    --card-foreground: 210 40% 98%;
+    --card: 168 30% 14%;
+    --card-foreground: 160 20% 95%;
     
-    --popover: 215 25% 10%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 168 30% 14%;
+    --popover-foreground: 160 20% 95%;
 
-    --secondary: 215 20% 18%;
-    --secondary-foreground: 210 40% 95%;
+    --secondary: 168 25% 20%;
+    --secondary-foreground: 160 20% 90%;
 
-    --muted: 215 25% 15%;
-    --muted-foreground: 215 16% 67%;
+    --muted: 168 25% 18%;
+    --muted-foreground: 160 15% 65%;
 
-    --accent: 215 20% 18%;
-    --accent-foreground: 210 40% 95%;
+    --accent: 168 25% 20%;
+    --accent-foreground: 160 20% 90%;
 
     /* Status Colors - Dark Mode */
     --status-live: 142 76% 46%;
     --status-ready: 199 89% 58%;
     --status-suspended: 38 92% 60%;
-    --status-finished: 215 16% 67%;
+    --status-finished: 160 15% 65%;
 
     /* Interactive Elements - Dark Mode */
-    --border: 215 20% 20%;
-    --input: 215 20% 20%;
-    --ring: 215 85% 55%;
+    --border: 168 20% 25%;
+    --input: 168 20% 25%;
+    --ring: 258 55% 65%;
 
     /* Gradients - Dark Mode */
-    --gradient-primary: linear-gradient(135deg, hsl(215 85% 55%), hsl(199 89% 58%));
-    --gradient-surface: linear-gradient(180deg, hsl(215 25% 12%), hsl(215 28% 8%));
-    --gradient-hero: linear-gradient(135deg, hsl(215 85% 55%), hsl(199 89% 58%), hsl(142 76% 46%));
+    --gradient-primary: linear-gradient(135deg, hsl(258 55% 65%), hsl(199 89% 58%));
+    --gradient-surface: linear-gradient(180deg, hsl(168 30% 16%), hsl(168 35% 12%));
+    --gradient-hero: linear-gradient(135deg, hsl(168 35% 15%), hsl(168 40% 10%));
+    --gradient-genie: linear-gradient(180deg, hsl(168 35% 15%), hsl(168 40% 10%));
 
     /* Shadows - Dark Mode */
     --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.15);
     --shadow: 0 4px 6px -1px hsl(0 0% 0% / 0.2), 0 2px 4px -1px hsl(0 0% 0% / 0.12);
     --shadow-md: 0 10px 15px -3px hsl(0 0% 0% / 0.2), 0 4px 6px -2px hsl(0 0% 0% / 0.1);
     --shadow-lg: 0 20px 25px -5px hsl(0 0% 0% / 0.2), 0 10px 10px -5px hsl(0 0% 0% / 0.08);
-    --shadow-glow: 0 0 20px hsl(215 85% 55% / 0.4);
+    --shadow-glow: 0 0 20px hsl(258 55% 65% / 0.4);
+
+    /* Sidebar - Dark Mode */
+    --sidebar-background: 168 30% 14%;
+    --sidebar-foreground: 160 20% 90%;
+    --sidebar-primary: 258 55% 65%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 168 25% 20%;
+    --sidebar-accent-foreground: 160 20% 90%;
+    --sidebar-border: 168 20% 25%;
+    --sidebar-ring: 258 55% 65%;
   }
 }
 
@@ -192,6 +204,17 @@
       box-shadow: 0 0 40px hsl(var(--primary) / 0.5);
     }
   }
+
+  @keyframes sparkle {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.7;
+      transform: scale(1.1);
+    }
+  }
 }
 
 /* Component Utilities */
@@ -212,6 +235,10 @@
     background: var(--gradient-hero);
   }
 
+  .gradient-genie {
+    background: var(--gradient-genie);
+  }
+
   .shadow-glow {
     box-shadow: var(--shadow-glow);
   }
@@ -230,6 +257,10 @@
 
   .animate-glow-pulse {
     animation: glow-pulse 2s ease-in-out infinite;
+  }
+
+  .animate-sparkle {
+    animation: sparkle 2s ease-in-out infinite;
   }
 
   .status-badge-live {
@@ -254,6 +285,19 @@
     @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold tracking-wide;
     background-color: hsl(var(--muted));
     color: hsl(var(--muted-foreground));
+  }
+
+  /* Genie Logo Text */
+  .genie-logo {
+    font-family: 'Instrument Sans', sans-serif;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+  }
+
+  .genie-logo-ai {
+    @apply text-xs font-medium tracking-wider opacity-70 ml-1 border rounded px-1.5 py-0.5;
+    border-color: currentColor;
+    opacity: 0.3;
   }
 
   /* Rich Text Editor Styles */

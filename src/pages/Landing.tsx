@@ -1,363 +1,150 @@
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import WaitlistDialog from '@/components/WaitlistDialog';
-import { 
-  ArrowRight, 
-  Zap, 
-  Shield, 
-  BarChart3, 
-  Users, 
-  MessageCircle,
-  Phone,
-  PhoneCall,
-  CheckCircle,
-  Sparkles,
-  Settings,
-  Play,
-  Rocket,
-  TrendingUp,
-  LogIn
-} from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { ARCHETYPES, PRICE_BY_CHANNEL } from '@/types';
 
 export default function Landing() {
-  const benefits = [
-    {
-      icon: Zap,
-      title: 'Launch in Minutes',
-      description: 'Create and deploy AI interview agents with an intuitive guided setup—no technical expertise required.',
-    },
-    {
-      icon: MessageCircle,
-      title: 'Multi-Channel Deployment',
-      description: 'Deploy your agents across chat and voice channels to reach respondents where they are.',
-    },
-    {
-      icon: BarChart3,
-      title: 'Instant Insights',
-      description: 'AI-powered analysis extracts themes, sentiments, and actionable insights from every conversation.',
-    },
-    {
-      icon: Shield,
-      title: 'Enterprise-Grade Security',
-      description: 'Okta SSO integration and enterprise data protection built for BCG standards.',
-    },
-  ];
-
-  const steps = [
-    { 
-      title: 'Choose Archetype', 
-      description: 'Select from Expert Deep Dive, Maturity Assessment, Belief Audits, or Surveys at Scale', 
-      icon: Sparkles 
-    },
-    { 
-      title: 'Configure Agent', 
-      description: 'Define interview flow, questions, and knowledge base in minutes', 
-      icon: Settings 
-    },
-    { 
-      title: 'Test & Refine', 
-      description: 'Validate with sample conversations before going live', 
-      icon: Play 
-    },
-    { 
-      title: 'Deploy', 
-      description: 'Launch on chat or voice with a unique case code', 
-      icon: Rocket 
-    },
-    { 
-      title: 'Analyze Results', 
-      description: 'Extract insights with AI-powered analysis and export findings', 
-      icon: TrendingUp 
-    },
-  ];
-
-  const useCases = [
-    {
-      icon: Sparkles,
-      title: 'Expert Deep Dive',
-      description: 'Technical deep-dives with adaptive questioning',
-      features: ['Probing follow-ups', 'Expertise-level adaptation', 'In-depth exploration']
-    },
-    {
-      icon: BarChart3,
-      title: 'Maturity Assessment',
-      description: 'Evaluate organizational capabilities systematically',
-      features: ['Consistent scoring framework', 'Multi-dimensional evaluation', 'Comparative benchmarking']
-    },
-    {
-      icon: Users,
-      title: 'Belief Audits',
-      description: 'Uncover assumptions and mental models',
-      features: ['Cultural pattern identification', 'Stakeholder belief mapping', 'Assumption exploration']
-    },
-    {
-      icon: MessageCircle,
-      title: 'Surveys at Scale',
-      description: 'Structured interviews with statistical rigor',
-      features: ['Standardized questions', 'Adaptive flow logic', 'Statistical aggregation']
-    },
-  ];
-
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[hsl(168,35%,18%)] text-foreground relative overflow-hidden">
       {/* Navigation */}
-      <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className="container flex h-16 items-center justify-between">
-          <div className="flex items-center gap-2">
-            <img 
-              src="/lovable-uploads/0d665f3b-7af8-4635-bd06-54729cc704ea.png" 
-              alt="Genie Logo" 
-              className="h-10 w-auto"
-            />
+      <nav className="absolute top-0 left-0 right-0 z-50 px-8 py-6">
+        <div className="flex items-center justify-between max-w-[1800px] mx-auto">
+          {/* Genie Logo */}
+          <div className="flex items-center">
+            <span className="text-2xl text-white genie-logo">genie</span>
+            <span className="genie-logo-ai text-white/70">AI</span>
           </div>
           
-          <div className="flex items-center gap-3">
-            <Link to="/login">
-              <Button variant="outline" className="gap-2">
-                <LogIn className="h-4 w-4" />
-                Log in
-              </Button>
-            </Link>
-            <WaitlistDialog>
-              <Button className="gap-2">
-                <Sparkles className="h-4 w-4" />
-                Join the Alpha
-              </Button>
-            </WaitlistDialog>
+          {/* BCG X Logo */}
+          <div className="text-white font-bold text-xl tracking-wider">
+            BCG X
           </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative py-20 md:py-32 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,hsl(var(--primary)/0.1),transparent_50%)]" />
-        
-        <div className="container relative">
-          <div className="max-w-4xl mx-auto text-center">
-            <Badge variant="secondary" className="mb-6 animate-fade-in">
-              <Sparkles className="h-3 w-3 mr-1" />
-              BCG Project Lumen
-            </Badge>
-            
-            <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 animate-fade-in">
-              AI-Powered Research
+      {/* Main Content */}
+      <div className="min-h-screen flex items-center">
+        <div className="w-full max-w-[1800px] mx-auto px-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          {/* Left Side - Genie "g" Graphic */}
+          <div className="relative flex items-center justify-center lg:justify-start">
+            {/* Stylized "g" - using gradients */}
+            <div className="relative w-[400px] h-[500px] lg:w-[500px] lg:h-[600px]">
+              {/* Sparkle */}
+              <div className="absolute top-4 right-1/3 animate-sparkle">
+                <svg 
+                  width="60" 
+                  height="60" 
+                  viewBox="0 0 60 60" 
+                  fill="none" 
+                  className="text-white/90"
+                >
+                  <path 
+                    d="M30 0L32.5 27.5L60 30L32.5 32.5L30 60L27.5 32.5L0 30L27.5 27.5L30 0Z" 
+                    fill="currentColor"
+                  />
+                </svg>
+              </div>
+              
+              {/* The "g" shape using SVG with gradient */}
+              <svg 
+                viewBox="0 0 400 500" 
+                className="w-full h-full"
+                style={{ filter: 'drop-shadow(0 0 40px rgba(100, 200, 150, 0.3))' }}
+              >
+                <defs>
+                  <linearGradient id="genieGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="hsl(180, 40%, 70%)" stopOpacity="0.9" />
+                    <stop offset="30%" stopColor="hsl(160, 45%, 55%)" stopOpacity="0.85" />
+                    <stop offset="60%" stopColor="hsl(140, 50%, 50%)" stopOpacity="0.9" />
+                    <stop offset="100%" stopColor="hsl(100, 60%, 50%)" stopOpacity="1" />
+                  </linearGradient>
+                  <linearGradient id="innerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="hsl(168, 35%, 18%)" />
+                    <stop offset="100%" stopColor="hsl(168, 35%, 22%)" />
+                  </linearGradient>
+                </defs>
+                
+                {/* Outer g shape */}
+                <path 
+                  d="M200 60 
+                     C 300 60, 340 130, 340 200 
+                     C 340 270, 300 340, 200 340 
+                     C 100 340, 60 270, 60 200 
+                     C 60 130, 100 60, 200 60
+                     M200 120
+                     C 140 120, 110 160, 110 200
+                     C 110 240, 140 280, 200 280
+                     C 260 280, 290 240, 290 200
+                     C 290 160, 260 120, 200 120"
+                  fill="url(#genieGradient)"
+                  fillRule="evenodd"
+                />
+                
+                {/* Tail of g */}
+                <path 
+                  d="M290 280
+                     C 300 320, 290 380, 250 420
+                     C 210 460, 150 480, 120 470
+                     C 100 465, 90 450, 100 440
+                     C 110 430, 140 440, 180 430
+                     C 220 420, 250 390, 260 340
+                     C 265 310, 270 290, 290 280"
+                  fill="url(#genieGradient)"
+                />
+                
+                {/* Inner hole of g */}
+                <ellipse 
+                  cx="200" 
+                  cy="200" 
+                  rx="70" 
+                  ry="70" 
+                  fill="url(#innerGradient)"
+                />
+              </svg>
+            </div>
+          </div>
+
+          {/* Right Side - Content */}
+          <div className="text-center lg:text-left lg:pl-12">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif text-white leading-tight mb-6 animate-fade-in">
+              Welcome
               <br />
-              <span className="bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
-                Interviews at Scale
-              </span>
+              to the future of
+              <br />
+              AI Interviews
             </h1>
             
-            <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto leading-relaxed animate-slide-up">
-              Create specialized AI interview agents, deploy across chat and voice channels, 
-              and extract actionable insights from every conversation.
+            <p className="text-lg text-white/70 mb-10 animate-slide-up">
+              Log in to launch your first AI interviewer
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-scale-in">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start animate-scale-in">
               <Link to="/login">
-                <Button size="lg" variant="outline" className="gap-2 text-lg px-8 h-14">
-                  <LogIn className="h-5 w-5" />
-                  Log in
+                <Button 
+                  size="lg" 
+                  className="bg-primary hover:bg-primary-dark text-primary-foreground px-12 py-6 text-lg rounded-full w-full sm:w-auto"
+                >
+                  SIGN IN With SSO
                 </Button>
               </Link>
+            </div>
+
+            <div className="mt-8">
               <WaitlistDialog>
-                <Button size="lg" className="gap-2 text-lg px-8 h-14">
-                  <Sparkles className="h-5 w-5" />
-                  Join the Alpha
-                </Button>
+                <button className="text-white/60 hover:text-white/90 text-sm underline underline-offset-4 transition-colors">
+                  Don't have access? Join the waitlist
+                </button>
               </WaitlistDialog>
             </div>
-
-            {/* Trust Indicator */}
-            <div className="mt-12 flex items-center justify-center gap-3 text-sm text-muted-foreground">
-              <CheckCircle className="h-4 w-4 text-primary" />
-              <span>Secured by Okta SSO</span>
-              <span className="text-muted-foreground/40">•</span>
-              <span>Enterprise-grade data protection</span>
-            </div>
           </div>
         </div>
-      </section>
-
-      {/* Benefits Section */}
-      <section className="py-20 bg-muted/30">
-        <div className="container">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold mb-4">
-              Why Genie Interviewers?
-            </h2>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-              Built for BCG case teams to conduct scalable, consistent research interviews
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {benefits.map((benefit, index) => (
-              <Card 
-                key={index} 
-                className="group relative overflow-hidden border-0 bg-card hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                
-                <CardHeader className="relative">
-                  <div className="mb-4 inline-flex p-3 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300">
-                    <benefit.icon className="h-6 w-6" />
-                  </div>
-                  <CardTitle className="text-xl">{benefit.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="relative">
-                  <CardDescription className="text-base leading-relaxed">
-                    {benefit.description}
-                  </CardDescription>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section className="py-20">
-        <div className="container">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold mb-4">
-              From Setup to Insights in 5 Steps
-            </h2>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-              Our guided workflow takes you from idea to actionable research data
-            </p>
-          </div>
-          
-          <div className="max-w-5xl mx-auto">
-            {steps.map((step, index) => (
-              <div 
-                key={index} 
-                className="relative flex gap-6 pb-12 last:pb-0"
-              >
-                {/* Connecting Line */}
-                {index < steps.length - 1 && (
-                  <div className="absolute left-6 top-14 bottom-0 w-0.5 bg-gradient-to-b from-primary/50 to-primary/10" />
-                )}
-                
-                {/* Step Number & Icon */}
-                <div className="relative flex-shrink-0">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold text-lg shadow-lg">
-                    {index + 1}
-                  </div>
-                </div>
-                
-                {/* Content */}
-                <Card className="flex-1 border-0 bg-card hover:shadow-lg transition-shadow duration-300">
-                  <CardHeader>
-                    <div className="flex items-center gap-3 mb-2">
-                      <step.icon className="h-5 w-5 text-primary" />
-                      <CardTitle className="text-xl">{step.title}</CardTitle>
-                    </div>
-                    <CardDescription className="text-base leading-relaxed">
-                      {step.description}
-                    </CardDescription>
-                  </CardHeader>
-                </Card>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Use Cases / Archetypes */}
-      <section className="py-20 bg-muted/30">
-        <div className="container">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold mb-4">
-              Choose Your Interview Archetype
-            </h2>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-              Each archetype is optimized for specific research objectives and conversation styles
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-            {useCases.map((useCase, index) => (
-              <Card 
-                key={index} 
-                className="group relative overflow-hidden border-0 bg-gradient-to-br from-card via-card to-muted/20 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2"
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                
-                <CardHeader className="relative">
-                  <div className="mb-4 inline-flex p-4 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300 group-hover:scale-110">
-                    <useCase.icon className="h-7 w-7" />
-                  </div>
-                  <CardTitle className="text-2xl mb-2 group-hover:text-primary transition-colors duration-300">
-                    {useCase.title}
-                  </CardTitle>
-                  <CardDescription className="text-base">
-                    {useCase.description}
-                  </CardDescription>
-                </CardHeader>
-                
-                <CardContent className="relative">
-                  <div className="space-y-2 mb-6">
-                    {useCase.features.map((feature, featureIndex) => (
-                      <div key={featureIndex} className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
-                        <span>{feature}</span>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  <WaitlistDialog>
-                    <Button className="w-full gap-2 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                      Request Access <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </WaitlistDialog>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* CTA */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-16">
-            <Link to="/login">
-              <Button size="lg" variant="outline" className="gap-2 text-lg px-8 h-14">
-                <LogIn className="h-5 w-5" />
-                Log in
-              </Button>
-            </Link>
-            <WaitlistDialog>
-              <Button size="lg" className="gap-2 text-lg px-8 h-14">
-                <Sparkles className="h-5 w-5" />
-                Join the Alpha
-              </Button>
-            </WaitlistDialog>
-          </div>
-        </div>
-      </section>
+      </div>
 
       {/* Footer */}
-      <footer className="border-t py-12 bg-background">
-        <div className="container">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="flex items-center gap-2">
-              <img 
-                src="/lovable-uploads/0d665f3b-7af8-4635-bd06-54729cc704ea.png" 
-                alt="Genie Logo" 
-                className="h-8 w-auto"
-              />
-            </div>
-            
-            <p className="text-sm text-muted-foreground">
-              © 2024 Genie Interviewers - BCG Project Lumen Internal Tool
-            </p>
-            
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Shield className="h-4 w-4" />
-              <span>Secured by Okta</span>
-            </div>
-          </div>
+      <footer className="absolute bottom-0 left-0 right-0 px-8 py-6">
+        <div className="max-w-[1800px] mx-auto flex justify-end">
+          <p className="text-sm text-white/50">
+            © Genie 2025
+          </p>
         </div>
       </footer>
     </div>
