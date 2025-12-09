@@ -1,9 +1,22 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { 
   BarChart, 
   Bar, 
@@ -23,7 +36,9 @@ import {
   FolderOpen,
   Clock,
   ChevronDown,
-  Calendar
+  Calendar,
+  Check,
+  ChevronsUpDown
 } from 'lucide-react';
 import { 
   getSystemAnalytics, 
@@ -35,6 +50,7 @@ import {
 } from '@/services/admin';
 import { PROJECT_TYPE_LABELS, ProjectType } from '@/types';
 import { formatDistanceToNow } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 function formatDuration(seconds: number): string {
   if (seconds < 60) return `${Math.round(seconds)}s`;
@@ -64,6 +80,7 @@ export default function AdminAnalytics() {
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [membersOpen, setMembersOpen] = useState(false);
+  const [projectSelectorOpen, setProjectSelectorOpen] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -206,20 +223,57 @@ export default function AdminAnalytics() {
 
         {/* Per Project Tab */}
         <TabsContent value="project" className="space-y-6 mt-6">
-          {/* Project Selector */}
+          {/* Project Selector with Search */}
           <div className="flex items-center gap-4">
-            <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
-              <SelectTrigger className="w-[300px]">
-                <SelectValue placeholder="Select a project" />
-              </SelectTrigger>
-              <SelectContent>
-                {projectList.map(p => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.name} ({p.caseCode})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover open={projectSelectorOpen} onOpenChange={setProjectSelectorOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={projectSelectorOpen}
+                  className="w-[350px] justify-between"
+                >
+                  {selectedProjectId
+                    ? (() => {
+                        const project = projectList.find(p => p.id === selectedProjectId);
+                        return project ? `${project.name} (${project.caseCode})` : "Select a project...";
+                      })()
+                    : "Select a project..."}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[350px] p-0">
+                <Command>
+                  <CommandInput placeholder="Search projects..." />
+                  <CommandList>
+                    <CommandEmpty>No project found.</CommandEmpty>
+                    <CommandGroup>
+                      {projectList.map(project => (
+                        <CommandItem
+                          key={project.id}
+                          value={`${project.name} ${project.caseCode}`}
+                          onSelect={() => {
+                            setSelectedProjectId(project.id);
+                            setProjectSelectorOpen(false);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              selectedProjectId === project.id ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          <span className="truncate">{project.name}</span>
+                          <span className="ml-2 text-xs text-muted-foreground font-mono">
+                            {project.caseCode}
+                          </span>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
 
           {projectAnalytics && (
