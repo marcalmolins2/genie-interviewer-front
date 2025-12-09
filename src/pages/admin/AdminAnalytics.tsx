@@ -249,13 +249,13 @@ export default function AdminAnalytics() {
                 {/* Sessions Completed */}
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Sessions</CardTitle>
+                    <CardTitle className="text-sm font-medium">Sessions Completed</CardTitle>
                     <MessageSquare className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-bold">{projectAnalytics.totalSessions}</div>
+                    <div className="text-3xl font-bold">{projectAnalytics.completedLiveSessions}</div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {projectAnalytics.liveSessions} live • {projectAnalytics.testSessions} test
+                      {projectAnalytics.testSessions} test sessions excluded
                     </p>
                   </CardContent>
                 </Card>

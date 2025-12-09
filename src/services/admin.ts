@@ -132,6 +132,7 @@ export interface ProjectAnalytics {
   liveSessions: number;
   testSessions: number;
   completedSessions: number;
+  completedLiveSessions: number;
   completionRate: number;
   avgDurationSec: number;
   totalDurationHours: number;
@@ -205,6 +206,7 @@ export async function getProjectAnalytics(projectId: string): Promise<ProjectAna
   const liveSessions = allSessions.filter(s => s.conversationType === 'live');
   const testSessions = allSessions.filter(s => s.conversationType === 'test');
   const completedSessions = allSessions.filter(s => s.completed);
+  const completedLiveSessions = liveSessions.filter(s => s.completed);
   
   const totalDurationSec = allSessions.reduce((sum, s) => sum + (s.durationSec || 0), 0);
   const avgDurationSec = allSessions.length > 0 ? totalDurationSec / allSessions.length : 0;
@@ -247,6 +249,7 @@ export async function getProjectAnalytics(projectId: string): Promise<ProjectAna
     liveSessions: liveSessions.length,
     testSessions: testSessions.length,
     completedSessions: completedSessions.length,
+    completedLiveSessions: completedLiveSessions.length,
     completionRate: allSessions.length > 0 ? (completedSessions.length / allSessions.length) * 100 : 0,
     avgDurationSec,
     totalDurationHours: totalDurationSec / 3600,
