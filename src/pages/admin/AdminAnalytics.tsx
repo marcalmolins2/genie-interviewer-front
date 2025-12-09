@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { 
   BarChart, 
   Bar, 
@@ -13,20 +14,16 @@ import {
   ResponsiveContainer,
   LineChart,
   Line,
-  PieChart,
-  Pie,
-  Cell,
   Legend
 } from 'recharts';
 import { 
   Users, 
   MessageSquare,
-  TrendingUp,
   Shapes,
   FolderOpen,
   Clock,
-  CheckCircle2,
-  TestTube
+  ChevronDown,
+  Calendar
 } from 'lucide-react';
 import { 
   getSystemAnalytics, 
@@ -36,8 +33,8 @@ import {
   ProjectAnalytics,
   ProjectListItem
 } from '@/services/admin';
-
-const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
+import { PROJECT_TYPE_LABELS, ProjectType } from '@/types';
+import { formatDistanceToNow } from 'date-fns';
 
 function formatDuration(seconds: number): string {
   if (seconds < 60) return `${Math.round(seconds)}s`;
@@ -46,6 +43,19 @@ function formatDuration(seconds: number): string {
   return secs > 0 ? `${mins}m ${secs}s` : `${mins}m`;
 }
 
+const PROJECT_TYPE_COLORS: Record<ProjectType, string> = {
+  internal_work: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+  commercial_proposal: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+  client_investment: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+  client_work: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+};
+
+const ROLE_COLORS: Record<string, string> = {
+  owner: 'bg-primary/20 text-primary border-primary/30',
+  editor: 'bg-chart-2/20 text-chart-2 border-chart-2/30',
+  viewer: 'bg-muted text-muted-foreground border-border',
+};
+
 export default function AdminAnalytics() {
   const [activeTab, setActiveTab] = useState<'system' | 'project'>('system');
   const [systemAnalytics, setSystemAnalytics] = useState<SystemAnalytics | null>(null);
@@ -53,6 +63,7 @@ export default function AdminAnalytics() {
   const [projectList, setProjectList] = useState<ProjectListItem[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
   const [loading, setLoading] = useState(true);
+  const [membersOpen, setMembersOpen] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -213,82 +224,101 @@ export default function AdminAnalytics() {
 
           {projectAnalytics && (
             <>
-              {/* Project Stats */}
-              <div className="grid gap-4 md:grid-cols-3">
+              {/* Project Header */}
+              <div className="space-y-2">
+                <h2 className="text-2xl font-bold text-foreground">{projectAnalytics.projectName}</h2>
+                <div className="flex items-center gap-3 flex-wrap">
+                  <Badge variant="outline" className="font-mono text-xs">
+                    {projectAnalytics.caseCode}
+                  </Badge>
+                  <Badge 
+                    variant="outline" 
+                    className={PROJECT_TYPE_COLORS[projectAnalytics.projectType]}
+                  >
+                    {PROJECT_TYPE_LABELS[projectAnalytics.projectType]}
+                  </Badge>
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <Calendar className="h-3.5 w-3.5" />
+                    <span>Last activity {formatDistanceToNow(new Date(projectAnalytics.lastActivityDate), { addSuffix: true })}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Metrics Cards */}
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                {/* Sessions Completed */}
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Team Size</CardTitle>
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{projectAnalytics.teamSize}</div>
-                    <div className="flex gap-2 mt-1">
-                      {projectAnalytics.membersByRole.filter(r => r.count > 0).map(r => (
-                        <span key={r.role} className="text-xs text-muted-foreground">
-                          {r.count} {r.role}
-                        </span>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Interviewers</CardTitle>
-                    <Shapes className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{projectAnalytics.totalInterviewers}</div>
-                    <div className="flex gap-2 mt-1 flex-wrap">
-                      {projectAnalytics.interviewersByStatus.map(s => (
-                        <span key={s.status} className="text-xs text-muted-foreground capitalize">
-                          {s.count} {s.status}
-                        </span>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Live Sessions</CardTitle>
+                    <CardTitle className="text-sm font-medium">Sessions</CardTitle>
                     <MessageSquare className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{projectAnalytics.liveSessions}</div>
-                    <p className="text-xs text-muted-foreground">{projectAnalytics.testSessions} test sessions</p>
+                    <div className="text-3xl font-bold">{projectAnalytics.totalSessions}</div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {projectAnalytics.liveSessions} live • {projectAnalytics.testSessions} test
+                    </p>
                   </CardContent>
                 </Card>
-              </div>
 
-              {/* Duration Metrics */}
-              <div className="grid gap-6">
+                {/* Team Members with Collapsible */}
                 <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Duration Metrics</CardTitle>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Team Members</CardTitle>
+                    <Users className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
-                  <CardContent className="flex gap-8">
-                    <div className="flex items-center gap-3">
-                      <Clock className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Avg Duration</p>
-                        <p className="text-xl font-bold">{formatDuration(projectAnalytics.avgDurationSec)}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Clock className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Total Time</p>
-                        <p className="text-xl font-bold">{projectAnalytics.totalDurationHours.toFixed(1)}h</p>
-                      </div>
-                    </div>
+                  <CardContent>
+                    <Collapsible open={membersOpen} onOpenChange={setMembersOpen}>
+                      <CollapsibleTrigger className="flex items-center gap-2 w-full group">
+                        <span className="text-3xl font-bold">{projectAnalytics.teamSize}</span>
+                        <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${membersOpen ? 'rotate-180' : ''}`} />
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="mt-3 space-y-2">
+                        {projectAnalytics.members.map(member => (
+                          <div key={member.id} className="flex items-center justify-between text-sm">
+                            <span className="text-foreground truncate">{member.name}</span>
+                            <Badge 
+                              variant="outline" 
+                              className={`text-xs capitalize ${ROLE_COLORS[member.role] || ''}`}
+                            >
+                              {member.role}
+                            </Badge>
+                          </div>
+                        ))}
+                      </CollapsibleContent>
+                    </Collapsible>
+                  </CardContent>
+                </Card>
+
+                {/* Total Duration */}
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Duration</CardTitle>
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold">{projectAnalytics.totalDurationHours.toFixed(1)}h</div>
+                    <p className="text-xs text-muted-foreground mt-1">Interview time</p>
+                  </CardContent>
+                </Card>
+
+                {/* Avg Duration */}
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Avg Duration</CardTitle>
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold">{formatDuration(projectAnalytics.avgDurationSec)}</div>
+                    <p className="text-xs text-muted-foreground mt-1">Per session</p>
                   </CardContent>
                 </Card>
               </div>
 
-              {/* Activity Chart */}
+              {/* Stacked Bar Activity Chart */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Session Activity (14 days)</CardTitle>
-                  <CardDescription>Live vs test sessions</CardDescription>
+                  <CardTitle>Session Activity</CardTitle>
+                  <CardDescription>Live vs test sessions over 14 days</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="h-[280px]">
@@ -306,8 +336,8 @@ export default function AdminAnalytics() {
                           labelFormatter={(v) => new Date(v).toLocaleDateString()}
                         />
                         <Legend />
-                        <Bar dataKey="live" name="Live" fill="hsl(var(--primary))" radius={[2, 2, 0, 0]} />
-                        <Bar dataKey="test" name="Test" fill="hsl(var(--chart-3))" radius={[2, 2, 0, 0]} />
+                        <Bar dataKey="live" name="Live" stackId="sessions" fill="hsl(var(--primary))" radius={[0, 0, 0, 0]} />
+                        <Bar dataKey="test" name="Test" stackId="sessions" fill="hsl(var(--chart-3))" radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>

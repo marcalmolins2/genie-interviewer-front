@@ -4,6 +4,16 @@
 export type ProjectRole = 'owner' | 'editor' | 'viewer';
 export type InterviewerRole = 'owner' | 'editor' | 'viewer' | 'none';
 
+// Project types
+export type ProjectType = 'internal_work' | 'commercial_proposal' | 'client_investment' | 'client_work';
+
+export const PROJECT_TYPE_LABELS: Record<ProjectType, string> = {
+  internal_work: 'Internal Work',
+  commercial_proposal: 'Commercial Proposal',
+  client_investment: 'Client Investment',
+  client_work: 'Client Work',
+};
+
 // Interviewer status lifecycle
 export type InterviewerStatus = 'draft' | 'ready_to_test' | 'launching' | 'published' | 'unpublished' | 'archived' | 'deleted' | 'active';
 
@@ -40,6 +50,7 @@ export interface Project {
   caseCode: string;
   name: string;
   description?: string;
+  projectType: ProjectType;
   createdAt: string;
   updatedAt: string;
 }

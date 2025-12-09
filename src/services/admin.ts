@@ -1,10 +1,11 @@
-import { ArchetypeInfo, Archetype, Project, ProjectRole } from '@/types';
+import { ArchetypeInfo, Archetype, Project, ProjectRole, ProjectType, PROJECT_TYPE_LABELS } from '@/types';
 import { 
   mockProjects, 
   mockProjectMemberships, 
   mockInterviewers, 
   mockSessions,
   mockUsers,
+  getUserById,
   getProjectMembershipsForProject,
   getInterviewersForProject,
   getSessionsForInterviewer
@@ -102,14 +103,24 @@ export async function deleteArchetype(id: string): Promise<void> {
 
 // ============= Project Analytics Types =============
 
+export interface ProjectMember {
+  id: string;
+  name: string;
+  email: string;
+  role: ProjectRole;
+}
+
 export interface ProjectAnalytics {
   projectId: string;
   projectName: string;
   caseCode: string;
+  projectType: ProjectType;
+  lastActivityDate: string;
   
   // Team composition
   teamSize: number;
   membersByRole: { role: ProjectRole; count: number }[];
+  members: ProjectMember[];
   
   // Interviewer stats
   totalInterviewers: number;
@@ -160,6 +171,17 @@ export async function getProjectAnalytics(projectId: string): Promise<ProjectAna
     { role: 'viewer', count: memberships.filter(m => m.role === 'viewer').length }
   ];
   
+  // Get member details
+  const members: ProjectMember[] = memberships.map(m => {
+    const user = getUserById(m.userId);
+    return {
+      id: m.userId,
+      name: user?.name || 'Unknown',
+      email: user?.email || '',
+      role: m.role
+    };
+  });
+  
   // Get interviewers
   const interviewers = getInterviewersForProject(projectId);
   
@@ -187,6 +209,14 @@ export async function getProjectAnalytics(projectId: string): Promise<ProjectAna
   const totalDurationSec = allSessions.reduce((sum, s) => sum + (s.durationSec || 0), 0);
   const avgDurationSec = allSessions.length > 0 ? totalDurationSec / allSessions.length : 0;
   
+  // Find last activity date (most recent session or project update)
+  const sortedSessions = [...allSessions].sort((a, b) => 
+    new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime()
+  );
+  const lastActivityDate = sortedSessions.length > 0 
+    ? sortedSessions[0].startedAt 
+    : project.updatedAt;
+  
   // Generate sessions by day (last 14 days)
   const sessionsByDay: { date: string; live: number; test: number }[] = [];
   const today = new Date();
@@ -205,8 +235,11 @@ export async function getProjectAnalytics(projectId: string): Promise<ProjectAna
     projectId: project.id,
     projectName: project.name,
     caseCode: project.caseCode,
+    projectType: project.projectType,
+    lastActivityDate,
     teamSize: memberships.length,
     membersByRole,
+    members,
     totalInterviewers: interviewers.length,
     interviewersByStatus,
     interviewersByChannel,
