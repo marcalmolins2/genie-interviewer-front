@@ -102,7 +102,7 @@ export default function AdminAnalytics() {
         {/* System Overview Tab */}
         <TabsContent value="system" className="space-y-6 mt-6">
           {/* Stats Cards */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Projects</CardTitle>
@@ -137,15 +137,6 @@ export default function AdminAnalytics() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{systemAnalytics?.overview.activeUsers}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Completion</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{systemAnalytics?.overview.completionRate}%</div>
               </CardContent>
             </Card>
           </div>
@@ -254,7 +245,7 @@ export default function AdminAnalytics() {
           {projectAnalytics && (
             <>
               {/* Project Stats */}
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <div className="grid gap-4 md:grid-cols-3">
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Team Size</CardTitle>
@@ -295,16 +286,6 @@ export default function AdminAnalytics() {
                   <CardContent>
                     <div className="text-2xl font-bold">{projectAnalytics.liveSessions}</div>
                     <p className="text-xs text-muted-foreground">{projectAnalytics.testSessions} test sessions</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Completion Rate</CardTitle>
-                    <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{projectAnalytics.completionRate.toFixed(1)}%</div>
-                    <Progress value={projectAnalytics.completionRate} className="h-1.5 mt-2" />
                   </CardContent>
                 </Card>
               </div>
