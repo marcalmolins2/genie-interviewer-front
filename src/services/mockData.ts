@@ -56,6 +56,7 @@ export const mockProjects: Project[] = [
     caseCode: 'BCG-2024-001',
     name: 'Retail Transformation Study',
     description: 'Customer experience research for major retail client',
+    projectType: 'client_work',
     createdAt: '2024-06-01T10:00:00Z',
     updatedAt: '2024-12-01T10:00:00Z'
   },
@@ -64,6 +65,7 @@ export const mockProjects: Project[] = [
     caseCode: 'BCG-2024-002',
     name: 'Healthcare Innovation',
     description: 'Expert interviews for healthcare technology assessment',
+    projectType: 'commercial_proposal',
     createdAt: '2024-07-15T10:00:00Z',
     updatedAt: '2024-11-20T10:00:00Z'
   },
@@ -72,6 +74,7 @@ export const mockProjects: Project[] = [
     caseCode: 'BCG-2024-003',
     name: 'Financial Services DD',
     description: 'Due diligence interviews for fintech acquisition',
+    projectType: 'client_investment',
     createdAt: '2024-08-20T10:00:00Z',
     updatedAt: '2024-12-05T10:00:00Z'
   }
