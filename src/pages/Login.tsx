@@ -19,12 +19,13 @@ export default function Login() {
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       // In real implementation, this would integrate with Okta Sign-In Widget
-      // For demo purposes, we'll simulate successful login
+      // For demo purposes, we'll simulate successful login with admin access
       localStorage.setItem('user', JSON.stringify({
         id: 'user-1',
         email: 'consultant@bcg.com',
         name: 'Sarah Chen',
-        organizationId: 'bcg-lumen'
+        organizationId: 'bcg-lumen',
+        isAdmin: true // Mock admin access for demo
       }));
       
       navigate('/app/agents');
