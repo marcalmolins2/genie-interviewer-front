@@ -170,58 +170,27 @@ export default function AdminAnalytics() {
               </CardContent>
             </Card>
 
+            {/* Archetype Usage */}
             <Card>
               <CardHeader>
-                <CardTitle>By Channel</CardTitle>
-                <CardDescription>Session distribution</CardDescription>
+                <CardTitle>By Archetype</CardTitle>
+                <CardDescription>Sessions per archetype</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="h-[280px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={systemAnalytics?.usageByChannel}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={55}
-                        outerRadius={90}
-                        paddingAngle={2}
-                        dataKey="count"
-                        nameKey="channel"
-                        label={({ channel, percentage }) => `${channel}: ${percentage}%`}
-                      >
-                        {systemAnalytics?.usageByChannel.map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
+                    <BarChart data={systemAnalytics?.usageByArchetype} layout="vertical" margin={{ left: 100 }}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" horizontal vertical={false} />
+                      <XAxis type="number" className="text-xs" />
+                      <YAxis type="category" dataKey="archetype" className="text-xs" width={100} />
                       <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} />
-                    </PieChart>
+                      <Bar dataKey="count" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+                    </BarChart>
                   </ResponsiveContainer>
                 </div>
               </CardContent>
             </Card>
           </div>
-
-          {/* Archetype Usage */}
-          <Card>
-            <CardHeader>
-              <CardTitle>By Archetype</CardTitle>
-              <CardDescription>Sessions per archetype</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={systemAnalytics?.usageByArchetype} layout="vertical" margin={{ left: 100 }}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" horizontal vertical={false} />
-                    <XAxis type="number" className="text-xs" />
-                    <YAxis type="category" dataKey="archetype" className="text-xs" width={100} />
-                    <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} />
-                    <Bar dataKey="count" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
         </TabsContent>
 
         {/* Per Project Tab */}
@@ -290,49 +259,26 @@ export default function AdminAnalytics() {
                 </Card>
               </div>
 
-              {/* Duration & Activity Row */}
-              <div className="grid gap-6 lg:grid-cols-3">
+              {/* Duration Metrics */}
+              <div className="grid gap-6">
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-base">Duration Metrics</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">Avg Duration</span>
+                  <CardContent className="flex gap-8">
+                    <div className="flex items-center gap-3">
+                      <Clock className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">Avg Duration</p>
+                        <p className="text-xl font-bold">{formatDuration(projectAnalytics.avgDurationSec)}</p>
                       </div>
-                      <span className="font-medium">{formatDuration(projectAnalytics.avgDurationSec)}</span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">Total Time</span>
+                    <div className="flex items-center gap-3">
+                      <Clock className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">Total Time</p>
+                        <p className="text-xl font-bold">{projectAnalytics.totalDurationHours.toFixed(1)}h</p>
                       </div>
-                      <span className="font-medium">{projectAnalytics.totalDurationHours.toFixed(1)}h</span>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="lg:col-span-2">
-                  <CardHeader>
-                    <CardTitle className="text-base">Sessions by Channel</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {projectAnalytics.interviewersByChannel.map(c => {
-                        const total = projectAnalytics.totalInterviewers;
-                        const pct = total > 0 ? (c.count / total) * 100 : 0;
-                        return (
-                          <div key={c.channel}>
-                            <div className="flex justify-between text-sm mb-1">
-                              <span className="capitalize">{c.channel.replace('_', ' ')}</span>
-                              <span>{c.count} interviewer{c.count !== 1 ? 's' : ''}</span>
-                            </div>
-                            <Progress value={pct} className="h-2" />
-                          </div>
-                        );
-                      })}
                     </div>
                   </CardContent>
                 </Card>
