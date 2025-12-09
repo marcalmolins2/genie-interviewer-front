@@ -257,6 +257,145 @@ export async function getProjectAnalytics(projectId: string): Promise<ProjectAna
   };
 }
 
+// ============= User Analytics Types =============
+
+export interface UserProjectDetail {
+  projectId: string;
+  projectName: string;
+  caseCode: string;
+  role: ProjectRole;
+  sessionCount: number; // Live sessions only
+}
+
+export interface UserAnalytics {
+  userId: string;
+  userName: string;
+  email: string;
+  isActive: boolean;
+  
+  // Projects
+  totalProjects: number;
+  projectsByRole: { role: ProjectRole; count: number }[];
+  projects: UserProjectDetail[]; // For collapsible list
+  
+  // Session metrics (live only across all accessible projects)
+  completedLiveSessions: number;
+  totalDurationMinutes: number;
+  avgDurationMinutes: number;
+  
+  // Activity
+  lastActivityDate: string;
+  sessionsByDay: { date: string; live: number; test: number }[];
+}
+
+export interface UserListItem {
+  id: string;
+  name: string;
+  email: string;
+  isActive: boolean;
+}
+
+// Get list of all users for selector
+export async function getUserList(): Promise<UserListItem[]> {
+  await new Promise(resolve => setTimeout(resolve, 200));
+  return mockUsers.map(u => ({
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    isActive: u.isActive
+  }));
+}
+
+// Get analytics for a specific user
+export async function getUserAnalytics(userId: string): Promise<UserAnalytics | null> {
+  await new Promise(resolve => setTimeout(resolve, 400));
+  
+  const user = mockUsers.find(u => u.id === userId);
+  if (!user) return null;
+  
+  // Get all project memberships for this user
+  const memberships = mockProjectMemberships.filter(m => m.userId === userId);
+  
+  // Projects by role
+  const projectsByRole: { role: ProjectRole; count: number }[] = [
+    { role: 'owner', count: memberships.filter(m => m.role === 'owner').length },
+    { role: 'editor', count: memberships.filter(m => m.role === 'editor').length },
+    { role: 'viewer', count: memberships.filter(m => m.role === 'viewer').length }
+  ];
+  
+  // Get detailed project info with session counts
+  const projectDetails: UserProjectDetail[] = [];
+  let allLiveSessions: typeof mockSessions = [];
+  let allTestSessions: typeof mockSessions = [];
+  
+  for (const membership of memberships) {
+    const project = mockProjects.find(p => p.id === membership.projectId);
+    if (!project) continue;
+    
+    // Get all interviewers for this project
+    const interviewers = getInterviewersForProject(project.id);
+    
+    // Get all sessions for these interviewers
+    const projectSessions = interviewers.flatMap(i => getSessionsForInterviewer(i.id));
+    const liveSessions = projectSessions.filter(s => s.conversationType === 'live' && s.completed);
+    const testSessions = projectSessions.filter(s => s.conversationType === 'test');
+    
+    allLiveSessions = [...allLiveSessions, ...liveSessions];
+    allTestSessions = [...allTestSessions, ...testSessions];
+    
+    projectDetails.push({
+      projectId: project.id,
+      projectName: project.name,
+      caseCode: project.caseCode,
+      role: membership.role,
+      sessionCount: liveSessions.length
+    });
+  }
+  
+  // Calculate total metrics
+  const totalDurationSec = allLiveSessions.reduce((sum, s) => sum + (s.durationSec || 0), 0);
+  const totalDurationMinutes = totalDurationSec / 60;
+  const avgDurationMinutes = allLiveSessions.length > 0 ? totalDurationMinutes / allLiveSessions.length : 0;
+  
+  // Find last activity date
+  const allSessions = [...allLiveSessions, ...allTestSessions];
+  const sortedSessions = [...allSessions].sort((a, b) => 
+    new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime()
+  );
+  const lastActivityDate = sortedSessions.length > 0 
+    ? sortedSessions[0].startedAt 
+    : new Date().toISOString();
+  
+  // Generate sessions by day (last 14 days)
+  const sessionsByDay: { date: string; live: number; test: number }[] = [];
+  const today = new Date();
+  for (let i = 13; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    const dateStr = date.toISOString().split('T')[0];
+    
+    const dayLive = allLiveSessions.filter(s => s.startedAt.startsWith(dateStr)).length;
+    const dayTest = allTestSessions.filter(s => s.startedAt.startsWith(dateStr)).length;
+    
+    sessionsByDay.push({ date: dateStr, live: dayLive, test: dayTest });
+  }
+  
+  return {
+    userId: user.id,
+    userName: user.name,
+    email: user.email,
+    isActive: user.isActive,
+    totalProjects: memberships.length,
+    projectsByRole,
+    projects: projectDetails,
+    completedLiveSessions: allLiveSessions.length,
+    totalDurationMinutes,
+    avgDurationMinutes,
+    lastActivityDate,
+    sessionsByDay
+  };
+}
+
 // ============= System Overview Analytics (existing) =============
 
 export interface AnalyticsOverview {
