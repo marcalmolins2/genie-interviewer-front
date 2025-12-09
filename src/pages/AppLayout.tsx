@@ -18,16 +18,19 @@ import {
   Settings, 
   LogOut,
   Menu,
-  X
+  X,
+  Shield
 } from 'lucide-react';
 import { User as UserType } from '@/types';
 import { ChatBot } from '@/components/ChatBot';
+import { useIsAdmin } from '@/hooks/useIsAdmin';
 
 export default function AppLayout() {
   const [user, setUser] = useState<UserType | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { isAdmin } = useIsAdmin();
 
   useEffect(() => {
     // Check if user is authenticated
@@ -74,7 +77,15 @@ export default function AppLayout() {
           </div>
 
           <div className="flex items-center gap-4">
-
+            {/* Admin Link - only visible to admins */}
+            {isAdmin && (
+              <Button variant="outline" size="sm" asChild className="hidden md:flex">
+                <Link to="/app/admin">
+                  <Shield className="h-4 w-4 mr-2" />
+                  Admin
+                </Link>
+              </Button>
+            )}
 
             {/* Mobile Menu Button */}
             <Button

@@ -18,6 +18,10 @@ import EditAgent from "./pages/EditAgent";
 import AgentAnalyze from "./pages/AgentAnalyze";
 import SessionDetail from "./pages/SessionDetail";
 import NotFound from "./pages/NotFound";
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminArchetypes from "./pages/admin/AdminArchetypes";
+import AdminAnalytics from "./pages/admin/AdminAnalytics";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +47,12 @@ const App = () => (
             <Route path="agents/:agentId/edit" element={<EditAgent />} />
             <Route path="agents/:agentId/analyze" element={<AgentAnalyze />} />
             <Route path="agents/:agentId/sessions/:sessionId" element={<SessionDetail />} />
+            {/* Admin Routes */}
+            <Route path="admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="archetypes" element={<AdminArchetypes />} />
+              <Route path="analytics" element={<AdminAnalytics />} />
+            </Route>
           </Route>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
