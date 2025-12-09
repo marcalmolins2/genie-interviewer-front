@@ -1,74 +1,134 @@
-// Core Types for Genie Interviewers
+// ============= Core Tenancy Model =============
 
-export type AgentStatus = 'live' | 'ready_to_test' | 'suspended' | 'finished';
+// Roles
+export type ProjectRole = 'owner' | 'editor' | 'viewer';
+export type InterviewerRole = 'owner' | 'editor' | 'viewer' | 'none';
+
+// Interviewer status lifecycle
+export type InterviewerStatus = 'draft' | 'ready_to_test' | 'launching' | 'published' | 'unpublished' | 'archived' | 'deleted' | 'active';
+
+// Session types
+export type ConversationType = 'test' | 'live';
+
+// Channel types
 export type Channel = 'chat' | 'inbound_call' | 'outbound_call';
+
+// Archetype types
 export type Archetype = 'expert_deep_dive' | 'client_stakeholder' | 'customer_user' | 'rapid_survey' | 'diagnostic' | 'investigative' | 'panel_moderator';
 
-// Agent permission types
-export type AgentPermission = 'viewer' | 'editor' | 'owner';
+// ============= Core Entities =============
 
-export interface AgentCollaborator {
+/**
+ * User - BCG employee identity
+ */
+export interface User {
   id: string;
-  agentId: string;
-  userId: string;
-  user: {
-    id: string;
-    email: string;
-    name: string;
-    avatar?: string;
-    department?: string;
-  };
-  permission: AgentPermission;
-  invitedBy?: string;
+  email: string;
+  name: string;
+  avatar?: string;
+  isActive: boolean; // System access approved
+  isSuperuser: boolean; // System admin
   createdAt: string;
   updatedAt: string;
 }
 
-// Permission descriptions for UI
-export const AGENT_PERMISSIONS: Record<AgentPermission, {
-  label: string;
-  description: string;
-  capabilities: string[];
-}> = {
-  viewer: {
-    label: 'Viewer',
-    description: 'View configuration and insights only',
-    capabilities: ['View agent configuration', 'View interview insights', 'View analytics']
-  },
-  editor: {
-    label: 'Editor',
-    description: 'Edit agent configuration',
-    capabilities: ['All Viewer capabilities', 'Edit agent configuration', 'Manage interview guide', 'Manage knowledge base']
-  },
-  owner: {
-    label: 'Owner',
-    description: 'Full control over agent',
-    capabilities: ['All Editor capabilities', 'Invite/remove collaborators', 'Change permissions', 'Archive or delete agent', 'Transfer ownership']
-  }
-};
-export interface Agent {
+/**
+ * Project - Logical grouping of interviewers (e.g., a case/engagement)
+ */
+export interface Project {
   id: string;
+  caseCode: string;
+  name: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * ProjectMembership - Links user to project with role
+ */
+export interface ProjectMembership {
+  id: string;
+  userId: string;
+  projectId: string;
+  role: ProjectRole;
+  createdAt: string;
+  updatedAt: string;
+  // Populated relations
+  user?: User;
+  project?: Project;
+}
+
+/**
+ * Interviewer - AI interviewer agent configuration
+ */
+export interface Interviewer {
+  id: string;
+  projectId: string;
   name: string;
   archetype: Archetype;
-  createdAt: string; // ISO
-  status: AgentStatus;
-  language: string; // e.g., 'en', 'es', 'de'
-  voiceId?: string; // optional for chat
+  status: InterviewerStatus;
   channel: Channel;
-  interviewsCount: number;
-  pricePerInterviewUsd: number; // computed from channel
+  language: string;
+  voiceId?: string;
   contact: { phoneNumber?: string; chatUrl?: string; chatPassword?: string };
-  credentialsReady: boolean; // to show when phone/url is generated
-  deletedAt?: string; // ISO timestamp when moved to trash
-  archivedAt?: string; // ISO timestamp when archived
-  hasActiveCall?: boolean; // true when an interview call is in progress
+  credentialsReady: boolean;
+  targetDurationMin?: number;
+  createdAt: string;
+  updatedAt: string;
+  // Populated relations
+  project?: Project;
+  sessionsCount?: number;
 }
+
+/**
+ * InterviewerMembership - Optional override of user's project-level access
+ */
+export interface InterviewerMembership {
+  id: string;
+  userId: string;
+  interviewerId: string;
+  role: InterviewerRole; // 'none' = explicitly revoke access
+  createdAt: string;
+  updatedAt: string;
+  // Populated relations
+  user?: User;
+  interviewer?: Interviewer;
+}
+
+/**
+ * Session - A conversation/interview instance
+ */
+export interface Session {
+  id: string;
+  interviewerId: string;
+  conversationType: ConversationType;
+  startedAt: string;
+  endedAt?: string;
+  durationSec?: number;
+  completed: boolean;
+  respondentId?: string;
+  createdAt: string;
+  // Populated relations
+  interviewer?: Interviewer;
+  transcript?: CleanedTranscript;
+}
+
+// ============= Interview Content Types =============
 
 export interface InterviewGuide {
   id: string;
-  agentId: string;
+  agentId?: string; // Legacy
+  interviewerId?: string; // New model
   rawText?: string;
   structured?: GuideSchema;
+  // New model fields
+  introduction?: string;
+  closingContext?: string;
+  hasScreener?: boolean;
+  screenerQuestions?: string;
+  introductionQuestions?: string;
+  guideContent?: string; // Rich text with sections
 }
 
 export interface GuideSchema {
@@ -81,9 +141,9 @@ export interface GuideSchema {
       type: 'open' | 'scale' | 'multi' | 'single';
       prompt: string;
       required?: boolean;
-      options?: string[]; // for multi/single
+      options?: string[];
       scale?: { min: number; max: number; labels?: Record<number, string> };
-      followUps?: string[]; // dynamic prompts
+      followUps?: string[];
     }[];
   }[];
   closing?: string;
@@ -91,7 +151,8 @@ export interface GuideSchema {
 
 export interface KnowledgeAsset {
   id: string;
-  agentId: string;
+  agentId?: string; // Legacy
+  interviewerId?: string; // New model
   title: string;
   type: 'text' | 'file';
   contentText?: string;
@@ -99,58 +160,7 @@ export interface KnowledgeAsset {
   fileSize?: number;
 }
 
-export interface AudienceUpload {
-  id: string;
-  agentId: string;
-  fileName: string;
-  status: 'processing' | 'ready' | 'error';
-  totalContacts?: number;
-  errors?: string[];
-}
-
-export interface Share {
-  agentId: string;
-  users: { email: string; role: 'owner' | 'editor' | 'viewer' }[];
-}
-
-export interface InterviewSummary {
-  id: string;
-  agentId: string;
-  startedAt: string;
-  durationSec: number;
-  channel: Channel;
-  completed: boolean;
-  respondentId?: string;
-}
-
-export interface ArchetypeInfo {
-  id: Archetype;
-  title: string;
-  description: string;
-  icon: string;
-  useCase: string;
-  examples: string[];
-}
-
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  avatar?: string;
-  organizationId: string;
-}
-
-// Session-level insights types
-export interface SessionDetail {
-  id: string;
-  agentId: string;
-  startedAt: string;
-  durationSec: number;
-  completed: boolean;
-  respondentId?: string;
-  channel: Channel;
-  transcript: CleanedTranscript;
-}
+// ============= Transcript & Insights Types =============
 
 export interface CleanedTranscript {
   sections: TranscriptSection[];
@@ -184,14 +194,71 @@ export interface QAMessage {
   timestamp: string;
 }
 
-// Pricing constants
+// ============= Archetype Types =============
+
+export interface ArchetypeInfo {
+  id: Archetype;
+  title: string;
+  description: string;
+  icon: string;
+  useCase: string;
+  examples: string[];
+}
+
+// ============= Permission Descriptions =============
+
+export const PROJECT_ROLES: Record<ProjectRole, {
+  label: string;
+  description: string;
+  capabilities: string[];
+}> = {
+  viewer: {
+    label: 'Viewer',
+    description: 'View project and interviewer data only',
+    capabilities: ['View all interviewers', 'View session insights', 'View analytics']
+  },
+  editor: {
+    label: 'Editor',
+    description: 'Edit interviewers within the project',
+    capabilities: ['All Viewer capabilities', 'Create/edit interviewers', 'Manage interview guides', 'Manage knowledge base']
+  },
+  owner: {
+    label: 'Owner',
+    description: 'Full control over project',
+    capabilities: ['All Editor capabilities', 'Invite/remove members', 'Change permissions', 'Archive or delete project']
+  }
+};
+
+export const INTERVIEWER_ROLES: Record<InterviewerRole, {
+  label: string;
+  description: string;
+}> = {
+  owner: {
+    label: 'Owner',
+    description: 'Full control over this interviewer'
+  },
+  editor: {
+    label: 'Editor',
+    description: 'Can edit this interviewer'
+  },
+  viewer: {
+    label: 'Viewer',
+    description: 'Can only view this interviewer'
+  },
+  none: {
+    label: 'No Access',
+    description: 'Explicitly revoked access to this interviewer'
+  }
+};
+
+// ============= Constants =============
+
 export const PRICE_BY_CHANNEL: Record<Channel, number> = {
   chat: 10,
   inbound_call: 20,
   outbound_call: 30,
 };
 
-// Archetype definitions
 export const ARCHETYPES: ArchetypeInfo[] = [
   {
     id: 'expert_deep_dive',
@@ -250,3 +317,101 @@ export const ARCHETYPES: ArchetypeInfo[] = [
     examples: ['Focus groups', 'Workshop facilitation', 'Group ideation sessions']
   }
 ];
+
+// ============= Legacy Compatibility (to be removed) =============
+
+// Keep Agent type as alias for Interviewer during migration
+export type AgentStatus = 'live' | 'ready_to_test' | 'suspended' | 'finished';
+export type AgentPermission = 'viewer' | 'editor' | 'owner';
+
+export interface Agent {
+  id: string;
+  name: string;
+  archetype: Archetype;
+  createdAt: string;
+  status: AgentStatus;
+  language: string;
+  voiceId?: string;
+  channel: Channel;
+  interviewsCount: number;
+  pricePerInterviewUsd: number;
+  contact: { phoneNumber?: string; chatUrl?: string; chatPassword?: string };
+  credentialsReady: boolean;
+  deletedAt?: string;
+  archivedAt?: string;
+  hasActiveCall?: boolean;
+}
+
+export interface AgentCollaborator {
+  id: string;
+  agentId: string;
+  userId: string;
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    avatar?: string;
+    department?: string;
+  };
+  permission: AgentPermission;
+  invitedBy?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const AGENT_PERMISSIONS: Record<AgentPermission, {
+  label: string;
+  description: string;
+  capabilities: string[];
+}> = {
+  viewer: {
+    label: 'Viewer',
+    description: 'View configuration and insights only',
+    capabilities: ['View agent configuration', 'View interview insights', 'View analytics']
+  },
+  editor: {
+    label: 'Editor',
+    description: 'Edit agent configuration',
+    capabilities: ['All Viewer capabilities', 'Edit agent configuration', 'Manage interview guide', 'Manage knowledge base']
+  },
+  owner: {
+    label: 'Owner',
+    description: 'Full control over agent',
+    capabilities: ['All Editor capabilities', 'Invite/remove collaborators', 'Change permissions', 'Archive or delete agent', 'Transfer ownership']
+  }
+};
+
+export interface InterviewSummary {
+  id: string;
+  agentId: string;
+  startedAt: string;
+  durationSec: number;
+  channel: Channel;
+  completed: boolean;
+  respondentId?: string;
+}
+
+export interface AudienceUpload {
+  id: string;
+  agentId: string;
+  fileName: string;
+  status: 'processing' | 'ready' | 'error';
+  totalContacts?: number;
+  errors?: string[];
+}
+
+export interface Share {
+  agentId: string;
+  users: { email: string; role: 'owner' | 'editor' | 'viewer' }[];
+}
+
+export interface SessionDetail {
+  id: string;
+  agentId: string;
+  startedAt: string;
+  durationSec: number;
+  completed: boolean;
+  respondentId?: string;
+  channel: Channel;
+  transcript: CleanedTranscript;
+}
