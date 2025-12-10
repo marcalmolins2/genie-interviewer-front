@@ -265,6 +265,17 @@ export interface UserProjectDetail {
   caseCode: string;
   role: ProjectRole;
   sessionCount: number; // Live sessions only
+  interviewerCount: number;
+}
+
+export interface UserInterviewerDetail {
+  interviewerId: string;
+  interviewerName: string;
+  projectName: string;
+  caseCode: string;
+  status: string;
+  channel: string;
+  sessionCount: number; // Live sessions only
 }
 
 export interface UserAnalytics {
@@ -277,6 +288,10 @@ export interface UserAnalytics {
   totalProjects: number;
   projectsByRole: { role: ProjectRole; count: number }[];
   projects: UserProjectDetail[]; // For collapsible list
+  
+  // Interviewers
+  totalInterviewers: number;
+  interviewers: UserInterviewerDetail[]; // For collapsible list
   
   // Session metrics (live only across all accessible projects)
   completedLiveSessions: number;
@@ -325,6 +340,7 @@ export async function getUserAnalytics(userId: string): Promise<UserAnalytics | 
   
   // Get detailed project info with session counts
   const projectDetails: UserProjectDetail[] = [];
+  const interviewerDetails: UserInterviewerDetail[] = [];
   let allLiveSessions: typeof mockSessions = [];
   let allTestSessions: typeof mockSessions = [];
   
@@ -343,12 +359,29 @@ export async function getUserAnalytics(userId: string): Promise<UserAnalytics | 
     allLiveSessions = [...allLiveSessions, ...liveSessions];
     allTestSessions = [...allTestSessions, ...testSessions];
     
+    // Add interviewer details
+    for (const interviewer of interviewers) {
+      const interviewerSessions = getSessionsForInterviewer(interviewer.id);
+      const interviewerLiveSessions = interviewerSessions.filter(s => s.conversationType === 'live' && s.completed);
+      
+      interviewerDetails.push({
+        interviewerId: interviewer.id,
+        interviewerName: interviewer.name,
+        projectName: project.name,
+        caseCode: project.caseCode,
+        status: interviewer.status,
+        channel: interviewer.channel,
+        sessionCount: interviewerLiveSessions.length
+      });
+    }
+    
     projectDetails.push({
       projectId: project.id,
       projectName: project.name,
       caseCode: project.caseCode,
       role: membership.role,
-      sessionCount: liveSessions.length
+      sessionCount: liveSessions.length,
+      interviewerCount: interviewers.length
     });
   }
   
@@ -388,6 +421,8 @@ export async function getUserAnalytics(userId: string): Promise<UserAnalytics | 
     totalProjects: memberships.length,
     projectsByRole,
     projects: projectDetails,
+    totalInterviewers: interviewerDetails.length,
+    interviewers: interviewerDetails,
     completedLiveSessions: allLiveSessions.length,
     totalDurationMinutes,
     avgDurationMinutes,

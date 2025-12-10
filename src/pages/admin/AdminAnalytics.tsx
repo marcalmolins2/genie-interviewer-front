@@ -95,6 +95,7 @@ export default function AdminAnalytics() {
   const [userAnalytics, setUserAnalytics] = useState<UserAnalytics | null>(null);
   const [userSelectorOpen, setUserSelectorOpen] = useState(false);
   const [userProjectsOpen, setUserProjectsOpen] = useState(false);
+  const [userInterviewersOpen, setUserInterviewersOpen] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -513,8 +514,8 @@ export default function AdminAnalytics() {
                 </div>
               </div>
 
-              {/* Metrics Cards */}
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {/* Metrics Cards - Row 1: Projects and Interviewers */}
+              <div className="grid gap-4 md:grid-cols-2">
                 {/* Projects with Collapsible */}
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -535,7 +536,7 @@ export default function AdminAnalytics() {
                               <span className="text-xs text-muted-foreground font-mono">{project.caseCode}</span>
                             </div>
                             <div className="flex items-center gap-2 shrink-0">
-                              <span className="text-xs text-muted-foreground">{project.sessionCount} sessions</span>
+                              <span className="text-xs text-muted-foreground">{project.interviewerCount} interviewers</span>
                               <Badge 
                                 variant="outline" 
                                 className={`text-xs capitalize ${ROLE_COLORS[project.role] || ''}`}
@@ -550,6 +551,44 @@ export default function AdminAnalytics() {
                   </CardContent>
                 </Card>
 
+                {/* Interviewers with Collapsible */}
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Interviewers</CardTitle>
+                    <Shapes className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <Collapsible open={userInterviewersOpen} onOpenChange={setUserInterviewersOpen}>
+                      <CollapsibleTrigger className="flex items-center gap-2 w-full group">
+                        <span className="text-3xl font-bold">{userAnalytics.totalInterviewers}</span>
+                        <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${userInterviewersOpen ? 'rotate-180' : ''}`} />
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="mt-3 space-y-2 max-h-48 overflow-y-auto">
+                        {userAnalytics.interviewers.map(interviewer => (
+                          <div key={interviewer.interviewerId} className="flex items-center justify-between text-sm gap-2">
+                            <div className="flex-1 min-w-0">
+                              <span className="text-foreground truncate block">{interviewer.interviewerName}</span>
+                              <span className="text-xs text-muted-foreground">{interviewer.projectName}</span>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className="text-xs text-muted-foreground">{interviewer.sessionCount} sessions</span>
+                              <Badge 
+                                variant="outline" 
+                                className="text-xs capitalize"
+                              >
+                                {interviewer.status}
+                              </Badge>
+                            </div>
+                          </div>
+                        ))}
+                      </CollapsibleContent>
+                    </Collapsible>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Metrics Cards - Row 2: Sessions */}
+              <div className="grid gap-4 md:grid-cols-3">
                 {/* Sessions Completed */}
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
