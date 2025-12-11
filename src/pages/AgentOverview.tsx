@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { 
+import { useState, useEffect } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -14,11 +14,11 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { AgentStatusBadge } from '@/components/AgentStatusBadge';
-import { ShareAgentDialog } from '@/components/ShareAgentDialog';
-import { useAgentPermission } from '@/hooks/useAgentPermission';
-import { 
+} from "@/components/ui/dialog";
+import { AgentStatusBadge } from "@/components/AgentStatusBadge";
+import { ShareAgentDialog } from "@/components/ShareAgentDialog";
+import { useAgentPermission } from "@/hooks/useAgentPermission";
+import {
   ArrowLeft,
   Edit,
   Play,
@@ -40,17 +40,12 @@ import {
   ChevronDown,
   ChevronRight,
   Eye,
-  AlertCircle
-} from 'lucide-react';
-import { Agent, InterviewGuide, KnowledgeAsset } from '@/types';
-import { agentsService } from '@/services/agents';
-import { useToast } from '@/hooks/use-toast';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+  AlertCircle,
+} from "lucide-react";
+import { Agent, InterviewGuide, KnowledgeAsset } from "@/types";
+import { agentsService } from "@/services/agents";
+import { useToast } from "@/hooks/use-toast";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function AgentOverview() {
   const { agentId } = useParams<{ agentId: string }>();
@@ -62,21 +57,21 @@ export default function AgentOverview() {
   const [expandedSections, setExpandedSections] = useState<Set<number>>(new Set());
   const [deployDialogOpen, setDeployDialogOpen] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
-  const [caseCode, setCaseCode] = useState('');
+  const [caseCode, setCaseCode] = useState("");
   const [isDeploying, setIsDeploying] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  
+
   // Use the permissions hook
-  const { 
-    permission, 
-    collaborators, 
-    isOwner, 
-    canEdit, 
+  const {
+    permission,
+    collaborators,
+    isOwner,
+    canEdit,
     canManageCollaborators,
     canArchive,
     loading: permissionLoading,
-    reload: reloadPermissions
+    reload: reloadPermissions,
   } = useAgentPermission(agentId);
 
   useEffect(() => {
@@ -89,21 +84,21 @@ export default function AgentOverview() {
 
   const loadAgent = async () => {
     if (!agentId) return;
-    
+
     try {
       const data = await agentsService.getAgent(agentId);
       if (data) {
         setAgent(data);
       } else {
-        navigate('/app/agents');
+        navigate("/app/agents");
       }
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to load agent details.',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to load agent details.",
+        variant: "destructive",
       });
-      navigate('/app/agents');
+      navigate("/app/agents");
     } finally {
       setLoading(false);
     }
@@ -111,69 +106,69 @@ export default function AgentOverview() {
 
   const loadStats = async () => {
     if (!agentId) return;
-    
+
     try {
       const data = await agentsService.getAgentStats(agentId);
       setStats(data);
     } catch (error) {
-      console.error('Failed to load stats:', error);
+      console.error("Failed to load stats:", error);
     }
   };
 
   const loadGuideAndKnowledge = async () => {
     if (!agentId) return;
-    
+
     try {
       const [guideData, knowledgeData] = await Promise.all([
         agentsService.getAgentGuide(agentId),
-        agentsService.getAgentKnowledge(agentId)
+        agentsService.getAgentKnowledge(agentId),
       ]);
       setGuide(guideData);
       setKnowledge(knowledgeData);
     } catch (error) {
-      console.error('Failed to load guide and knowledge:', error);
+      console.error("Failed to load guide and knowledge:", error);
     }
   };
 
   const handleActivate = async () => {
     if (!agent) return;
-    
+
     try {
       const updatedAgent = await agentsService.activateAgent(agent.id);
       setAgent(updatedAgent);
-      
+
       toast({
-        title: 'Success',
-        description: 'Agent activated successfully.',
+        title: "Success",
+        description: "Agent activated successfully.",
       });
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to activate agent.',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to activate agent.",
+        variant: "destructive",
       });
     }
   };
 
   const handleDeploy = async () => {
     if (!agent || !caseCode.trim()) return;
-    
+
     setIsDeploying(true);
     try {
       await agentsService.deployAgent(agent.id, caseCode);
-      setAgent(prev => prev ? { ...prev, status: 'live' } : null);
+      setAgent((prev) => (prev ? { ...prev, status: "live" } : null));
       setDeployDialogOpen(false);
-      setCaseCode('');
-      
+      setCaseCode("");
+
       toast({
-        title: 'Success',
-        description: 'Agent deployed successfully and is now live!',
+        title: "Success",
+        description: "Agent deployed successfully and is now live!",
       });
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to deploy agent.',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to deploy agent.",
+        variant: "destructive",
       });
     } finally {
       setIsDeploying(false);
@@ -183,13 +178,13 @@ export default function AgentOverview() {
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     toast({
-      title: 'Copied',
+      title: "Copied",
       description: `${label} copied to clipboard.`,
     });
   };
 
   const toggleSection = (sectionIndex: number) => {
-    setExpandedSections(prev => {
+    setExpandedSections((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(sectionIndex)) {
         newSet.delete(sectionIndex);
@@ -215,9 +210,7 @@ export default function AgentOverview() {
       <div className="container py-8">
         <Card className="p-12 text-center">
           <CardTitle className="mb-2">Agent not found</CardTitle>
-          <CardDescription className="mb-6">
-            The requested agent could not be found.
-          </CardDescription>
+          <CardDescription className="mb-6">The requested agent could not be found.</CardDescription>
           <Link to="/app/agents">
             <Button>Back to Agents</Button>
           </Link>
@@ -227,22 +220,21 @@ export default function AgentOverview() {
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
-
 
   return (
     <div className="container py-8 space-y-6">
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate('/app/agents')}>
+          <Button variant="ghost" onClick={() => navigate("/app/agents")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Agents
           </Button>
@@ -250,12 +242,8 @@ export default function AgentOverview() {
             <h1 className="text-3xl font-bold">{agent.name}</h1>
             <div className="flex items-center gap-2 mt-1">
               <AgentStatusBadge status={agent.status} />
-              <Badge variant="outline">
-                {agent.archetype.replace('_', ' ')}
-              </Badge>
-              <Badge variant="outline">
-                {agent.language.toUpperCase()}
-              </Badge>
+              <Badge variant="outline">{agent.archetype.replace("_", " ")}</Badge>
+              <Badge variant="outline">{agent.language.toUpperCase()}</Badge>
             </div>
           </div>
         </div>
@@ -275,9 +263,9 @@ export default function AgentOverview() {
                 <TooltipContent>
                   <p className="flex items-center gap-1">
                     <AlertCircle className="h-3 w-3" />
-                    {agent.hasActiveCall 
-                      ? 'Cannot edit while a call is in progress'
-                      : 'You need Editor or Owner permission to edit'}
+                    {agent.hasActiveCall
+                      ? "Cannot edit while a call is in progress"
+                      : "You need Editor or Owner permission to edit"}
                   </p>
                 </TooltipContent>
               </Tooltip>
@@ -288,8 +276,8 @@ export default function AgentOverview() {
               Edit
             </Button>
           )}
-          
-          {agent.status === 'ready_to_test' && (
+
+          {agent.status === "ready_to_test" && (
             <Dialog open={deployDialogOpen} onOpenChange={setDeployDialogOpen}>
               <DialogTrigger asChild>
                 <Button className="gap-2">
@@ -300,9 +288,7 @@ export default function AgentOverview() {
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Deploy Agent</DialogTitle>
-                  <DialogDescription>
-                    Enter your BCG case code to deploy this agent to production.
-                  </DialogDescription>
+                  <DialogDescription>Enter your BCG case code to deploy this agent to production.</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div>
@@ -317,16 +303,10 @@ export default function AgentOverview() {
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button
-                    variant="outline"
-                    onClick={() => setDeployDialogOpen(false)}
-                  >
+                  <Button variant="outline" onClick={() => setDeployDialogOpen(false)}>
                     Cancel
                   </Button>
-                  <Button
-                    onClick={handleDeploy}
-                    disabled={!caseCode.trim() || isDeploying}
-                  >
+                  <Button onClick={handleDeploy} disabled={!caseCode.trim() || isDeploying}>
                     {isDeploying ? (
                       <>
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
@@ -343,29 +323,26 @@ export default function AgentOverview() {
               </DialogContent>
             </Dialog>
           )}
-          
-          {agent.status === 'suspended' && (
-            <Button
-              size="sm"
-              onClick={handleActivate}
-            >
+
+          {agent.status === "suspended" && (
+            <Button size="sm" onClick={handleActivate}>
               <Play className="h-4 w-4 mr-2" />
               Activate
             </Button>
           )}
-          
+
           <Link to={`/app/agents/${agent.id}/analyze`}>
             <Button variant="outline" size="sm">
               <BarChart3 className="h-4 w-4 mr-2" />
-              Analyze
+              Insights
             </Button>
           </Link>
-          
+
           <Button variant="outline" size="sm">
             <Zap className="h-4 w-4 mr-2" />
             Test Agent
           </Button>
-          
+
           <Button variant="outline" size="sm" onClick={() => setShareDialogOpen(true)}>
             <Share className="h-4 w-4 mr-2" />
             Share
@@ -375,7 +352,7 @@ export default function AgentOverview() {
               </Badge>
             )}
           </Button>
-          
+
           {/* View Only Badge for non-editors */}
           {permission && !canEdit && (
             <Badge variant="secondary" className="flex items-center gap-1">
@@ -393,16 +370,10 @@ export default function AgentOverview() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                {agent.channel === 'chat' ? (
-                  <MessageCircle className="h-5 w-5" />
-                ) : (
-                  <Phone className="h-5 w-5" />
-                )}
+                {agent.channel === "chat" ? <MessageCircle className="h-5 w-5" /> : <Phone className="h-5 w-5" />}
                 Contact Information
               </CardTitle>
-              <CardDescription>
-                How participants access your agent
-              </CardDescription>
+              <CardDescription>How participants access your agent</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {agent.credentialsReady ? (
@@ -416,13 +387,13 @@ export default function AgentOverview() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => copyToClipboard(agent.contact.phoneNumber!, 'Phone number')}
+                        onClick={() => copyToClipboard(agent.contact.phoneNumber!, "Phone number")}
                       >
                         <Copy className="h-4 w-4" />
                       </Button>
                     </div>
                   )}
-                  
+
                   {agent.contact.chatUrl && (
                     <div className="space-y-3">
                       <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
@@ -434,20 +405,20 @@ export default function AgentOverview() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => copyToClipboard(agent.contact.chatUrl!, 'Chat URL')}
+                            onClick={() => copyToClipboard(agent.contact.chatUrl!, "Chat URL")}
                           >
                             <Copy className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => window.open(agent.contact.chatUrl, '_blank')}
+                            onClick={() => window.open(agent.contact.chatUrl, "_blank")}
                           >
                             <ExternalLink className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>
-                      
+
                       {agent.contact.chatPassword && (
                         <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
                           <div>
@@ -457,7 +428,7 @@ export default function AgentOverview() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => copyToClipboard(agent.contact.chatPassword!, 'Password')}
+                            onClick={() => copyToClipboard(agent.contact.chatPassword!, "Password")}
                           >
                             <Copy className="h-4 w-4" />
                           </Button>
@@ -469,9 +440,7 @@ export default function AgentOverview() {
               ) : (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto mb-2"></div>
-                  <p className="text-sm text-muted-foreground">
-                    Generating contact credentials...
-                  </p>
+                  <p className="text-sm text-muted-foreground">Generating contact credentials...</p>
                 </div>
               )}
             </CardContent>
@@ -497,7 +466,7 @@ export default function AgentOverview() {
                           {guide.structured.intro}
                         </p>
                       </div>
-                      
+
                       <div>
                         <h4 className="font-medium text-sm mb-2">Objectives</h4>
                         <ul className="text-sm text-muted-foreground space-y-1">
@@ -509,9 +478,11 @@ export default function AgentOverview() {
                           ))}
                         </ul>
                       </div>
-                      
+
                       <div>
-                        <h4 className="font-medium text-sm mb-2">Interview Sections ({guide.structured.sections.length})</h4>
+                        <h4 className="font-medium text-sm mb-2">
+                          Interview Sections ({guide.structured.sections.length})
+                        </h4>
                         <div className="space-y-2">
                           {guide.structured.sections.map((section, idx) => (
                             <div key={idx} className="border border-border rounded-md overflow-hidden">
@@ -526,12 +497,15 @@ export default function AgentOverview() {
                                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                                 )}
                               </button>
-                              
+
                               {expandedSections.has(idx) && (
                                 <div className="px-3 pb-3 border-t border-border">
                                   <ul className="space-y-2 pt-3">
                                     {section.questions.map((question) => (
-                                      <li key={question.id} className="text-sm text-muted-foreground flex items-start gap-2">
+                                      <li
+                                        key={question.id}
+                                        className="text-sm text-muted-foreground flex items-start gap-2"
+                                      >
                                         <span className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5 flex-shrink-0"></span>
                                         <span>{question.prompt}</span>
                                       </li>
@@ -547,16 +521,11 @@ export default function AgentOverview() {
                   ) : guide.rawText ? (
                     <div>
                       <h4 className="font-medium text-sm mb-2">Raw Guide Text</h4>
-                      <Textarea 
-                        value={guide.rawText} 
-                        readOnly 
-                        className="min-h-[200px] text-sm"
-                      />
+                      <Textarea value={guide.rawText} readOnly className="min-h-[200px] text-sm" />
                     </div>
                   ) : (
                     <p className="text-sm text-muted-foreground">No guide content available</p>
                   )}
-                  
                 </div>
               ) : (
                 <div className="text-center py-4">
@@ -582,7 +551,7 @@ export default function AgentOverview() {
                   {knowledge.map((asset) => (
                     <div key={asset.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                       <div className="flex items-center gap-3">
-                        {asset.type === 'file' ? (
+                        {asset.type === "file" ? (
                           <File className="h-4 w-4 text-muted-foreground" />
                         ) : (
                           <FileText className="h-4 w-4 text-muted-foreground" />
@@ -590,23 +559,23 @@ export default function AgentOverview() {
                         <div>
                           <p className="font-medium text-sm">{asset.title}</p>
                           <p className="text-xs text-muted-foreground">
-                            {asset.type === 'file' && asset.fileName ? (
+                            {asset.type === "file" && asset.fileName ? (
                               <span>
                                 {asset.fileName} • {Math.round((asset.fileSize || 0) / 1024)} KB
                               </span>
                             ) : (
-                              'Text content'
+                              "Text content"
                             )}
                           </p>
                         </div>
                       </div>
-                      {asset.type === 'text' && asset.contentText && (
+                      {asset.type === "text" && asset.contentText && (
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => {
                             // Create a modal or expand to show content
-                            alert(asset.contentText?.substring(0, 200) + '...');
+                            alert(asset.contentText?.substring(0, 200) + "...");
                           }}
                         >
                           View
@@ -614,10 +583,10 @@ export default function AgentOverview() {
                       )}
                     </div>
                   ))}
-                  
+
                   <div className="pt-2 border-t">
                     <p className="text-xs text-muted-foreground text-center">
-                      {knowledge.length} knowledge asset{knowledge.length !== 1 ? 's' : ''} configured
+                      {knowledge.length} knowledge asset{knowledge.length !== 1 ? "s" : ""} configured
                     </p>
                   </div>
                 </div>
@@ -642,32 +611,28 @@ export default function AgentOverview() {
                   <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
                   <div>
                     <p className="font-medium">Agent Created</p>
-                    <p className="text-sm text-muted-foreground">
-                      {formatDate(agent.createdAt)}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{formatDate(agent.createdAt)}</p>
                   </div>
                 </div>
-                
+
                 {agent.credentialsReady && (
                   <div className="flex items-start gap-3">
                     <div className="w-2 h-2 bg-success rounded-full mt-2"></div>
                     <div>
                       <p className="font-medium">Contact Info Generated</p>
                       <p className="text-sm text-muted-foreground">
-                        {agent.channel === 'chat' ? 'Chat URL' : 'Phone number'} provisioned
+                        {agent.channel === "chat" ? "Chat URL" : "Phone number"} provisioned
                       </p>
                     </div>
                   </div>
                 )}
-                
-                {agent.status === 'live' && (
+
+                {agent.status === "live" && (
                   <div className="flex items-start gap-3">
                     <div className="w-2 h-2 bg-success rounded-full mt-2"></div>
                     <div>
                       <p className="font-medium">Deployed to Production</p>
-                      <p className="text-sm text-muted-foreground">
-                        Agent is now accepting interviews
-                      </p>
+                      <p className="text-sm text-muted-foreground">Agent is now accepting interviews</p>
                     </div>
                   </div>
                 )}
@@ -689,24 +654,24 @@ export default function AgentOverview() {
                   <div className="text-2xl font-bold text-primary">{agent.interviewsCount}</div>
                   <div className="text-xs text-muted-foreground">Total Interviews</div>
                 </div>
-                
+
                 <div className="text-center p-3 bg-muted rounded-lg">
-                  <div className="text-2xl font-bold text-primary">${(agent.pricePerInterviewUsd * agent.interviewsCount).toFixed(2)}</div>
+                  <div className="text-2xl font-bold text-primary">
+                    ${(agent.pricePerInterviewUsd * agent.interviewsCount).toFixed(2)}
+                  </div>
                   <div className="text-xs text-muted-foreground">Total Spent</div>
                 </div>
               </div>
-              
+
               {stats && (
                 <>
                   <div className="text-center p-3 bg-muted rounded-lg">
                     <div className="text-2xl font-bold text-success">{stats.last7Days}</div>
                     <div className="text-xs text-muted-foreground">Last 7 Days</div>
                   </div>
-                  
+
                   <div className="text-center p-3 bg-muted rounded-lg">
-                    <div className="text-2xl font-bold text-info">
-                      {Math.round(stats.completionRate * 100)}%
-                    </div>
+                    <div className="text-2xl font-bold text-info">{Math.round(stats.completionRate * 100)}%</div>
                     <div className="text-xs text-muted-foreground">Completion Rate</div>
                   </div>
                 </>
@@ -722,23 +687,21 @@ export default function AgentOverview() {
             <CardContent className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Channel</span>
-                <span className="text-sm capitalize">
-                  {agent.channel.replace('_', ' ')}
-                </span>
+                <span className="text-sm capitalize">{agent.channel.replace("_", " ")}</span>
               </div>
-              
+
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Language</span>
                 <span className="text-sm">{agent.language.toUpperCase()}</span>
               </div>
-              
+
               {agent.voiceId && (
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Voice</span>
                   <span className="text-sm">{agent.voiceId}</span>
                 </div>
               )}
-              
+
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Created</span>
                 <span className="text-sm">{formatDate(agent.createdAt)}</span>
