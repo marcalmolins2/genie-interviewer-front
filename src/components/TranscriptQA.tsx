@@ -267,12 +267,9 @@ export function TranscriptQA({ sessionId, transcript, initialMessages = [], onSa
                 <button
                   key={i}
                   onClick={() => setInput(q)}
-                  className="group flex items-center gap-3 w-full text-left text-sm p-3 rounded-lg border border-border bg-card hover:border-primary/50 hover:bg-primary/5 transition-all"
+                  className="w-full text-left text-sm p-3 rounded-lg border border-border bg-card hover:border-primary/50 hover:bg-primary/5 transition-all"
                 >
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-medium group-hover:bg-primary/20 transition-colors">
-                    {i + 1}
-                  </span>
-                  <span className="text-foreground">{q}</span>
+                  {q}
                 </button>
               ))}
             </div>
