@@ -54,16 +54,9 @@ export function TranscriptSection({ section, searchQuery = '', defaultOpen = tru
         </div>
         
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2 mb-1">
-            <p className="font-medium text-foreground">
-              {highlightText(section.question, searchQuery)}
-            </p>
-            {section.timestamp && (
-              <span className="text-xs text-muted-foreground whitespace-nowrap">
-                {section.timestamp}
-              </span>
-            )}
-          </div>
+          <p className="font-medium text-foreground">
+            {highlightText(section.question, searchQuery)}
+          </p>
           
           {!isOpen && section.answer.summary && (
             <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
@@ -81,11 +74,10 @@ export function TranscriptSection({ section, searchQuery = '', defaultOpen = tru
             </p>
           )}
           
-          <ul className="space-y-1.5">
+          <ul className="space-y-1.5 list-disc list-inside marker:text-primary">
             {section.answer.bulletPoints.map((point, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                <span className="text-primary mt-1.5 flex-shrink-0">•</span>
-                <span>{highlightText(point, searchQuery)}</span>
+              <li key={i} className="text-sm text-muted-foreground">
+                {highlightText(point, searchQuery)}
               </li>
             ))}
           </ul>
