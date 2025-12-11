@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { TranscriptSection as TranscriptSectionType } from '@/types';
@@ -8,6 +8,7 @@ interface TranscriptSectionProps {
   searchQuery?: string;
   defaultOpen?: boolean;
   viewMode?: 'clean' | 'original';
+  isHighlighted?: boolean;
 }
 
 const highlightText = (text: string, query: string) => {
@@ -25,8 +26,15 @@ const highlightText = (text: string, query: string) => {
   );
 };
 
-export function TranscriptSection({ section, searchQuery = '', defaultOpen = true, viewMode = 'clean' }: TranscriptSectionProps) {
+export function TranscriptSection({ section, searchQuery = '', defaultOpen = true, viewMode = 'clean', isHighlighted = false }: TranscriptSectionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+  
+  // Auto-expand when highlighted
+  useEffect(() => {
+    if (isHighlighted) {
+      setIsOpen(true);
+    }
+  }, [isHighlighted]);
   
   const hasMatch = searchQuery && (
     section.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -40,9 +48,11 @@ export function TranscriptSection({ section, searchQuery = '', defaultOpen = tru
 
   return (
     <div 
+      id={`transcript-section-${section.id}`}
       className={cn(
-        "border rounded-lg overflow-hidden transition-all",
+        "border rounded-lg overflow-hidden transition-all duration-300",
         hasMatch && "ring-2 ring-primary/50 border-primary/30",
+        isHighlighted && "ring-2 ring-primary border-primary animate-pulse",
         "bg-card"
       )}
     >
