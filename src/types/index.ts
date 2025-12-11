@@ -203,6 +203,7 @@ export interface QAMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: string;
+  citations?: string[]; // Array of section IDs referenced in the response
 }
 
 // ============= Archetype Types =============

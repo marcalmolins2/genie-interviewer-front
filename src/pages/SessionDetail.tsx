@@ -226,6 +226,7 @@ export default function SessionDetail() {
   const [searchQuery, setSearchQuery] = useState('');
   const [qaMessages, setQaMessages] = useState<QAMessage[]>([]);
   const [viewMode, setViewMode] = useState<'clean' | 'original'>('clean');
+  const [highlightedSectionId, setHighlightedSectionId] = useState<string | null>(null);
 
   useEffect(() => {
     if (agentId && sessionId) {
@@ -245,6 +246,21 @@ export default function SessionDetail() {
   const handleSaveMessage = useCallback((message: QAMessage) => {
     // In production, this would save to database
     console.log('Save message:', message);
+  }, []);
+
+  const handleCitationClick = useCallback((sectionId: string) => {
+    setHighlightedSectionId(sectionId);
+    
+    // Scroll to the section
+    const element = document.getElementById(`transcript-section-${sectionId}`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    
+    // Clear highlight after animation
+    setTimeout(() => {
+      setHighlightedSectionId(null);
+    }, 2000);
   }, []);
 
   const matchCount = searchQuery ? session?.transcript.sections.filter(s =>
@@ -407,6 +423,7 @@ export default function SessionDetail() {
                 section={section}
                 searchQuery={searchQuery}
                 viewMode={viewMode}
+                isHighlighted={highlightedSectionId === section.id}
               />
             ))}
           </div>
@@ -419,6 +436,7 @@ export default function SessionDetail() {
             transcript={session.transcript}
             initialMessages={qaMessages}
             onSaveMessage={handleSaveMessage}
+            onCitationClick={handleCitationClick}
           />
         </div>
       </div>
