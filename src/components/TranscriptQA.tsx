@@ -236,10 +236,9 @@ export function TranscriptQA({ sessionId, transcript, initialMessages = [], onSa
   };
 
   const suggestedQuestions = [
-    "Give me verbatim quotes about the main challenges",
-    "Summarize what the respondent said about implementation",
-    "What did the respondent say about measuring success?",
-    "Pull direct quotes about stakeholder concerns",
+    "Summarize the key topics that were discussed",
+    "What are the main challenges the respondent mentioned?",
+    "Give me verbatim quotes for the key pain points",
   ];
 
   return (
