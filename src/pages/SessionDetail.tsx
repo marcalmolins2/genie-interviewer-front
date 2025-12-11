@@ -369,14 +369,15 @@ export default function SessionDetail() {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 min-h-[600px]">
         {/* Transcript Panel (60%) */}
         <div className="lg:col-span-3 space-y-4">
-          <div className="flex items-center justify-between gap-4">
+          <div className="space-y-3">
             <TranscriptSearch 
               onSearch={handleSearch} 
               matchCount={matchCount}
               placeholder="Search questions & answers..."
             />
             
-            <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">View:</span>
               <Label 
                 htmlFor="view-mode" 
                 className={`text-sm cursor-pointer ${viewMode === 'clean' ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
