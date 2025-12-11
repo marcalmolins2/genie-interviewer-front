@@ -167,8 +167,7 @@ export default function AgentAnalyze() {
 
   const filteredInterviews = interviews.filter(interview => {
     const matchesSearch = searchQuery === '' || 
-      interview.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      interview.respondentId?.toLowerCase().includes(searchQuery.toLowerCase());
+      interview.id.toLowerCase().includes(searchQuery.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || 
       (statusFilter === 'completed' && interview.completed) ||
@@ -523,14 +522,13 @@ SLIDE 4: Recommendations
                   <TableHead>Date</TableHead>
                   <TableHead>Duration</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Respondent</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredInterviews.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8">
+                    <TableCell colSpan={5} className="text-center py-8">
                       <div className="text-muted-foreground">
                         {searchQuery || statusFilter !== 'all' 
                           ? 'No interviews match your filters' 
@@ -560,13 +558,10 @@ SLIDE 4: Recommendations
                               Incomplete
                             </>
                           )}
-                        </Badge>
+                      </Badge>
                       </TableCell>
                       <TableCell>
-                        {interview.respondentId || 'Anonymous'}
-                      </TableCell>
-                      <TableCell>
-                        <Button 
+                        <Button
                           variant="outline" 
                           size="sm"
                           onClick={() => navigate(`/app/agents/${agentId}/sessions/${interview.id}`)}

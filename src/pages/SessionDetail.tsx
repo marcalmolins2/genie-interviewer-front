@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Clock, Calendar, User, Download, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowLeft, Clock, Calendar, Download, CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -342,10 +342,6 @@ export default function SessionDetail() {
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-muted-foreground" />
             <span>{formatDuration(session.durationSec)}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <User className="h-4 w-4 text-muted-foreground" />
-            <span>{session.respondentId || 'Anonymous'}</span>
           </div>
           <Badge variant={session.completed ? 'default' : 'secondary'}>
             {session.completed ? (
