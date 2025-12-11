@@ -263,14 +263,17 @@ export function TranscriptQA({ sessionId, transcript, initialMessages = [], onSa
               Ask any question about this interview transcript
             </p>
             <div className="space-y-2">
-              <p className="text-xs text-muted-foreground font-medium">Suggested questions:</p>
+              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Try asking:</p>
               {suggestedQuestions.map((q, i) => (
                 <button
                   key={i}
                   onClick={() => setInput(q)}
-                  className="block w-full text-left text-sm p-2 rounded-md bg-muted/50 hover:bg-muted transition-colors"
+                  className="group flex items-center gap-3 w-full text-left text-sm p-3 rounded-lg border border-border bg-card hover:border-primary/50 hover:bg-primary/5 transition-all"
                 >
-                  {q}
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-medium group-hover:bg-primary/20 transition-colors">
+                    {i + 1}
+                  </span>
+                  <span className="text-foreground">{q}</span>
                 </button>
               ))}
             </div>
