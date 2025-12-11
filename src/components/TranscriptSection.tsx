@@ -7,6 +7,7 @@ interface TranscriptSectionProps {
   section: TranscriptSectionType;
   searchQuery?: string;
   defaultOpen?: boolean;
+  viewMode?: 'clean' | 'original';
 }
 
 const highlightText = (text: string, query: string) => {
@@ -24,14 +25,18 @@ const highlightText = (text: string, query: string) => {
   );
 };
 
-export function TranscriptSection({ section, searchQuery = '', defaultOpen = true }: TranscriptSectionProps) {
+export function TranscriptSection({ section, searchQuery = '', defaultOpen = true, viewMode = 'clean' }: TranscriptSectionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   
   const hasMatch = searchQuery && (
     section.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
     section.answer.bulletPoints.some(bp => bp.toLowerCase().includes(searchQuery.toLowerCase())) ||
-    section.answer.summary?.toLowerCase().includes(searchQuery.toLowerCase())
+    section.answer.summary?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    section.answer.rawText?.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const hasCleanContent = section.answer.summary || section.answer.bulletPoints.length > 0;
+  const hasOriginalContent = !!section.answer.rawText;
 
   return (
     <div 
@@ -68,19 +73,41 @@ export function TranscriptSection({ section, searchQuery = '', defaultOpen = tru
       
       {isOpen && (
         <div className="px-4 pb-4 pl-11 space-y-3">
-          {section.answer.summary && (
-            <p className="text-sm font-medium text-foreground">
-              {highlightText(section.answer.summary, searchQuery)}
-            </p>
+          {viewMode === 'clean' ? (
+            hasCleanContent ? (
+              <>
+                {section.answer.summary && (
+                  <p className="text-sm font-medium text-foreground">
+                    {highlightText(section.answer.summary, searchQuery)}
+                  </p>
+                )}
+                
+                {section.answer.bulletPoints.length > 0 && (
+                  <ul className="space-y-1.5 list-disc list-inside marker:text-primary">
+                    {section.answer.bulletPoints.map((point, i) => (
+                      <li key={i} className="text-sm text-muted-foreground">
+                        {highlightText(point, searchQuery)}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground italic">
+                Clean transcript not available for this section.
+              </p>
+            )
+          ) : (
+            hasOriginalContent ? (
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                {highlightText(section.answer.rawText!, searchQuery)}
+              </p>
+            ) : (
+              <p className="text-sm text-muted-foreground italic">
+                Original transcript not available for this section.
+              </p>
+            )
           )}
-          
-          <ul className="space-y-1.5 list-disc list-inside marker:text-primary">
-            {section.answer.bulletPoints.map((point, i) => (
-              <li key={i} className="text-sm text-muted-foreground">
-                {highlightText(point, searchQuery)}
-              </li>
-            ))}
-          </ul>
         </div>
       )}
     </div>

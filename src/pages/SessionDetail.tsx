@@ -4,6 +4,8 @@ import { ArrowLeft, Clock, Calendar, Download, CheckCircle, XCircle } from 'luci
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { TranscriptSection } from '@/components/TranscriptSection';
 import { TranscriptSearch } from '@/components/TranscriptSearch';
 import { TranscriptQA } from '@/components/TranscriptQA';
@@ -223,6 +225,7 @@ export default function SessionDetail() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [qaMessages, setQaMessages] = useState<QAMessage[]>([]);
+  const [viewMode, setViewMode] = useState<'clean' | 'original'>('clean');
 
   useEffect(() => {
     if (agentId && sessionId) {
@@ -247,7 +250,8 @@ export default function SessionDetail() {
   const matchCount = searchQuery ? session?.transcript.sections.filter(s =>
     s.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
     s.answer.bulletPoints.some(bp => bp.toLowerCase().includes(searchQuery.toLowerCase())) ||
-    s.answer.summary?.toLowerCase().includes(searchQuery.toLowerCase())
+    s.answer.summary?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    s.answer.rawText?.toLowerCase().includes(searchQuery.toLowerCase())
   ).length : undefined;
 
   const formatDuration = (seconds: number) => {
@@ -270,15 +274,23 @@ export default function SessionDetail() {
   const handleExport = () => {
     if (!session) return;
     
-    const content = session.transcript.sections.map((s) => 
-      `${s.question}\n\n${s.answer.summary ? s.answer.summary + '\n\n' : ''}${s.answer.bulletPoints.map(bp => `• ${bp}`).join('\n')}\n`
-    ).join('\n---\n\n');
+    let content: string;
+    
+    if (viewMode === 'original') {
+      content = session.transcript.sections.map((s) => 
+        `${s.question}\n\n${s.answer.rawText || 'Original transcript not available'}\n`
+      ).join('\n---\n\n');
+    } else {
+      content = session.transcript.sections.map((s) => 
+        `${s.question}\n\n${s.answer.summary ? s.answer.summary + '\n\n' : ''}${s.answer.bulletPoints.map(bp => `• ${bp}`).join('\n')}\n`
+      ).join('\n---\n\n');
+    }
     
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `transcript-${sessionId}.txt`;
+    a.download = `transcript-${sessionId}-${viewMode}.txt`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -357,11 +369,33 @@ export default function SessionDetail() {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 min-h-[600px]">
         {/* Transcript Panel (60%) */}
         <div className="lg:col-span-3 space-y-4">
-          <TranscriptSearch 
-            onSearch={handleSearch} 
-            matchCount={matchCount}
-            placeholder="Search questions & answers..."
-          />
+          <div className="flex items-center justify-between gap-4">
+            <TranscriptSearch 
+              onSearch={handleSearch} 
+              matchCount={matchCount}
+              placeholder="Search questions & answers..."
+            />
+            
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <Label 
+                htmlFor="view-mode" 
+                className={`text-sm cursor-pointer ${viewMode === 'clean' ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
+              >
+                Clean
+              </Label>
+              <Switch
+                id="view-mode"
+                checked={viewMode === 'original'}
+                onCheckedChange={(checked) => setViewMode(checked ? 'original' : 'clean')}
+              />
+              <Label 
+                htmlFor="view-mode" 
+                className={`text-sm cursor-pointer ${viewMode === 'original' ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
+              >
+                Original
+              </Label>
+            </div>
+          </div>
           
           <div className="space-y-3">
             {session.transcript.sections.map((section) => (
@@ -369,6 +403,7 @@ export default function SessionDetail() {
                 key={section.id}
                 section={section}
                 searchQuery={searchQuery}
+                viewMode={viewMode}
               />
             ))}
           </div>
