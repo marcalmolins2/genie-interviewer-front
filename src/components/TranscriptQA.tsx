@@ -23,11 +23,13 @@ interface Citation {
 interface GeneratedResponse {
   content: string;
   citations: Citation[];
+  followUps: string[];
 }
 
 // Extended QAMessage with structured citations
 interface QAMessageWithCitations extends Omit<QAMessage, 'citations'> {
   citations?: Citation[];
+  followUps?: string[];
 }
 
 export function TranscriptQA({ sessionId, transcript, initialMessages = [], onSaveMessage, onCitationClick }: TranscriptQAProps) {
@@ -61,6 +63,10 @@ export function TranscriptQA({ sessionId, transcript, initialMessages = [], onSa
           { sectionId: 'q1', quote: "I'm a Product Manager at a fintech company. We've been exploring AI integration for about 18 months now" },
           { sectionId: 'q2', quote: "The biggest hurdle has been getting buy-in from stakeholders. There's a lot of fear around AI replacing jobs" },
           { sectionId: 'q3', quote: "We started with small pilot programs that showed clear value without displacing anyone" }
+        ],
+        followUps: [
+          "Tell me more about the pilot programs",
+          "What specific fears did stakeholders have?",
         ]
       };
     }
@@ -71,6 +77,10 @@ export function TranscriptQA({ sessionId, transcript, initialMessages = [], onSa
         citations: [
           { sectionId: 'q2', quote: "There's a lot of fear around AI replacing jobs, and we've had to be very careful about how we position these tools as augmentation rather than replacement" },
           { sectionId: 'q3', quote: "Our AI chatbot handles routine queries, which freed up our human agents to focus on complex issues. The results spoke for themselves" }
+        ],
+        followUps: [
+          "How did they address the job replacement fears?",
+          "Give me verbatim quotes about the challenges",
         ]
       };
     }
@@ -83,6 +93,10 @@ export function TranscriptQA({ sessionId, transcript, initialMessages = [], onSa
           { sectionId: 'q3', quote: "We started with small pilot programs that showed clear value without displacing anyone" },
           { sectionId: 'q2', quote: "We've had to be very careful about how we position these tools as augmentation rather than replacement" },
           { sectionId: 'q4', quote: "We tracked response times, resolution rates, and customer satisfaction scores" }
+        ],
+        followUps: [
+          "What metrics did they use to measure success?",
+          "How did they communicate the changes to staff?",
         ]
       };
     }
@@ -92,6 +106,10 @@ export function TranscriptQA({ sessionId, transcript, initialMessages = [], onSa
         content: "The respondent tracked several success metrics [1]:\n\n• Response times dropped by 60% after AI implementation\n• Customer satisfaction scores increased by 15 points\n• Human agents reported higher job satisfaction\n• Agents now focus on complex tasks instead of repetitive queries",
         citations: [
           { sectionId: 'q4', quote: "Response times dropped by 60%, and our CSAT scores went up by 15 points. But the real win was that our human agents reported higher job satisfaction" }
+        ],
+        followUps: [
+          "What drove the improvement in job satisfaction?",
+          "How long did it take to see these results?",
         ]
       };
     }
@@ -100,6 +118,10 @@ export function TranscriptQA({ sessionId, transcript, initialMessages = [], onSa
       content: `Based on my analysis of this interview transcript, I found relevant information regarding your question about "${question}". The respondent discussed various aspects in their role and approach [1] that may be helpful. Would you like me to focus on any specific part of their responses?`,
       citations: [
         { sectionId: 'q1', quote: "I'm a Product Manager at a fintech company. We've been exploring AI integration for about 18 months now" }
+      ],
+      followUps: [
+        "What were the main challenges discussed?",
+        "Summarize the key recommendations",
       ]
     };
   };
@@ -131,6 +153,7 @@ export function TranscriptQA({ sessionId, transcript, initialMessages = [], onSa
       content: response.content,
       timestamp: new Date().toISOString(),
       citations: response.citations,
+      followUps: response.followUps,
     };
     
     setMessages(prev => [...prev, assistantMessage]);
@@ -325,6 +348,21 @@ export function TranscriptQA({ sessionId, transcript, initialMessages = [], onSa
                 <div className="bg-muted rounded-lg p-3">
                   <Loader2 className="h-4 w-4 animate-spin" />
                 </div>
+              </div>
+            )}
+            
+            {/* Follow-up suggestions */}
+            {!isLoading && messages.length > 0 && messages[messages.length - 1].role === 'assistant' && messages[messages.length - 1].followUps && (
+              <div className="flex flex-wrap gap-2 mt-2 ml-11">
+                {messages[messages.length - 1].followUps?.map((followUp, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setInput(followUp)}
+                    className="text-xs px-3 py-1.5 rounded-full border border-border bg-background hover:border-primary/50 hover:bg-primary/5 transition-all text-muted-foreground hover:text-foreground"
+                  >
+                    {followUp}
+                  </button>
+                ))}
               </div>
             )}
           </div>
