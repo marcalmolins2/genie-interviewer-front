@@ -5,7 +5,6 @@ import type { TranscriptSection as TranscriptSectionType } from '@/types';
 
 interface TranscriptSectionProps {
   section: TranscriptSectionType;
-  index: number;
   searchQuery?: string;
   defaultOpen?: boolean;
 }
@@ -25,7 +24,7 @@ const highlightText = (text: string, query: string) => {
   );
 };
 
-export function TranscriptSection({ section, index, searchQuery = '', defaultOpen = false }: TranscriptSectionProps) {
+export function TranscriptSection({ section, searchQuery = '', defaultOpen = true }: TranscriptSectionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   
   const hasMatch = searchQuery && (
@@ -55,28 +54,19 @@ export function TranscriptSection({ section, index, searchQuery = '', defaultOpe
         </div>
         
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded">
-              Q{index + 1}
-            </span>
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <p className="font-medium text-foreground">
+              {highlightText(section.question, searchQuery)}
+            </p>
             {section.timestamp && (
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-muted-foreground whitespace-nowrap">
                 {section.timestamp}
-              </span>
-            )}
-            {hasMatch && (
-              <span className="text-xs text-primary font-medium">
-                • Match
               </span>
             )}
           </div>
           
-          <p className="font-medium text-foreground">
-            {highlightText(section.question, searchQuery)}
-          </p>
-          
           {!isOpen && section.answer.summary && (
-            <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
+            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
               {highlightText(section.answer.summary, searchQuery)}
             </p>
           )}
@@ -86,30 +76,19 @@ export function TranscriptSection({ section, index, searchQuery = '', defaultOpe
       {isOpen && (
         <div className="px-4 pb-4 pl-11 space-y-3">
           {section.answer.summary && (
-            <p className="text-sm text-muted-foreground italic border-l-2 border-primary/30 pl-3">
+            <p className="text-sm font-medium text-foreground">
               {highlightText(section.answer.summary, searchQuery)}
             </p>
           )}
           
-          <ul className="space-y-2">
+          <ul className="space-y-1.5">
             {section.answer.bulletPoints.map((point, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm">
+              <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
                 <span className="text-primary mt-1.5 flex-shrink-0">•</span>
                 <span>{highlightText(point, searchQuery)}</span>
               </li>
             ))}
           </ul>
-          
-          {section.answer.rawText && (
-            <details className="mt-3">
-              <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground">
-                View original response
-              </summary>
-              <p className="mt-2 text-xs text-muted-foreground bg-muted/50 p-3 rounded">
-                {section.answer.rawText}
-              </p>
-            </details>
-          )}
         </div>
       )}
     </div>
