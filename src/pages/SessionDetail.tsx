@@ -270,8 +270,8 @@ export default function SessionDetail() {
   const handleExport = () => {
     if (!session) return;
     
-    const content = session.transcript.sections.map((s, i) => 
-      `Q${i + 1}: ${s.question}\n\n${s.answer.bulletPoints.map(bp => `• ${bp}`).join('\n')}\n`
+    const content = session.transcript.sections.map((s) => 
+      `${s.question}\n\n${s.answer.summary ? s.answer.summary + '\n\n' : ''}${s.answer.bulletPoints.map(bp => `• ${bp}`).join('\n')}\n`
     ).join('\n---\n\n');
     
     const blob = new Blob([content], { type: 'text/plain' });
@@ -364,13 +364,11 @@ export default function SessionDetail() {
           />
           
           <div className="space-y-3">
-            {session.transcript.sections.map((section, index) => (
+            {session.transcript.sections.map((section) => (
               <TranscriptSection
                 key={section.id}
                 section={section}
-                index={index}
                 searchQuery={searchQuery}
-                defaultOpen={index === 0}
               />
             ))}
           </div>
