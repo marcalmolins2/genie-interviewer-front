@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -72,6 +72,8 @@ const SimpleBarChart = ({ data, title }: { data: any[], title: string }) => (
 
 export default function AgentAnalyze() {
   const { agentId } = useParams<{ agentId: string }>();
+  const [searchParams] = useSearchParams();
+  const defaultTab = searchParams.get('tab') || 'overview';
   const [agent, setAgent] = useState<Agent | null>(null);
   const [interviews, setInterviews] = useState<InterviewSummary[]>([]);
   const [stats, setStats] = useState<any>(null);
@@ -400,7 +402,7 @@ SLIDE 4: Recommendations
       </div>
 
       {/* Analytics Tabs */}
-      <Tabs defaultValue="overview" className="space-y-6">
+      <Tabs defaultValue={defaultTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="transcripts">Transcripts</TabsTrigger>
