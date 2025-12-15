@@ -230,6 +230,16 @@ export default function SessionDetail() {
   const [highlightedSectionId, setHighlightedSectionId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<SessionFeedbackType | null>(null);
 
+  // Load feedback from localStorage
+  useEffect(() => {
+    if (sessionId) {
+      const storedFeedback = localStorage.getItem(`session-feedback-${sessionId}`);
+      if (storedFeedback) {
+        setFeedback(JSON.parse(storedFeedback));
+      }
+    }
+  }, [sessionId]);
+
   useEffect(() => {
     if (agentId && sessionId) {
       // Simulate loading
@@ -240,6 +250,11 @@ export default function SessionDetail() {
       }, 500);
     }
   }, [agentId, sessionId]);
+
+  const handleFeedbackSubmit = useCallback((newFeedback: SessionFeedbackType) => {
+    setFeedback(newFeedback);
+    localStorage.setItem(`session-feedback-${newFeedback.sessionId}`, JSON.stringify(newFeedback));
+  }, []);
 
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
@@ -387,7 +402,7 @@ export default function SessionDetail() {
             <SessionFeedback
               sessionId={session.id}
               currentFeedback={feedback}
-              onFeedbackSubmit={setFeedback}
+              onFeedbackSubmit={handleFeedbackSubmit}
             />
           )}
         </div>
