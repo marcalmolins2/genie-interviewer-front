@@ -521,8 +521,8 @@ SLIDE 4: Recommendations
                   <TableHead>Date</TableHead>
                   <TableHead>Duration</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Feedback</TableHead>
                   <TableHead>Actions</TableHead>
+                  <TableHead>Feedback</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -561,6 +561,16 @@ SLIDE 4: Recommendations
                         </Badge>
                       </TableCell>
                       <TableCell>
+                        <Button
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => navigate(`/app/agents/${agentId}/sessions/${interview.id}`)}
+                          disabled={!interview.completed}
+                        >
+                          View Transcript
+                        </Button>
+                      </TableCell>
+                      <TableCell>
                         {interview.completed ? (
                           (() => {
                             const storedFeedback = localStorage.getItem(`session-feedback-${interview.id}`);
@@ -576,16 +586,6 @@ SLIDE 4: Recommendations
                         ) : (
                           <span className="text-muted-foreground">—</span>
                         )}
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => navigate(`/app/agents/${agentId}/sessions/${interview.id}`)}
-                          disabled={!interview.completed}
-                        >
-                          View Transcript
-                        </Button>
                       </TableCell>
                     </TableRow>
                   ))
