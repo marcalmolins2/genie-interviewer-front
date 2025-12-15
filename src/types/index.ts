@@ -20,6 +20,15 @@ export type InterviewerStatus = 'draft' | 'ready_to_test' | 'launching' | 'publi
 // Session types
 export type ConversationType = 'test' | 'live';
 
+// Feedback types
+export interface SessionFeedback {
+  sessionId: string;
+  rating: 'positive' | 'negative' | null;
+  negativeReason?: string;
+  submittedAt?: string;
+  submittedBy?: string;
+}
+
 // Channel types
 export type Channel = 'inbound_call';
 
@@ -399,6 +408,7 @@ export interface InterviewSummary {
   channel: Channel;
   completed: boolean;
   respondentId?: string;
+  feedback?: SessionFeedback;
 }
 
 export interface AudienceUpload {
@@ -424,4 +434,5 @@ export interface SessionDetail {
   respondentId?: string;
   channel: Channel;
   transcript: CleanedTranscript;
+  feedback?: SessionFeedback;
 }

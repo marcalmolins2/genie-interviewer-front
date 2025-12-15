@@ -39,8 +39,12 @@ import {
   TrendingUp,
   CheckCircle,
   XCircle,
-  FileSliders
+  FileSliders,
+  ThumbsUp,
+  ThumbsDown,
+  Minus
 } from 'lucide-react';
+import { SessionFeedback } from '@/components/SessionFeedback';
 import { Agent, InterviewSummary } from '@/types';
 import { agentsService } from '@/services/agents';
 import { useToast } from '@/hooks/use-toast';
@@ -108,7 +112,8 @@ export default function AgentAnalyze() {
             durationSec: 1280,
             completed: true,
             respondentId: 'sarah.chen@company.com',
-            channel: agentData.channel
+            channel: agentData.channel,
+            feedback: { sessionId: 'int-20241201-001', rating: 'positive', submittedAt: '2024-12-01T15:00:00Z' }
           },
           {
             id: 'int-20241201-002', 
@@ -117,7 +122,8 @@ export default function AgentAnalyze() {
             durationSec: 952,
             completed: true,
             respondentId: 'mike.rodriguez@company.com',
-            channel: agentData.channel
+            channel: agentData.channel,
+            feedback: { sessionId: 'int-20241201-002', rating: 'negative', negativeReason: 'Audio quality was poor', submittedAt: '2024-12-01T09:45:00Z' }
           },
           {
             id: 'int-20241130-003',
@@ -136,6 +142,7 @@ export default function AgentAnalyze() {
             completed: true,
             respondentId: 'david.kim@company.com',
             channel: agentData.channel
+            // No feedback yet
           },
           {
             id: 'int-20241129-005',
@@ -522,13 +529,14 @@ SLIDE 4: Recommendations
                   <TableHead>Date</TableHead>
                   <TableHead>Duration</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Feedback</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredInterviews.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8">
+                    <TableCell colSpan={6} className="text-center py-8">
                       <div className="text-muted-foreground">
                         {searchQuery || statusFilter !== 'all' 
                           ? 'No interviews match your filters' 
@@ -558,7 +566,20 @@ SLIDE 4: Recommendations
                               Incomplete
                             </>
                           )}
-                      </Badge>
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {interview.completed ? (
+                          interview.feedback?.rating === 'positive' ? (
+                            <ThumbsUp className="h-4 w-4 text-emerald-600" />
+                          ) : interview.feedback?.rating === 'negative' ? (
+                            <ThumbsDown className="h-4 w-4 text-rose-600" />
+                          ) : (
+                            <Minus className="h-4 w-4 text-muted-foreground" />
+                          )
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
                       </TableCell>
                       <TableCell>
                         <Button
