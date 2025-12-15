@@ -74,7 +74,7 @@ export default function CreateAgentAssisted() {
     archetype: null,
     language: 'en',
     voiceId: 'voice-1',
-    channel: 'chat',
+    channel: 'inbound_call',
     researchGoals: '',
     interviewGuide: '',
     knowledgeText: ''
@@ -168,7 +168,7 @@ export default function CreateAgentAssisted() {
         handleKnowledgeBase(userMessage);
         break;
       case ConversationPhase.KNOWLEDGE_BASE:
-        handleChannelSelection(userMessage);
+        handleConfirmChannel(userMessage);
         break;
       case ConversationPhase.CHANNEL_SELECTION:
         handleReviewConfirm(userMessage);
@@ -321,43 +321,43 @@ Or type "skip" if you don't need any additional context right now.`,
     
     setCurrentPhase(ConversationPhase.KNOWLEDGE_BASE);
     addAssistantMessage(
-      `Great! Now let's choose how participants will interact with your agent.\n
-**Which communication method would work best for your research?**\n
-🔹 **Chat** - Text-based conversations ($${PRICE_BY_CHANNEL.chat}/interview)
-   Perfect for: Detailed written responses, participant convenience\n
-📞 **Inbound Call** - Participants call your agent ($${PRICE_BY_CHANNEL.inbound_call}/interview)
-   Perfect for: Voice conversations, natural dialogue\n
-📱 **Outbound Call** - Agent calls participants ($${PRICE_BY_CHANNEL.outbound_call}/interview)
-   Perfect for: Scheduled interviews, higher response rates\n
-Which option sounds best for your research goals?`,
+      `Great! Your agent will use **Inbound Calls** - participants will call a dedicated phone number to complete the interview.\n
+**Price:** $${PRICE_BY_CHANNEL.inbound_call} per interview\n
+**Features:**
+- Dedicated phone number
+- Voice interaction
+- Call recording\n`,
       ConversationPhase.CHANNEL_SELECTION
     );
-  };
-
-  const handleChannelSelection = (userMessage: string) => {
-    const lowerMessage = userMessage.toLowerCase();
-    let selectedChannel: Channel = 'chat';
     
-    if (lowerMessage.includes('inbound') || lowerMessage.includes('call me') || lowerMessage.includes('participants call')) {
-      selectedChannel = 'inbound_call';
-    } else if (lowerMessage.includes('outbound') || lowerMessage.includes('call them') || lowerMessage.includes('agent call')) {
-      selectedChannel = 'outbound_call';
-    } else if (lowerMessage.includes('chat') || lowerMessage.includes('text') || lowerMessage.includes('message')) {
-      selectedChannel = 'chat';
-    }
-    
-    setAgentData(prev => ({ ...prev, channel: selectedChannel }));
+    setAgentData(prev => ({ ...prev, channel: 'inbound_call' }));
     setCurrentPhase(ConversationPhase.CHANNEL_SELECTION);
     
     const archetype = ARCHETYPES.find(a => a.id === agentData.archetype);
-    const channelName = selectedChannel.replace('_', ' ');
     
     addAssistantMessage(
       `Perfect! Here's a summary of your agent:\n
 **Agent Name:** ${agentData.name}\n
 **Type:** ${archetype?.title}\n
-**Communication:** ${channelName.charAt(0).toUpperCase() + channelName.slice(1)}\n
-**Price:** $${PRICE_BY_CHANNEL[selectedChannel]} per interview\n
+**Communication:** Inbound Call\n
+**Price:** $${PRICE_BY_CHANNEL.inbound_call} per interview\n
+**Research Goals:** ${agentData.researchGoals}\n
+Your agent will have a customized interview guide and ${agentData.knowledgeText ? 'background knowledge context' : 'no additional context'}.\n
+**Are you ready to create this agent?** Type "yes" to proceed or "modify" if you want to change anything.`,
+      ConversationPhase.REVIEW_CONFIRM
+    );
+  };
+
+  const handleConfirmChannel = (userMessage: string) => {
+    setCurrentPhase(ConversationPhase.CHANNEL_SELECTION);
+    const archetype = ARCHETYPES.find(a => a.id === agentData.archetype);
+    
+    addAssistantMessage(
+      `Perfect! Here's a summary of your agent:\n
+**Agent Name:** ${agentData.name}\n
+**Type:** ${archetype?.title}\n
+**Communication:** Inbound Call\n
+**Price:** $${PRICE_BY_CHANNEL.inbound_call} per interview\n
 **Research Goals:** ${agentData.researchGoals}\n
 Your agent will have a customized interview guide and ${agentData.knowledgeText ? 'background knowledge context' : 'no additional context'}.\n
 **Are you ready to create this agent?** Type "yes" to proceed or "modify" if you want to change anything.`,

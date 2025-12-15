@@ -489,7 +489,7 @@ export async function getSystemAnalytics(): Promise<SystemAnalytics> {
   
   const totalSessionsByChannel = Object.values(channelCounts).reduce((a, b) => a + b, 0);
   const usageByChannel = Object.entries(channelCounts).map(([channel, count]) => ({
-    channel: channel === 'chat' ? 'Chat' : channel === 'inbound_call' ? 'Inbound Call' : 'Outbound Call',
+    channel: 'Inbound Call',
     count,
     percentage: totalSessionsByChannel > 0 ? Math.round((count / totalSessionsByChannel) * 100 * 10) / 10 : 0
   }));

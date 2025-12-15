@@ -21,7 +21,7 @@ export type InterviewerStatus = 'draft' | 'ready_to_test' | 'launching' | 'publi
 export type ConversationType = 'test' | 'live';
 
 // Channel types
-export type Channel = 'chat' | 'inbound_call' | 'outbound_call';
+export type Channel = 'inbound_call';
 
 // Archetype types
 export type Archetype = 'expert_deep_dive' | 'client_stakeholder' | 'customer_user' | 'rapid_survey' | 'diagnostic' | 'investigative' | 'panel_moderator';
@@ -266,9 +266,7 @@ export const INTERVIEWER_ROLES: Record<InterviewerRole, {
 // ============= Constants =============
 
 export const PRICE_BY_CHANNEL: Record<Channel, number> = {
-  chat: 10,
   inbound_call: 20,
-  outbound_call: 30,
 };
 
 export const ARCHETYPES: ArchetypeInfo[] = [
