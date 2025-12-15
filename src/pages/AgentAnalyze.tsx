@@ -390,10 +390,6 @@ SLIDE 4: Recommendations
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={generatePPTReport}>
-            <FileSliders className="h-4 w-4 mr-2" />
-            Generate PPT Report
-          </Button>
           <Button variant="outline" size="sm">
             <Download className="h-4 w-4 mr-2" />
             Export Data
