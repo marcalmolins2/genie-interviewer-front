@@ -346,7 +346,7 @@ export default function SessionDetail() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate(`/app/agents/${agentId}/analyze`)}>
+          <Button variant="ghost" size="sm" onClick={() => navigate(`/app/agents/${agentId}/analyze?tab=transcripts`)}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
