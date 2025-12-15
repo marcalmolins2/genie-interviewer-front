@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -45,7 +45,7 @@ import {
   Minus
 } from 'lucide-react';
 import { SessionFeedback } from '@/components/SessionFeedback';
-import { Agent, InterviewSummary } from '@/types';
+import { Agent, InterviewSummary, SessionFeedback as SessionFeedbackType } from '@/types';
 import { agentsService } from '@/services/agents';
 import { useToast } from '@/hooks/use-toast';
 
@@ -572,13 +572,17 @@ SLIDE 4: Recommendations
                       </TableCell>
                       <TableCell>
                         {interview.completed ? (
-                          interview.feedback?.rating === 'positive' ? (
-                            <ThumbsUp className="h-4 w-4 text-emerald-600" />
-                          ) : interview.feedback?.rating === 'negative' ? (
-                            <ThumbsDown className="h-4 w-4 text-rose-600" />
-                          ) : (
-                            <Minus className="h-4 w-4 text-muted-foreground" />
-                          )
+                          (() => {
+                            const storedFeedback = localStorage.getItem(`session-feedback-${interview.id}`);
+                            const feedback = storedFeedback ? JSON.parse(storedFeedback) as SessionFeedbackType : interview.feedback;
+                            return feedback?.rating === 'positive' ? (
+                              <ThumbsUp className="h-4 w-4 text-emerald-600" />
+                            ) : feedback?.rating === 'negative' ? (
+                              <ThumbsDown className="h-4 w-4 text-rose-600" />
+                            ) : (
+                              <Minus className="h-4 w-4 text-muted-foreground" />
+                            );
+                          })()
                         ) : (
                           <span className="text-muted-foreground">—</span>
                         )}
