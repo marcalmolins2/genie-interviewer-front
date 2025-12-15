@@ -9,7 +9,8 @@ import { Label } from '@/components/ui/label';
 import { TranscriptSection } from '@/components/TranscriptSection';
 import { TranscriptSearch } from '@/components/TranscriptSearch';
 import { TranscriptQA } from '@/components/TranscriptQA';
-import type { SessionDetail as SessionDetailType, QAMessage } from '@/types';
+import { SessionFeedback } from '@/components/SessionFeedback';
+import type { SessionDetail as SessionDetailType, QAMessage, SessionFeedback as SessionFeedbackType } from '@/types';
 
 // Mock session data
 const getMockSessionDetail = (sessionId: string, agentId: string): SessionDetailType => {
@@ -227,6 +228,7 @@ export default function SessionDetail() {
   const [qaMessages, setQaMessages] = useState<QAMessage[]>([]);
   const [viewMode, setViewMode] = useState<'clean' | 'original'>('clean');
   const [highlightedSectionId, setHighlightedSectionId] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<SessionFeedbackType | null>(null);
 
   useEffect(() => {
     if (agentId && sessionId) {
@@ -362,22 +364,32 @@ export default function SessionDetail() {
 
       {/* Session Metadata */}
       <Card className="p-4">
-        <div className="flex flex-wrap items-center gap-6 text-sm">
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <span>{formatDate(session.startedAt)}</span>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-6 text-sm">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <span>{formatDate(session.startedAt)}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              <span>{formatDuration(session.durationSec)}</span>
+            </div>
+            <Badge variant={session.completed ? 'default' : 'secondary'}>
+              {session.completed ? (
+                <><CheckCircle className="h-3 w-3 mr-1" /> Completed</>
+              ) : (
+                <><XCircle className="h-3 w-3 mr-1" /> Incomplete</>
+              )}
+            </Badge>
           </div>
-          <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-muted-foreground" />
-            <span>{formatDuration(session.durationSec)}</span>
-          </div>
-          <Badge variant={session.completed ? 'default' : 'secondary'}>
-            {session.completed ? (
-              <><CheckCircle className="h-3 w-3 mr-1" /> Completed</>
-            ) : (
-              <><XCircle className="h-3 w-3 mr-1" /> Incomplete</>
-            )}
-          </Badge>
+          
+          {session.completed && (
+            <SessionFeedback
+              sessionId={session.id}
+              currentFeedback={feedback}
+              onFeedbackSubmit={setFeedback}
+            />
+          )}
         </div>
       </Card>
 
