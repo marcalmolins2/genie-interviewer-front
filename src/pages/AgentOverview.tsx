@@ -26,7 +26,6 @@ import {
   Share,
   Copy,
   Phone,
-  MessageCircle,
   Users,
   Calendar,
   Zap,
@@ -370,73 +369,28 @@ export default function AgentOverview() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                {agent.channel === "chat" ? <MessageCircle className="h-5 w-5" /> : <Phone className="h-5 w-5" />}
+                <Phone className="h-5 w-5" />
                 Contact Information
               </CardTitle>
               <CardDescription>How participants access your agent</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {agent.credentialsReady ? (
-                <>
+                <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                  <div>
+                    <Label className="text-sm font-medium">Phone Number</Label>
+                    <p className="text-lg font-mono">{agent.contact.phoneNumber || 'Not assigned'}</p>
+                  </div>
                   {agent.contact.phoneNumber && (
-                    <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                      <div>
-                        <Label className="text-sm font-medium">Phone Number</Label>
-                        <p className="text-lg font-mono">{agent.contact.phoneNumber}</p>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => copyToClipboard(agent.contact.phoneNumber!, "Phone number")}
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => copyToClipboard(agent.contact.phoneNumber!, "Phone number")}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
                   )}
-
-                  {agent.contact.chatUrl && (
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                        <div className="flex-1 min-w-0">
-                          <Label className="text-sm font-medium">Chat URL</Label>
-                          <p className="text-sm font-mono truncate">{agent.contact.chatUrl}</p>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => copyToClipboard(agent.contact.chatUrl!, "Chat URL")}
-                          >
-                            <Copy className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => window.open(agent.contact.chatUrl, "_blank")}
-                          >
-                            <ExternalLink className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      {agent.contact.chatPassword && (
-                        <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                          <div>
-                            <Label className="text-sm font-medium">Password</Label>
-                            <p className="text-lg font-mono">{agent.contact.chatPassword}</p>
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => copyToClipboard(agent.contact.chatPassword!, "Password")}
-                          >
-                            <Copy className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </>
+                </div>
               ) : (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto mb-2"></div>
@@ -621,7 +575,7 @@ export default function AgentOverview() {
                     <div>
                       <p className="font-medium">Contact Info Generated</p>
                       <p className="text-sm text-muted-foreground">
-                        {agent.channel === "chat" ? "Chat URL" : "Phone number"} provisioned
+                        Phone number provisioned
                       </p>
                     </div>
                   </div>
