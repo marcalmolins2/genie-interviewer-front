@@ -29,6 +29,7 @@ interface CreateAgentForm {
   voiceId: string;
   channel: Channel;
   targetDuration: string;
+  interviewContext: string;
   introContext: string;
   enableScreener: boolean;
   screenerQuestions: string;
@@ -111,6 +112,12 @@ const validateTargetDuration = (value: string): string => {
   return '';
 };
 
+const validateInterviewContext = (value: string): string => {
+  const trimmed = value.trim();
+  if (trimmed.length > 2000) return 'Interview context must be shorter than 2000 characters';
+  return '';
+};
+
 const validateIntroContext = (value: string): string => {
   const trimmed = value.trim();
   if (trimmed.length > 600) return 'Introduction context must be shorter than 600 characters';
@@ -181,6 +188,7 @@ export default function CreateAgent() {
     voiceId: 'voice-1',
     channel: 'inbound_call',
     targetDuration: '20',
+    interviewContext: '',
     introContext: '',
     enableScreener: false,
     screenerQuestions: '',
@@ -210,6 +218,7 @@ export default function CreateAgent() {
       case 'projectDescription': error = validateProjectDescription(value); break;
       case 'name': error = validateAgentName(value); break;
       case 'targetDuration': error = validateTargetDuration(value); break;
+      case 'interviewContext': error = validateInterviewContext(value); break;
       case 'introContext': error = validateIntroContext(value); break;
       case 'screenerQuestions': error = validateScreenerQuestions(value); break;
       case 'introductionQuestions': error = validateIntroductionQuestions(value); break;
@@ -235,6 +244,7 @@ export default function CreateAgent() {
         return form.archetype !== null && !validateAgentName(form.name);
       case 2: {
         const durationValid = !validateTargetDuration(form.targetDuration);
+        const interviewContextValid = !validateInterviewContext(form.interviewContext);
         const introContextValid = !validateIntroContext(form.introContext);
         const questionsValid = form.enableScreener 
           ? !validateScreenerQuestions(form.screenerQuestions)
@@ -242,7 +252,7 @@ export default function CreateAgent() {
         const guideValid = !validateInterviewGuide(form.interviewGuide);
         const closeContextValid = !validateCloseContext(form.closeContext);
         const knowledgeValid = !validateKnowledgeText(form.knowledgeText);
-        return durationValid && introContextValid && questionsValid && guideValid && closeContextValid && knowledgeValid;
+        return durationValid && interviewContextValid && introContextValid && questionsValid && guideValid && closeContextValid && knowledgeValid;
       }
       case 3: return true;
       case 4: return true;
@@ -499,6 +509,24 @@ export default function CreateAgent() {
               <h2 className="text-2xl font-bold mb-2">Interview Content Configuration</h2>
               <p className="text-muted-foreground">Configure the interview flow, questions, and knowledge base.</p>
             </div>
+
+            {/* Interview Context */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Interview Context</CardTitle>
+                <CardDescription>
+                  Define the broader purpose, scope, and boundaries of your interview. Describe why the interview is happening, what insights matter most, and how to keep the conversation on track. Include 2-4 research objectives and guidance on what "good" looks like for each topic area.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <RichTextEditor
+                  value={form.interviewContext}
+                  onChange={(value) => handleFieldChange('interviewContext', value)}
+                  placeholder="Example: This interview aims to understand customer pain points in the onboarding process. Key objectives: (1) Identify friction points in the first 30 days, (2) Understand what success looks like from the customer's perspective..."
+                />
+                <CharacterCounter current={form.interviewContext.length} max={2000} error={fieldErrors.interviewContext} />
+              </CardContent>
+            </Card>
             
             {/* Target Duration */}
             <Card>
@@ -787,6 +815,10 @@ export default function CreateAgent() {
                 <div>
                   <Label className="text-muted-foreground">Target Duration</Label>
                   <p className="font-medium">{form.targetDuration} minutes</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Interview Context</Label>
+                  <p className="font-medium">{form.interviewContext ? `${form.interviewContext.replace(/<[^>]*>/g, '').substring(0, 100)}${form.interviewContext.length > 100 ? '...' : ''}` : 'Not provided'}</p>
                 </div>
                 <div>
                   <Label className="text-muted-foreground">Intro Context</Label>
