@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Agent, ARCHETYPES } from '@/types';
-import { Mic, Clock, Shield, AlertCircle, ExternalLink } from 'lucide-react';
+import { Agent } from '@/types';
+import { Mic, Clock, Shield, AlertCircle, ExternalLink, Bot } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
 
@@ -15,8 +15,6 @@ export function InterviewWelcome({ agent, onStart }: InterviewWelcomeProps) {
   const [micPermission, setMicPermission] = useState<'pending' | 'granted' | 'denied'>('pending');
   const [isRequestingMic, setIsRequestingMic] = useState(false);
   const { toast } = useToast();
-
-  const archetypeInfo = ARCHETYPES.find(a => a.id === agent.archetype);
 
   const requestMicrophonePermission = async () => {
     setIsRequestingMic(true);
@@ -39,6 +37,8 @@ export function InterviewWelcome({ agent, onStart }: InterviewWelcomeProps) {
     }
   };
 
+  const estimatedDuration = (agent as any).targetDurationMin || 20;
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="max-w-lg w-full">
@@ -46,9 +46,9 @@ export function InterviewWelcome({ agent, onStart }: InterviewWelcomeProps) {
           <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
             <Mic className="h-8 w-8 text-primary" />
           </div>
-          <CardTitle className="text-2xl">{agent.name}</CardTitle>
+          <CardTitle className="text-2xl">Voice Interview</CardTitle>
           <CardDescription>
-            {archetypeInfo?.description || 'AI-powered interview'}
+            Please review the information below before starting
           </CardDescription>
         </CardHeader>
         
@@ -57,7 +57,11 @@ export function InterviewWelcome({ agent, onStart }: InterviewWelcomeProps) {
           <div className="space-y-3">
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
               <Clock className="h-4 w-4" />
-              <span>Estimated duration: 15-30 minutes</span>
+              <span>Estimated duration: {estimatedDuration} minutes</span>
+            </div>
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <Bot className="h-4 w-4" />
+              <span>This is an AI-led interview</span>
             </div>
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
               <Shield className="h-4 w-4" />
