@@ -750,7 +750,7 @@ export const agentsService = {
   // Get agent by link ID (for public interview page)
   async getAgentByLinkId(linkId: string): Promise<Agent | null> {
     await delay(300);
-    return mockAgents.find(agent => agent.contact.linkId === linkId) || null;
+    return mockAgents.find(agent => agent.contact?.linkId === linkId) || null;
   },
 
   // Deploy agent (go live)
