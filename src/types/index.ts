@@ -30,7 +30,7 @@ export interface SessionFeedback {
 }
 
 // Channel types
-export type Channel = 'inbound_call';
+export type Channel = 'inbound_call' | 'web_link';
 
 // Archetype types
 export type Archetype = 'expert_deep_dive' | 'client_stakeholder' | 'customer_user' | 'rapid_survey' | 'diagnostic' | 'investigative' | 'panel_moderator';
@@ -91,7 +91,7 @@ export interface Interviewer {
   channel: Channel;
   language: string;
   voiceId?: string;
-  contact: { phoneNumber?: string; chatUrl?: string; chatPassword?: string };
+  contact: { phoneNumber?: string; chatUrl?: string; chatPassword?: string; linkId?: string };
   credentialsReady: boolean;
   targetDurationMin?: number;
   createdAt: string;
@@ -275,7 +275,8 @@ export const INTERVIEWER_ROLES: Record<InterviewerRole, {
 // ============= Constants =============
 
 export const PRICE_BY_CHANNEL: Record<Channel, number> = {
-  inbound_call: 20,
+  inbound_call: 50,
+  web_link: 50,
 };
 
 export const ARCHETYPES: ArchetypeInfo[] = [
@@ -354,7 +355,7 @@ export interface Agent {
   channel: Channel;
   interviewsCount: number;
   pricePerInterviewUsd: number;
-  contact: { phoneNumber?: string; chatUrl?: string; chatPassword?: string };
+  contact: { phoneNumber?: string; chatUrl?: string; chatPassword?: string; linkId?: string };
   credentialsReady: boolean;
   deletedAt?: string;
   archivedAt?: string;

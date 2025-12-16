@@ -1,5 +1,15 @@
 // Mock Service Layer for Agents API
-import { Agent, InterviewGuide, KnowledgeAsset, AudienceUpload, Share, InterviewSummary, GuideSchema, PRICE_BY_CHANNEL, AgentCollaborator, AgentPermission } from '@/types';
+import { Agent, InterviewGuide, KnowledgeAsset, AudienceUpload, Share, InterviewSummary, GuideSchema, PRICE_BY_CHANNEL, AgentCollaborator, AgentPermission, Channel } from '@/types';
+
+// Generate a short 6-character alphanumeric code
+function generateShortCode(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Excluding confusing chars
+  let result = '';
+  for (let i = 0; i < 6; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
 
 // Current user ID (mock - in production this would come from auth)
 const CURRENT_USER_ID = 'current-user-1';
@@ -88,6 +98,15 @@ const mockCollaborators: AgentCollaborator[] = [
     permission: 'owner',
     createdAt: '2024-12-01T11:00:00Z',
     updatedAt: '2024-12-01T11:00:00Z'
+  },
+  {
+    id: 'collab-8',
+    agentId: 'agent-web-link',
+    userId: CURRENT_USER_ID,
+    user: CURRENT_USER,
+    permission: 'owner',
+    createdAt: '2024-12-10T09:00:00Z',
+    updatedAt: '2024-12-10T09:00:00Z'
   }
 ];
 // Mock data
@@ -160,6 +179,20 @@ const mockAgents: Agent[] = [
     contact: { phoneNumber: '+1 (555) 111-2222' },
     credentialsReady: true,
     hasActiveCall: true, // Mock: this agent has an ongoing call
+  },
+  {
+    id: 'agent-web-link',
+    name: 'Web Interview Demo',
+    archetype: 'customer_user',
+    createdAt: '2024-12-10T09:00:00Z',
+    status: 'live',
+    language: 'en',
+    voiceId: 'voice-1',
+    channel: 'web_link',
+    interviewsCount: 12,
+    pricePerInterviewUsd: PRICE_BY_CHANNEL.web_link,
+    contact: { linkId: 'DEMO42' },
+    credentialsReady: true,
   }
 ];
 
@@ -654,6 +687,16 @@ export const agentsService = {
   // Create new agent
   async createAgent(data: Partial<Agent>): Promise<Agent> {
     await delay(800);
+    const channel = data.channel || 'inbound_call';
+    const contact: Agent['contact'] = {};
+    
+    // Generate contact info based on channel
+    if (channel === 'inbound_call') {
+      contact.phoneNumber = `+1 (555) ${Math.floor(Math.random() * 900 + 100)}-${Math.floor(Math.random() * 9000 + 1000)}`;
+    } else if (channel === 'web_link') {
+      contact.linkId = generateShortCode();
+    }
+    
     const newAgent: Agent = {
       id: `agent-${Date.now()}`,
       name: data.name || 'Untitled Agent',
@@ -662,11 +705,11 @@ export const agentsService = {
       status: 'ready_to_test',
       language: data.language || 'en',
       voiceId: data.voiceId,
-      channel: 'inbound_call',
+      channel,
       interviewsCount: 0,
-      pricePerInterviewUsd: PRICE_BY_CHANNEL.inbound_call,
-      contact: {},
-      credentialsReady: false,
+      pricePerInterviewUsd: PRICE_BY_CHANNEL[channel],
+      contact,
+      credentialsReady: true,
     };
     
     mockAgents.push(newAgent);
@@ -683,7 +726,7 @@ export const agentsService = {
     return mockAgents[index];
   },
 
-  // Provision contact info (phone/chat)
+  // Provision contact info (phone/web link)
   async provisionContact(agentId: string): Promise<{ contact: Agent['contact'] }> {
     await delay(1000);
     const agent = mockAgents.find(a => a.id === agentId);
@@ -693,10 +736,8 @@ export const agentsService = {
     
     if (agent.channel === 'inbound_call') {
       contact.phoneNumber = `+1 (555) ${Math.floor(Math.random() * 900 + 100)}-${Math.floor(Math.random() * 9000 + 1000)}`;
-    } else if (agent.channel === 'chat') {
-      const urlId = Math.random().toString(36).substring(2, 8);
-      contact.chatUrl = `https://chat.genie/${urlId}`;
-      contact.chatPassword = `PWD-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    } else if (agent.channel === 'web_link') {
+      contact.linkId = generateShortCode();
     }
 
     // Update the agent
@@ -704,6 +745,12 @@ export const agentsService = {
     agent.credentialsReady = true;
     
     return { contact };
+  },
+
+  // Get agent by link ID (for public interview page)
+  async getAgentByLinkId(linkId: string): Promise<Agent | null> {
+    await delay(300);
+    return mockAgents.find(agent => agent.contact.linkId === linkId) || null;
   },
 
   // Deploy agent (go live)

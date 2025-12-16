@@ -26,6 +26,8 @@ import {
   Share,
   Copy,
   Phone,
+  Globe,
+  ExternalLink as ExternalLinkIcon,
   Users,
   Calendar,
   Zap,
@@ -369,28 +371,66 @@ export default function AgentOverview() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Phone className="h-5 w-5" />
+                {agent.channel === 'web_link' ? <Globe className="h-5 w-5" /> : <Phone className="h-5 w-5" />}
                 Contact Information
               </CardTitle>
               <CardDescription>How participants access your agent</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {agent.credentialsReady ? (
-                <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                  <div>
-                    <Label className="text-sm font-medium">Phone Number</Label>
-                    <p className="text-lg font-mono">{agent.contact.phoneNumber || 'Not assigned'}</p>
+                agent.channel === 'web_link' ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                      <div className="flex-1 min-w-0">
+                        <Label className="text-sm font-medium">Interview Link</Label>
+                        <p className="text-sm font-mono truncate">
+                          {`${window.location.origin}/interview/${agent.contact.linkId}`}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 ml-3">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => copyToClipboard(
+                            `${window.location.origin}/interview/${agent.contact.linkId}`,
+                            "Interview link"
+                          )}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => window.open(`/interview/${agent.contact.linkId}`, '_blank')}
+                        >
+                          <ExternalLinkIcon className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <div className={`w-2 h-2 rounded-full ${agent.status === 'live' ? 'bg-green-500' : 'bg-amber-500'}`} />
+                      <span className="text-muted-foreground">
+                        {agent.status === 'live' ? 'Link is active' : 'Link inactive (agent not live)'}
+                      </span>
+                    </div>
                   </div>
-                  {agent.contact.phoneNumber && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => copyToClipboard(agent.contact.phoneNumber!, "Phone number")}
-                    >
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
+                ) : (
+                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                    <div>
+                      <Label className="text-sm font-medium">Phone Number</Label>
+                      <p className="text-lg font-mono">{agent.contact.phoneNumber || 'Not assigned'}</p>
+                    </div>
+                    {agent.contact.phoneNumber && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => copyToClipboard(agent.contact.phoneNumber!, "Phone number")}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                )
               ) : (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto mb-2"></div>

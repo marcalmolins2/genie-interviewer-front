@@ -22,6 +22,7 @@ import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminArchetypes from "./pages/admin/AdminArchetypes";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
+import PublicInterview from "./pages/PublicInterview";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +35,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/interview/:linkId" element={<PublicInterview />} />
           <Route path="/app" element={<AppLayout />}>
             <Route path="agents" element={<AgentsLayout />}>
               <Route index element={<AgentsList />} />
