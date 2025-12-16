@@ -112,7 +112,7 @@ export function InterviewWelcome({ agent, onStart }: InterviewWelcomeProps) {
                     htmlFor="consent" 
                     className="text-sm font-medium leading-none cursor-pointer peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                   >
-                    I agree to participate and consent to the recording of this interview
+                    I agree to participate in this interview
                   </label>
                 </div>
               </div>
