@@ -5,6 +5,7 @@ interface RichTextEditorProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  minHeight?: string;
 }
 
 const modules = {
@@ -22,9 +23,12 @@ const formats = [
   'list', 'bullet'
 ];
 
-export const RichTextEditor = ({ value, onChange, placeholder }: RichTextEditorProps) => {
+export const RichTextEditor = ({ value, onChange, placeholder, minHeight = '150px' }: RichTextEditorProps) => {
   return (
-    <div className="rich-text-editor [&_.ql-container]:min-h-[150px] [&_.ql-editor]:text-sm">
+    <div 
+      className="rich-text-editor [&_.ql-editor]:text-sm"
+      style={{ ['--editor-min-height' as string]: minHeight }}
+    >
       <ReactQuill
         theme="snow"
         value={value}
@@ -32,7 +36,7 @@ export const RichTextEditor = ({ value, onChange, placeholder }: RichTextEditorP
         modules={modules}
         formats={formats}
         placeholder={placeholder}
-        className="bg-background"
+        className="bg-background [&_.ql-container]:min-h-[var(--editor-min-height)]"
       />
     </div>
   );
