@@ -46,9 +46,9 @@ export function InterviewWelcome({ agent, onStart }: InterviewWelcomeProps) {
           <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
             <Mic className="h-8 w-8 text-primary" />
           </div>
-          <CardTitle className="text-2xl">Voice Interview</CardTitle>
+          <CardTitle className="text-2xl">Welcome!</CardTitle>
           <CardDescription>
-            Please review the information below before starting
+            We're excited to hear your thoughts. Here's what to expect:
           </CardDescription>
         </CardHeader>
         
@@ -61,11 +61,11 @@ export function InterviewWelcome({ agent, onStart }: InterviewWelcomeProps) {
             </div>
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
               <Bot className="h-4 w-4" />
-              <span>This is an AI-led interview</span>
+              <span>You'll be chatting with an AI interviewer</span>
             </div>
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
               <Shield className="h-4 w-4" />
-              <span>This interview will be recorded and transcribed</span>
+              <span>Your responses will be recorded and transcribed</span>
             </div>
           </div>
 
