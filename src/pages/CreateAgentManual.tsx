@@ -522,7 +522,14 @@ export default function CreateAgent() {
                 <RichTextEditor
                   value={form.interviewContext}
                   onChange={(value) => handleFieldChange('interviewContext', value)}
-                  placeholder="Example: This interview aims to understand customer pain points in the onboarding process. Key objectives: (1) Identify friction points in the first 30 days, (2) Understand what success looks like from the customer's perspective..."
+                  placeholder={`Purpose: These interviews will inform our client's market entry strategy for the European renewable energy sector. Insights will shape recommendations on target segments, partnership models, and competitive positioning.
+
+Respondents: Senior executives and technical leaders from wind and solar energy companies
+
+Key Research Goals:
+• Map the competitive landscape and identify emerging players disrupting traditional market dynamics
+• Understand regulatory and policy factors driving investment decisions across key European markets
+• Identify technology trends that will reshape cost structures over the next 5 years`}
                 />
                 <CharacterCounter current={form.interviewContext.length} max={2000} error={fieldErrors.interviewContext} />
               </CardContent>
