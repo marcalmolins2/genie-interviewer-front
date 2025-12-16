@@ -575,7 +575,9 @@ export default function CreateAgent() {
                 <RichTextEditor
                   value={form.interviewContext}
                   onChange={(value) => handleFieldChange("interviewContext", value)}
-                  placeholder={`Purpose: These interviews will inform our client's market entry strategy for the European renewable energy sector. Insights will shape recommendations on target segments, partnership models, and competitive positioning.
+                  placeholder={`Example
+
+Purpose: These interviews will inform our client's market entry strategy for the European renewable energy sector. Insights will shape recommendations on target segments, partnership models, and competitive positioning.
 
 Respondents: Senior executives and technical leaders from wind and solar energy companies
 
