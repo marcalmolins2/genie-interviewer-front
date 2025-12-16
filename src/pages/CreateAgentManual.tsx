@@ -1091,7 +1091,7 @@ Key Research Goals:
                     disabled={!validateStep(currentStep) || isCreating}
                     className={!validateStep(currentStep) || isCreating ? "pointer-events-none" : ""}
                   >
-                    {isCreating ? "Creating..." : "Generate Phone Number"}
+                    {isCreating ? "Creating..." : "Publish"}
                   </Button>
                 </div>
               )}
