@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Agent, ARCHETYPES } from '@/types';
-import { Mic, Clock, Shield, AlertCircle } from 'lucide-react';
+import { Mic, Clock, Shield, AlertCircle, ExternalLink } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Link } from 'react-router-dom';
 
 interface InterviewWelcomeProps {
   agent: Agent;
@@ -123,7 +124,15 @@ export function InterviewWelcome({ agent, onStart }: InterviewWelcomeProps) {
 
           {/* Privacy Note */}
           <p className="text-xs text-muted-foreground text-center">
-            By starting this interview, you consent to the recording and processing of your responses for research purposes.
+            By starting this interview, you consent to the recording and processing of your responses.{' '}
+            <Link 
+              to="/privacy" 
+              target="_blank"
+              className="text-primary hover:underline inline-flex items-center gap-1"
+            >
+              Privacy Policy
+              <ExternalLink className="h-3 w-3" />
+            </Link>
           </p>
         </CardContent>
       </Card>
