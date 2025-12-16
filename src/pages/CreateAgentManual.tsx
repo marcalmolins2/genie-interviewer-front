@@ -530,6 +530,7 @@ Key Research Goals:
 • Map the competitive landscape and identify emerging players disrupting traditional market dynamics
 • Understand regulatory and policy factors driving investment decisions across key European markets
 • Identify technology trends that will reshape cost structures over the next 5 years`}
+                  minHeight="220px"
                 />
                 <CharacterCounter current={form.interviewContext.length} max={2000} error={fieldErrors.interviewContext} />
               </CardContent>
