@@ -95,9 +95,9 @@ const validateProjectDescription = (value: string): string => {
 const validateAgentName = (value: string): string => {
   const trimmed = value.trim();
   if (!trimmed) return ""; // Optional field
-  if (trimmed.length < 2) return "Agent name must be at least 2 characters";
-  if (trimmed.length > 20) return "Agent name must be shorter than 20 characters";
-  if (!AGENT_NAME_PATTERN.test(trimmed)) return "Agent name can only contain letters, spaces, and dashes";
+  if (trimmed.length < 2) return "Interviewer name must be at least 2 characters";
+  if (trimmed.length > 20) return "Interviewer name must be shorter than 20 characters";
+  if (!AGENT_NAME_PATTERN.test(trimmed)) return "Interviewer name can only contain letters, spaces, and dashes";
   return "";
 };
 
@@ -405,10 +405,10 @@ export default function CreateAgent() {
         channel: form.channel,
       });
       await agentsService.provisionContact(agent.id);
-      toast({ title: "Success!", description: "Your agent has been created and is ready to test." });
-      navigate(`/app/agents/${agent.id}`);
+      toast({ title: "Success!", description: "Your interviewer has been created and is ready to test." });
+      navigate(`/app/interviewers/${agent.id}`);
     } catch (error) {
-      toast({ title: "Error", description: "Failed to create agent. Please try again.", variant: "destructive" });
+      toast({ title: "Error", description: "Failed to create interviewer. Please try again.", variant: "destructive" });
     } finally {
       setIsCreating(false);
     }
@@ -959,7 +959,7 @@ Key Research Goals:
           <div className="space-y-6 max-w-2xl mx-auto">
             <div>
               <h2 className="text-2xl font-bold mb-2">Test Your Configuration</h2>
-              <p className="text-muted-foreground">Try out your agent before launching.</p>
+              <p className="text-muted-foreground">Try out your interviewer before launching.</p>
             </div>
             <Card>
               <CardContent className="pt-6">
@@ -979,7 +979,7 @@ Key Research Goals:
         return (
           <div className="space-y-6 max-w-2xl mx-auto">
             <div>
-              <h2 className="text-2xl font-bold mb-2">Deploy Your Agent</h2>
+              <h2 className="text-2xl font-bold mb-2">Deploy Your Interviewer</h2>
               <p className="text-muted-foreground">Select the medium and generate your phone number.</p>
             </div>
             <Card>

@@ -72,7 +72,7 @@ const getMockResponse = (message: string): string => {
   }
   
   if (lowerMessage.includes('archetype')) {
-    return "Archetypes define your agent's interview style:\n\n• **Discovery** - Open-ended exploration of topics\n• **Evaluative** - Structured assessment interviews\n• **Generative** - Creative ideation sessions\n• **Validation** - Testing specific hypotheses\n\nChoose based on your research goals. Discovery works well for early-stage research, while Validation suits hypothesis testing.";
+    return "Archetypes define your interviewer's interview style:\n\n• **Discovery** - Open-ended exploration of topics\n• **Evaluative** - Structured assessment interviews\n• **Generative** - Creative ideation sessions\n• **Validation** - Testing specific hypotheses\n\nChoose based on your research goals. Discovery works well for early-stage research, while Validation suits hypothesis testing.";
   }
   
   if (lowerMessage.includes('interview guide') || lowerMessage.includes('effective')) {
@@ -80,7 +80,7 @@ const getMockResponse = (message: string): string => {
   }
   
   if (lowerMessage.includes('test')) {
-    return "Testing your agent before deployment:\n\n1. Navigate to the **Test** step in the agent setup\n2. You'll see a preview of your interview flow\n3. Interact with the agent as a respondent would\n4. Check that questions flow naturally\n5. Verify screener logic works correctly\n\nYou can always go back to edit and re-test until satisfied.";
+    return "Testing your interviewer before deployment:\n\n1. Navigate to the **Test** step in the interviewer setup\n2. You'll see a preview of your interview flow\n3. Interact with the interviewer as a respondent would\n4. Check that questions flow naturally\n5. Verify screener logic works correctly\n\nYou can always go back to edit and re-test until satisfied.";
   }
   
   if (lowerMessage.includes('insight') || lowerMessage.includes('analyze') || lowerMessage.includes('interpret')) {
@@ -88,7 +88,7 @@ const getMockResponse = (message: string): string => {
   }
   
   if (lowerMessage.includes('export')) {
-    return "To export your interview data:\n\n1. Go to the **Analyze** tab of your agent\n2. Click the export button (top-right)\n3. Choose format: CSV, JSON, or PDF report\n4. Select which data to include\n\nYou can export individual transcripts or aggregate data.";
+    return "To export your interview data:\n\n1. Go to the **Analyze** tab of your interviewer\n2. Click the export button (top-right)\n3. Choose format: CSV, JSON, or PDF report\n4. Select which data to include\n\nYou can export individual transcripts or aggregate data.";
   }
   
   if (lowerMessage.includes('documentation') || lowerMessage.includes('docs') || lowerMessage.includes('help')) {

@@ -10,7 +10,7 @@ interface InterviewLiveProps {
   onEnd: (duration: number) => void;
 }
 
-// Mock interview questions based on agent type
+// Mock interview questions based on interviewer type
 const mockQuestions = [
   "Hello! Thank you for joining this interview. Before we begin, could you briefly introduce yourself and your role?",
   "That's great context. Now, thinking about your day-to-day work, what are the biggest challenges you face?",

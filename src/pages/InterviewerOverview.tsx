@@ -114,15 +114,15 @@ export default function AgentOverview() {
       if (data) {
         setAgent(data);
       } else {
-        navigate("/app/agents");
+        navigate("/app/interviewers");
       }
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to load agent details.",
+        description: "Failed to load interviewer details.",
         variant: "destructive",
       });
-      navigate("/app/agents");
+      navigate("/app/interviewers");
     } finally {
       setLoading(false);
     }
@@ -163,12 +163,12 @@ export default function AgentOverview() {
 
       toast({
         title: "Success",
-        description: "Agent activated successfully.",
+        description: "Interviewer activated successfully.",
       });
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to activate agent.",
+        description: "Failed to activate interviewer.",
         variant: "destructive",
       });
     }
@@ -186,12 +186,12 @@ export default function AgentOverview() {
 
       toast({
         title: "Success",
-        description: "Agent deployed successfully and is now live!",
+        description: "Interviewer deployed successfully and is now live!",
       });
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to deploy agent.",
+        description: "Failed to deploy interviewer.",
         variant: "destructive",
       });
     } finally {
@@ -212,7 +212,7 @@ export default function AgentOverview() {
     try {
       await agentsService.archiveAgent(agent.id);
       toast({ description: "Archived" });
-      navigate("/app/agents");
+      navigate("/app/interviewers");
     } catch (error) {
       toast({
         title: "Error",
@@ -228,7 +228,7 @@ export default function AgentOverview() {
     try {
       await agentsService.moveToTrash(agent.id);
       toast({ description: "Moved to trash" });
-      navigate("/app/agents");
+      navigate("/app/interviewers");
     } catch (error) {
       if (error instanceof Error && error.message === 'ACTIVE_CALL_IN_PROGRESS') {
         toast({
@@ -291,7 +291,7 @@ export default function AgentOverview() {
         <Card className="p-12 text-center">
           <CardTitle className="mb-2">Interviewer not found</CardTitle>
           <CardDescription className="mb-6">The requested interviewer could not be found.</CardDescription>
-          <Link to="/app/agents">
+          <Link to="/app/interviewers">
             <Button>Back to Interviewers</Button>
           </Link>
         </Card>
@@ -316,7 +316,7 @@ export default function AgentOverview() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate("/app/agents")}>
+          <Button variant="ghost" onClick={() => navigate("/app/interviewers")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Interviewers
           </Button>
@@ -356,7 +356,7 @@ export default function AgentOverview() {
               </Tooltip>
             </TooltipProvider>
           ) : (
-            <Button variant="outline" size="sm" onClick={() => navigate(`/app/agents/${agent.id}/edit`)}>
+            <Button variant="outline" size="sm" onClick={() => navigate(`/app/interviewers/${agent.id}/edit`)}>
               <Edit className="h-4 w-4 mr-2" />
               Edit
             </Button>
@@ -424,7 +424,7 @@ export default function AgentOverview() {
             </Button>
           )}
 
-          <Link to={`/app/agents/${agent.id}/analyze`}>
+          <Link to={`/app/interviewers/${agent.id}/analyze`}>
             <Button variant="outline" size="sm">
               <BarChart3 className="h-4 w-4 mr-2" />
               Insights
@@ -542,7 +542,7 @@ export default function AgentOverview() {
                 {agent.channel === 'web_link' ? <Globe className="h-5 w-5" /> : <Phone className="h-5 w-5" />}
                 Contact Information
               </CardTitle>
-              <CardDescription>How participants access your agent</CardDescription>
+              <CardDescription>How participants access your interviewer</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {agent.credentialsReady ? (
@@ -765,14 +765,14 @@ export default function AgentOverview() {
           <Card>
             <CardHeader>
               <CardTitle>Activity Timeline</CardTitle>
-              <CardDescription>Key events in your agent's lifecycle</CardDescription>
+              <CardDescription>Key events in your interviewer's lifecycle</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
                   <div>
-                    <p className="font-medium">Agent Created</p>
+                    <p className="font-medium">Interviewer Created</p>
                     <p className="text-sm text-muted-foreground">{formatDate(agent.createdAt)}</p>
                   </div>
                 </div>

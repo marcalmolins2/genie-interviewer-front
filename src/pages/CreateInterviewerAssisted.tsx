@@ -55,8 +55,8 @@ interface AgentData {
 const phaseLabels = {
   [ConversationPhase.WELCOME]: 'Welcome',
   [ConversationPhase.RESEARCH_GOALS]: 'Research Goals',
-  [ConversationPhase.ARCHETYPE_SELECTION]: 'Agent Type',
-  [ConversationPhase.AGENT_DETAILS]: 'Agent Details',
+  [ConversationPhase.ARCHETYPE_SELECTION]: 'Interviewer Type',
+  [ConversationPhase.AGENT_DETAILS]: 'Interviewer Details',
   [ConversationPhase.INTERVIEW_GUIDE]: 'Interview Guide',
   [ConversationPhase.KNOWLEDGE_BASE]: 'Knowledge Base',
   [ConversationPhase.CHANNEL_SELECTION]: 'Communication',
@@ -88,7 +88,7 @@ export default function CreateAgentAssisted() {
     // Send welcome message when component mounts
     setTimeout(() => {
       addAssistantMessage(
-        "👋 Hi there! I'm your Genie Agent Configuration Assistant, here to help you create the perfect interview agent. This will be a quick conversation where I'll ask about your research goals and guide you through the setup.\n\nLet's start with a simple question: **What type of research are you planning to conduct?** For example:\n- User experience interviews\n- Market research\n- Customer feedback collection\n- Product validation\n- Academic research",
+        "👋 Hi there! I'm your Genie Interviewer Configuration Assistant, here to help you create the perfect interviewer. This will be a quick conversation where I'll ask about your research goals and guide you through the setup.\n\nLet's start with a simple question: **What type of research are you planning to conduct?** For example:\n- User experience interviews\n- Market research\n- Customer feedback collection\n- Product validation\n- Academic research",
         ConversationPhase.WELCOME
       );
     }, 500);
@@ -242,13 +242,13 @@ Does this sound like what you need? If not, I can suggest other types like:
     setCurrentPhase(ConversationPhase.ARCHETYPE_SELECTION);
     
     addAssistantMessage(
-      `Great choice! Now let's give your agent a name. This should be descriptive and help you identify the purpose.\n
-**What would you like to name your agent?**\n
+      `Great choice! Now let's give your interviewer a name. This should be descriptive and help you identify the purpose.\n
+**What would you like to name your interviewer?**\n
 Some examples:
 - "Customer Satisfaction Deep-Dive"
 - "UX Research Assistant"
 - "Product Feedback Collector"
-- "Market Analysis Agent"`,
+- "Market Analysis Interviewer"`,
       ConversationPhase.AGENT_DETAILS
     );
   };
@@ -258,7 +258,7 @@ Some examples:
     setCurrentPhase(ConversationPhase.AGENT_DETAILS);
     
     addAssistantMessage(
-      `Perfect! "${userMessage}" is a great name. Now I'll create a customized interview guide for your agent.\n
+      `Perfect! "${userMessage}" is a great name. Now I'll create a customized interview guide for your interviewer.\n
 Based on your research goals and chosen archetype, I'll generate a structured interview flow. **Is there anything specific you want me to include or focus on in the interview questions?**\n
 For example:
 - Specific topics to cover
@@ -301,8 +301,8 @@ Based on your input: ${userMessage}\n
     setCurrentPhase(ConversationPhase.INTERVIEW_GUIDE);
     
     addAssistantMessage(
-      `Excellent! I've created a tailored interview guide for your agent. Now, let's add some knowledge context.\n
-**Do you have any background information, context, or specific knowledge you want your agent to be aware of during interviews?**\n
+      `Excellent! I've created a tailored interview guide for your interviewer. Now, let's add some knowledge context.\n
+**Do you have any background information, context, or specific knowledge you want your interviewer to be aware of during interviews?**\n
 This could include:
 - Company background
 - Product information
@@ -321,7 +321,7 @@ Or type "skip" if you don't need any additional context right now.`,
     
     setCurrentPhase(ConversationPhase.KNOWLEDGE_BASE);
     addAssistantMessage(
-      `Great! Your agent will use **Inbound Calls** - participants will call a dedicated phone number to complete the interview.\n
+      `Great! Your interviewer will use **Inbound Calls** - participants will call a dedicated phone number to complete the interview.\n
 **Price:** $${PRICE_BY_CHANNEL.inbound_call} per interview\n
 **Features:**
 - Dedicated phone number
@@ -336,14 +336,14 @@ Or type "skip" if you don't need any additional context right now.`,
     const archetype = ARCHETYPES.find(a => a.id === agentData.archetype);
     
     addAssistantMessage(
-      `Perfect! Here's a summary of your agent:\n
-**Agent Name:** ${agentData.name}\n
+      `Perfect! Here's a summary of your interviewer:\n
+**Interviewer Name:** ${agentData.name}\n
 **Type:** ${archetype?.title}\n
 **Communication:** Inbound Call\n
 **Price:** $${PRICE_BY_CHANNEL.inbound_call} per interview\n
 **Research Goals:** ${agentData.researchGoals}\n
-Your agent will have a customized interview guide and ${agentData.knowledgeText ? 'background knowledge context' : 'no additional context'}.\n
-**Are you ready to create this agent?** Type "yes" to proceed or "modify" if you want to change anything.`,
+Your interviewer will have a customized interview guide and ${agentData.knowledgeText ? 'background knowledge context' : 'no additional context'}.\n
+**Are you ready to create this interviewer?** Type "yes" to proceed or "modify" if you want to change anything.`,
       ConversationPhase.REVIEW_CONFIRM
     );
   };
@@ -353,14 +353,14 @@ Your agent will have a customized interview guide and ${agentData.knowledgeText 
     const archetype = ARCHETYPES.find(a => a.id === agentData.archetype);
     
     addAssistantMessage(
-      `Perfect! Here's a summary of your agent:\n
-**Agent Name:** ${agentData.name}\n
+      `Perfect! Here's a summary of your interviewer:\n
+**Interviewer Name:** ${agentData.name}\n
 **Type:** ${archetype?.title}\n
 **Communication:** Inbound Call\n
 **Price:** $${PRICE_BY_CHANNEL.inbound_call} per interview\n
 **Research Goals:** ${agentData.researchGoals}\n
-Your agent will have a customized interview guide and ${agentData.knowledgeText ? 'background knowledge context' : 'no additional context'}.\n
-**Are you ready to create this agent?** Type "yes" to proceed or "modify" if you want to change anything.`,
+Your interviewer will have a customized interview guide and ${agentData.knowledgeText ? 'background knowledge context' : 'no additional context'}.\n
+**Are you ready to create this interviewer?** Type "yes" to proceed or "modify" if you want to change anything.`,
       ConversationPhase.REVIEW_CONFIRM
     );
   };
@@ -371,7 +371,7 @@ Your agent will have a customized interview guide and ${agentData.knowledgeText 
     if (lowerMessage.includes('modify') || lowerMessage.includes('change') || lowerMessage.includes('no')) {
       addAssistantMessage(
         `No problem! What would you like to modify? You can change:
-- Agent name
+- Interviewer name
 - Communication method
 - Interview focus
 - Background context\n
@@ -394,7 +394,7 @@ Or if you prefer more control, you can switch to our manual setup process.`,
     if (!agentData.archetype) return;
     
     setIsCreating(true);
-    addAssistantMessage(`Creating your agent now... This will just take a moment! ✨`);
+    addAssistantMessage(`Creating your interviewer now... This will just take a moment! ✨`);
     
     try {
       const agent = await agentsService.createAgent({
@@ -410,29 +410,29 @@ Or if you prefer more control, you can switch to our manual setup process.`,
 
       setCurrentPhase(ConversationPhase.COMPLETE);
       addAssistantMessage(
-        `🎉 **Success!** Your agent "${agentData.name}" has been created and is ready to use!\n
-Your agent is now live and ready to conduct interviews. You can view details, test it out, or share it with participants.\n
+        `🎉 **Success!** Your interviewer "${agentData.name}" has been created and is ready to use!\n
+Your interviewer is now live and ready to conduct interviews. You can view details, test it out, or share it with participants.\n
 **What would you like to do next?**`,
         ConversationPhase.COMPLETE
       );
 
       toast({
         title: 'Success!',
-        description: 'Your agent has been created and is ready to test.',
+        description: 'Your interviewer has been created and is ready to test.',
       });
 
-      // Navigate to agent details after a short delay
+      // Navigate to interviewer details after a short delay
       setTimeout(() => {
-        navigate(`/app/agents/${agent.id}`);
+        navigate(`/app/interviewers/${agent.id}`);
       }, 3000);
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Failed to create agent. Please try again.',
+        description: 'Failed to create interviewer. Please try again.',
         variant: 'destructive',
       });
       addAssistantMessage(
-        `I'm sorry, there was an error creating your agent. Please try again or switch to manual setup if the problem persists.`
+        `I'm sorry, there was an error creating your interviewer. Please try again or switch to manual setup if the problem persists.`
       );
     } finally {
       setIsCreating(false);
@@ -444,19 +444,19 @@ Your agent is now live and ready to conduct interviews. You can view details, te
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
-          <Link to="/app/agents">
+          <Link to="/app/interviewers">
             <Button variant="ghost" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Agents
+              Back to Interviewers
             </Button>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold">Genie-Assisted Agent Creation</h1>
-            <p className="text-muted-foreground">Let's create your perfect interview agent together</p>
+            <h1 className="text-2xl font-bold">Genie-Assisted Interviewer Creation</h1>
+            <p className="text-muted-foreground">Let's create your perfect interviewer together</p>
           </div>
         </div>
         
-        <Link to="/app/agents/new/manual">
+        <Link to="/app/interviewers/new/manual">
           <Button variant="outline" size="sm">
             <Settings className="h-4 w-4 mr-2" />
             Switch to Manual

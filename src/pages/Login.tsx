@@ -107,7 +107,7 @@ export default function Login() {
         {/* Footer */}
         <div className="text-center text-xs text-muted-foreground">
           <p>
-            © 2024 Genie Interviewers. Enterprise security and compliance enabled.
+            © 2025 Genie Interviewers. Enterprise security and compliance enabled.
           </p>
         </div>
       </div>

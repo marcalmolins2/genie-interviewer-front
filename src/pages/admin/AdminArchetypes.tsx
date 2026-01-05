@@ -110,7 +110,7 @@ export default function AdminArchetypes() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Archetypes</h1>
-          <p className="text-muted-foreground mt-1">Manage interview agent archetypes</p>
+          <p className="text-muted-foreground mt-1">Manage interviewer archetypes</p>
         </div>
         <Button onClick={() => setFormOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
@@ -203,7 +203,7 @@ export default function AdminArchetypes() {
             </AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete "{deletingArchetype?.title}"? This action cannot be undone.
-              Existing agents using this archetype will not be affected.
+              Existing interviewers using this archetype will not be affected.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
