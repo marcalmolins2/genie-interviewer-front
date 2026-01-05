@@ -97,16 +97,24 @@ export default function AgentsList() {
     try {
       await agentsService.moveToTrash(agentId);
       toast({
-        title: 'Agent moved to trash',
-        description: 'The agent will be permanently deleted after 30 days.'
+        title: 'Interviewer moved to trash',
+        description: 'The interviewer will be permanently deleted after 30 days.'
       });
       loadAgents();
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to move agent to trash.',
-        variant: 'destructive'
-      });
+      if (error instanceof Error && error.message === 'ACTIVE_CALL_IN_PROGRESS') {
+        toast({
+          title: 'Cannot move to trash',
+          description: 'This interviewer has an active call in progress. Please wait until the call ends.',
+          variant: 'destructive'
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Failed to move interviewer to trash.',
+          variant: 'destructive'
+        });
+      }
     }
   };
 

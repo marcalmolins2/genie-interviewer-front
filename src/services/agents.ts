@@ -869,6 +869,11 @@ export const agentsService = {
     const agent = mockAgents.find(a => a.id === agentId);
     if (!agent) throw new Error('Agent not found');
     
+    // Block deletion if a call is in progress
+    if (agent.hasActiveCall) {
+      throw new Error('ACTIVE_CALL_IN_PROGRESS');
+    }
+    
     agent.deletedAt = new Date().toISOString();
     // Auto-suspend when moving to trash
     if (agent.status === 'live') {
