@@ -105,7 +105,7 @@ export default function AgentsList() {
       if (error instanceof Error && error.message === 'ACTIVE_CALL_IN_PROGRESS') {
         toast({
           title: 'Cannot move to trash',
-          description: 'This interviewer has an active call in progress. Please wait until the call ends.',
+          description: 'This interviewer has an active call in progress. Please wait until the call ends before moving to trash.',
           variant: 'destructive'
         });
       } else {
@@ -396,23 +396,13 @@ export default function AgentsList() {
                           <ArchiveIcon className="h-4 w-4 mr-2" />
                           Archive
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={async e => {
-                    e.stopPropagation();
-                    try {
-                      await agentsService.moveToTrash(agent.id);
-                      toast({
-                        title: 'Moved to trash',
-                        description: 'Agent moved to trash. It will be permanently deleted in 30 days.'
-                      });
-                      loadAgents();
-                    } catch (error) {
-                      toast({
-                        title: 'Error',
-                        description: 'Failed to move agent to trash',
-                        variant: 'destructive'
-                      });
-                    }
-                  }}>
+                        <DropdownMenuItem 
+                          className="text-destructive focus:text-destructive" 
+                          onClick={e => {
+                            e.stopPropagation();
+                            handleMoveToTrash(agent.id);
+                          }}
+                        >
                           <Trash2 className="h-4 w-4 mr-2" />
                           Move to Trash
                         </DropdownMenuItem>
