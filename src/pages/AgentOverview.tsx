@@ -15,6 +15,22 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { AgentStatusBadge } from "@/components/AgentStatusBadge";
 import { ShareAgentDialog } from "@/components/ShareAgentDialog";
 import { useAgentPermission } from "@/hooks/useAgentPermission";
@@ -42,6 +58,10 @@ import {
   ChevronRight,
   Eye,
   AlertCircle,
+  MoreHorizontal,
+  Archive,
+  Trash2,
+  RotateCcw,
 } from "lucide-react";
 import { Agent, InterviewGuide, KnowledgeAsset } from "@/types";
 import { agentsService } from "@/services/agents";
@@ -58,6 +78,9 @@ export default function AgentOverview() {
   const [expandedSections, setExpandedSections] = useState<Set<number>>(new Set());
   const [deployDialogOpen, setDeployDialogOpen] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
+  const [trashDialogOpen, setTrashDialogOpen] = useState(false);
+  const [unarchiveDialogOpen, setUnarchiveDialogOpen] = useState(false);
   const [caseCode, setCaseCode] = useState("");
   const [isDeploying, setIsDeploying] = useState(false);
   const navigate = useNavigate();
@@ -184,6 +207,54 @@ export default function AgentOverview() {
     });
   };
 
+  const handleArchive = async () => {
+    if (!agent) return;
+    try {
+      await agentsService.archiveAgent(agent.id);
+      toast({ description: "Archived" });
+      navigate("/app/agents");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to archive interviewer.",
+        variant: "destructive",
+      });
+    }
+    setArchiveDialogOpen(false);
+  };
+
+  const handleMoveToTrash = async () => {
+    if (!agent) return;
+    try {
+      await agentsService.moveToTrash(agent.id);
+      toast({ description: "Moved to trash" });
+      navigate("/app/agents");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to move interviewer to trash.",
+        variant: "destructive",
+      });
+    }
+    setTrashDialogOpen(false);
+  };
+
+  const handleUnarchive = async () => {
+    if (!agent) return;
+    try {
+      const updatedAgent = await agentsService.unarchiveAgent(agent.id);
+      setAgent(updatedAgent);
+      toast({ description: "Unarchived" });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to unarchive interviewer.",
+        variant: "destructive",
+      });
+    }
+    setUnarchiveDialogOpen(false);
+  };
+
   const toggleSection = (sectionIndex: number) => {
     setExpandedSections((prev) => {
       const newSet = new Set(prev);
@@ -210,15 +281,17 @@ export default function AgentOverview() {
     return (
       <div className="container py-8">
         <Card className="p-12 text-center">
-          <CardTitle className="mb-2">Agent not found</CardTitle>
-          <CardDescription className="mb-6">The requested agent could not be found.</CardDescription>
+          <CardTitle className="mb-2">Interviewer not found</CardTitle>
+          <CardDescription className="mb-6">The requested interviewer could not be found.</CardDescription>
           <Link to="/app/agents">
-            <Button>Back to Agents</Button>
+            <Button>Back to Interviewers</Button>
           </Link>
         </Card>
       </div>
     );
   }
+
+  const isArchived = agent.status === 'archived';
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -237,7 +310,7 @@ export default function AgentOverview() {
         <div className="flex items-center gap-4">
           <Button variant="ghost" onClick={() => navigate("/app/agents")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Agents
+            Back to Interviewers
           </Button>
           <div>
             <h1 className="text-3xl font-bold">{agent.name}</h1>
@@ -250,7 +323,8 @@ export default function AgentOverview() {
         </div>
 
         <div className="flex items-center gap-2">
-          {agent.hasActiveCall || !canEdit ? (
+          {/* Edit Button - disabled for archived or no permission */}
+          {agent.hasActiveCall || !canEdit || isArchived ? (
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -264,7 +338,9 @@ export default function AgentOverview() {
                 <TooltipContent>
                   <p className="flex items-center gap-1">
                     <AlertCircle className="h-3 w-3" />
-                    {agent.hasActiveCall
+                    {isArchived
+                      ? "Unarchive to edit this interviewer"
+                      : agent.hasActiveCall
                       ? "Cannot edit while a call is in progress"
                       : "You need Editor or Owner permission to edit"}
                   </p>
@@ -288,8 +364,8 @@ export default function AgentOverview() {
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Deploy Agent</DialogTitle>
-                  <DialogDescription>Enter your BCG case code to deploy this agent to production.</DialogDescription>
+                  <DialogTitle>Deploy Interviewer</DialogTitle>
+                  <DialogDescription>Enter your BCG case code to deploy this interviewer to production.</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div>
@@ -325,10 +401,18 @@ export default function AgentOverview() {
             </Dialog>
           )}
 
-          {agent.status === "suspended" && (
+          {(agent.status === "suspended" || agent.status === "paused") && (
             <Button size="sm" onClick={handleActivate}>
               <Play className="h-4 w-4 mr-2" />
               Activate
+            </Button>
+          )}
+
+          {/* Unarchive button for archived interviewers */}
+          {isArchived && (
+            <Button size="sm" onClick={() => setUnarchiveDialogOpen(true)}>
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Unarchive
             </Button>
           )}
 
@@ -339,10 +423,12 @@ export default function AgentOverview() {
             </Button>
           </Link>
 
-          <Button variant="outline" size="sm">
-            <Zap className="h-4 w-4 mr-2" />
-            Test Agent
-          </Button>
+          {!isArchived && (
+            <Button variant="outline" size="sm">
+              <Zap className="h-4 w-4 mr-2" />
+              Test Interviewer
+            </Button>
+          )}
 
           <Button variant="outline" size="sm" onClick={() => setShareDialogOpen(true)}>
             <Share className="h-4 w-4 mr-2" />
@@ -354,6 +440,30 @@ export default function AgentOverview() {
             )}
           </Button>
 
+          {/* Actions Dropdown Menu */}
+          {canArchive && !isArchived && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setArchiveDialogOpen(true)}>
+                  <Archive className="h-4 w-4 mr-2" />
+                  Archive
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setTrashDialogOpen(true)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Move to Trash
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+
           {/* View Only Badge for non-editors */}
           {permission && !canEdit && (
             <Badge variant="secondary" className="flex items-center gap-1">
@@ -363,6 +473,56 @@ export default function AgentOverview() {
           )}
         </div>
       </div>
+
+      {/* Archive Confirmation Dialog */}
+      <AlertDialog open={archiveDialogOpen} onOpenChange={setArchiveDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Archive interviewer</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will hide the interviewer from your overview and disable new calls
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleArchive}>Archive</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Trash Confirmation Dialog */}
+      <AlertDialog open={trashDialogOpen} onOpenChange={setTrashDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Move to Trash</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will move the interviewer to trash for 30 days before permanent deletion
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleMoveToTrash} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Move to Trash
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Unarchive Confirmation Dialog */}
+      <AlertDialog open={unarchiveDialogOpen} onOpenChange={setUnarchiveDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unarchive interviewer</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will restore the interviewer in Paused state
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleUnarchive}>Unarchive</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Main Info */}
@@ -447,7 +607,7 @@ export default function AgentOverview() {
                 <FileText className="h-5 w-5" />
                 Interview Guide
               </CardTitle>
-              <CardDescription>The conversation structure for this agent</CardDescription>
+              <CardDescription>The conversation structure for this interviewer</CardDescription>
             </CardHeader>
             <CardContent>
               {guide ? (
@@ -537,7 +697,7 @@ export default function AgentOverview() {
                 <Brain className="h-5 w-5" />
                 Knowledge Base
               </CardTitle>
-              <CardDescription>Information and resources available to the agent</CardDescription>
+              <CardDescription>Information and resources available to the interviewer</CardDescription>
             </CardHeader>
             <CardContent>
               {knowledge.length > 0 ? (

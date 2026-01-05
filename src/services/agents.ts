@@ -912,25 +912,30 @@ export const agentsService = {
   async archiveAgent(agentId: string): Promise<Agent> {
     await delay(400);
     const agent = mockAgents.find(a => a.id === agentId);
-    if (!agent) throw new Error('Agent not found');
+    if (!agent) throw new Error('Interviewer not found');
     
     agent.archivedAt = new Date().toISOString();
-    // Auto-suspend when archiving
-    if (agent.status === 'live') {
-      agent.status = 'suspended';
-    }
+    agent.status = 'archived';
     return agent;
   },
 
   async unarchiveAgent(agentId: string): Promise<Agent> {
     await delay(400);
     const agent = mockAgents.find(a => a.id === agentId);
-    if (!agent) throw new Error('Agent not found');
+    if (!agent) throw new Error('Interviewer not found');
     
     delete agent.archivedAt;
-    // Remain suspended - user must manually reactivate
-    agent.status = 'suspended';
+    agent.status = 'paused';
     return agent;
+  },
+
+  async getLastInterviewDate(agentId: string): Promise<string | null> {
+    await delay(200);
+    const interviews = mockInterviews.filter(i => i.agentId === agentId);
+    if (interviews.length === 0) return null;
+    return interviews.sort((a, b) => 
+      new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime()
+    )[0].startedAt;
   },
 
   async getArchivedAgents(): Promise<Agent[]> {

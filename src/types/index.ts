@@ -341,7 +341,7 @@ export const ARCHETYPES: ArchetypeInfo[] = [
 // ============= Legacy Compatibility (to be removed) =============
 
 // Keep Agent type as alias for Interviewer during migration
-export type AgentStatus = 'live' | 'ready_to_test' | 'suspended' | 'finished';
+export type AgentStatus = 'live' | 'ready_to_test' | 'suspended' | 'paused' | 'archived' | 'finished';
 export type AgentPermission = 'viewer' | 'editor' | 'owner';
 
 export interface Agent {
