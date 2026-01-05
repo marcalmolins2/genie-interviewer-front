@@ -28,7 +28,7 @@ export default function Login() {
         isAdmin: true // Mock admin access for demo
       }));
       
-      navigate('/app/agents');
+      navigate('/app/interviewers');
     } catch (err) {
       setError('Authentication failed. Please try again.');
     } finally {

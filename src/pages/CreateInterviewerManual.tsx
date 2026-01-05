@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, ArrowRight, Upload, FileText, X, Check, AlertCircle, Edit } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { ARCHETYPES, Channel, Archetype, PRICE_BY_CHANNEL, GuideSchema } from "@/types";
-import { agentsService } from "@/services/agents";
+import { interviewersService, agentsService } from "@/services/interviewers";
 import { useToast } from "@/hooks/use-toast";
 import { RichTextEditor } from "@/components/RichTextEditor";
 

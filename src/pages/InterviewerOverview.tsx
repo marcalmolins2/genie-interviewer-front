@@ -31,9 +31,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { AgentStatusBadge } from "@/components/AgentStatusBadge";
-import { ShareAgentDialog } from "@/components/ShareAgentDialog";
-import { useAgentPermission } from "@/hooks/useAgentPermission";
+import { InterviewerStatusBadge, AgentStatusBadge } from "@/components/InterviewerStatusBadge";
+import { ShareInterviewerDialog, ShareAgentDialog } from "@/components/ShareInterviewerDialog";
+import { useInterviewerPermission, useAgentPermission } from "@/hooks/useInterviewerPermission";
 import {
   ArrowLeft,
   Edit,
@@ -64,7 +64,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { Agent, InterviewGuide, KnowledgeAsset } from "@/types";
-import { agentsService } from "@/services/agents";
+import { interviewersService, agentsService } from "@/services/interviewers";
 import { useToast } from "@/hooks/use-toast";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 

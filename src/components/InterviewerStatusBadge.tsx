@@ -1,7 +1,7 @@
 import { AgentStatus } from '@/types';
 import { cn } from '@/lib/utils';
 
-interface AgentStatusBadgeProps {
+interface InterviewerStatusBadgeProps {
   status: AgentStatus;
   className?: string;
 }
@@ -33,7 +33,7 @@ const statusConfig = {
   },
 };
 
-export function AgentStatusBadge({ status, className }: AgentStatusBadgeProps) {
+export function InterviewerStatusBadge({ status, className }: InterviewerStatusBadgeProps) {
   const config = statusConfig[status];
   
   return (
@@ -42,3 +42,6 @@ export function AgentStatusBadge({ status, className }: AgentStatusBadgeProps) {
     </span>
   );
 }
+
+// Legacy alias for backward compatibility
+export const AgentStatusBadge = InterviewerStatusBadge;
