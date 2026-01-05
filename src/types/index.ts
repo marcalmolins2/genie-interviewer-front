@@ -15,7 +15,7 @@ export const PROJECT_TYPE_LABELS: Record<ProjectType, string> = {
 };
 
 // Interviewer status lifecycle
-export type InterviewerStatus = 'draft' | 'ready_to_test' | 'launching' | 'published' | 'unpublished' | 'archived' | 'deleted' | 'active';
+export type InterviewerStatus = 'live' | 'ready_to_test' | 'suspended' | 'paused' | 'archived' | 'finished' | 'draft' | 'launching' | 'published' | 'unpublished' | 'deleted' | 'active';
 
 // Session types
 export type ConversationType = 'test' | 'live';
@@ -80,11 +80,11 @@ export interface ProjectMembership {
 }
 
 /**
- * Interviewer - AI interviewer agent configuration
+ * Interviewer - AI interviewer configuration
  */
 export interface Interviewer {
   id: string;
-  projectId: string;
+  projectId?: string;
   name: string;
   archetype: Archetype;
   status: InterviewerStatus;
@@ -95,7 +95,12 @@ export interface Interviewer {
   credentialsReady: boolean;
   targetDurationMin?: number;
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
+  deletedAt?: string;
+  archivedAt?: string;
+  hasActiveCall?: boolean;
+  interviewsCount?: number;
+  pricePerInterviewUsd?: number;
   // Populated relations
   project?: Project;
   sessionsCount?: number;
@@ -114,6 +119,26 @@ export interface InterviewerMembership {
   // Populated relations
   user?: User;
   interviewer?: Interviewer;
+}
+
+/**
+ * InterviewerCollaborator - Collaborator with user details
+ */
+export interface InterviewerCollaborator {
+  id: string;
+  interviewerId: string;
+  userId: string;
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    avatar?: string;
+    department?: string;
+  };
+  permission: InterviewerRole;
+  invitedBy?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 /**
@@ -138,8 +163,7 @@ export interface Session {
 
 export interface InterviewGuide {
   id: string;
-  agentId?: string; // Legacy
-  interviewerId?: string; // New model
+  interviewerId?: string;
   rawText?: string;
   structured?: GuideSchema;
   // New model fields
@@ -171,8 +195,7 @@ export interface GuideSchema {
 
 export interface KnowledgeAsset {
   id: string;
-  agentId?: string; // Legacy
-  interviewerId?: string; // New model
+  interviewerId?: string;
   title: string;
   type: 'text' | 'file';
   contentText?: string;
@@ -253,18 +276,22 @@ export const PROJECT_ROLES: Record<ProjectRole, {
 export const INTERVIEWER_ROLES: Record<InterviewerRole, {
   label: string;
   description: string;
+  capabilities?: string[];
 }> = {
   owner: {
     label: 'Owner',
-    description: 'Full control over this interviewer'
+    description: 'Full control over this interviewer',
+    capabilities: ['All Editor capabilities', 'Invite/remove collaborators', 'Change permissions', 'Archive or delete interviewer', 'Transfer ownership']
   },
   editor: {
     label: 'Editor',
-    description: 'Can edit this interviewer'
+    description: 'Can edit this interviewer',
+    capabilities: ['All Viewer capabilities', 'Edit interviewer configuration', 'Manage interview guide', 'Manage knowledge base']
   },
   viewer: {
     label: 'Viewer',
-    description: 'Can only view this interviewer'
+    description: 'Can only view this interviewer',
+    capabilities: ['View interviewer configuration', 'View interview insights', 'View analytics']
   },
   none: {
     label: 'No Access',
@@ -338,72 +365,11 @@ export const ARCHETYPES: ArchetypeInfo[] = [
   }
 ];
 
-// ============= Legacy Compatibility (to be removed) =============
-
-// Keep Agent type as alias for Interviewer during migration
-export type AgentStatus = 'live' | 'ready_to_test' | 'suspended' | 'paused' | 'archived' | 'finished';
-export type AgentPermission = 'viewer' | 'editor' | 'owner';
-
-export interface Agent {
-  id: string;
-  name: string;
-  archetype: Archetype;
-  createdAt: string;
-  status: AgentStatus;
-  language: string;
-  voiceId?: string;
-  channel: Channel;
-  interviewsCount: number;
-  pricePerInterviewUsd: number;
-  contact: { phoneNumber?: string; chatUrl?: string; chatPassword?: string; linkId?: string };
-  credentialsReady: boolean;
-  deletedAt?: string;
-  archivedAt?: string;
-  hasActiveCall?: boolean;
-}
-
-export interface AgentCollaborator {
-  id: string;
-  agentId: string;
-  userId: string;
-  user: {
-    id: string;
-    email: string;
-    name: string;
-    avatar?: string;
-    department?: string;
-  };
-  permission: AgentPermission;
-  invitedBy?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export const AGENT_PERMISSIONS: Record<AgentPermission, {
-  label: string;
-  description: string;
-  capabilities: string[];
-}> = {
-  viewer: {
-    label: 'Viewer',
-    description: 'View configuration and insights only',
-    capabilities: ['View agent configuration', 'View interview insights', 'View analytics']
-  },
-  editor: {
-    label: 'Editor',
-    description: 'Edit agent configuration',
-    capabilities: ['All Viewer capabilities', 'Edit agent configuration', 'Manage interview guide', 'Manage knowledge base']
-  },
-  owner: {
-    label: 'Owner',
-    description: 'Full control over agent',
-    capabilities: ['All Editor capabilities', 'Invite/remove collaborators', 'Change permissions', 'Archive or delete agent', 'Transfer ownership']
-  }
-};
+// ============= Session & Interview Types =============
 
 export interface InterviewSummary {
   id: string;
-  agentId: string;
+  interviewerId: string;
   startedAt: string;
   durationSec: number;
   channel: Channel;
@@ -414,7 +380,7 @@ export interface InterviewSummary {
 
 export interface AudienceUpload {
   id: string;
-  agentId: string;
+  interviewerId: string;
   fileName: string;
   status: 'processing' | 'ready' | 'error';
   totalContacts?: number;
@@ -422,13 +388,13 @@ export interface AudienceUpload {
 }
 
 export interface Share {
-  agentId: string;
+  interviewerId: string;
   users: { email: string; role: 'owner' | 'editor' | 'viewer' }[];
 }
 
 export interface SessionDetail {
   id: string;
-  agentId: string;
+  interviewerId: string;
   startedAt: string;
   durationSec: number;
   completed: boolean;

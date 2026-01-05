@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -36,19 +36,19 @@ import {
   Eye,
   UserPlus,
   Trash2,
-  ArrowRightLeft,
   Check
 } from 'lucide-react';
-import { AgentCollaborator, AgentPermission, AGENT_PERMISSIONS } from '@/types';
-import { agentsService } from '@/services/agents';
+import { InterviewerCollaborator, InterviewerRole, INTERVIEWER_ROLES } from '@/types';
+import { interviewersService } from '@/services/interviewers';
 import { useToast } from '@/hooks/use-toast';
+import { useEffect } from 'react';
 
-interface ShareAgentDialogProps {
+interface ShareInterviewerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  agentId: string;
-  agentName: string;
-  collaborators: AgentCollaborator[];
+  interviewerId: string;
+  interviewerName: string;
+  collaborators: InterviewerCollaborator[];
   isOwner: boolean;
   onCollaboratorsChange: () => void;
 }
@@ -60,26 +60,25 @@ interface SearchUser {
   department: string;
 }
 
-export function ShareAgentDialog({
+export function ShareInterviewerDialog({
   open,
   onOpenChange,
-  agentId,
-  agentName,
+  interviewerId,
+  interviewerName,
   collaborators,
   isOwner,
   onCollaboratorsChange
-}: ShareAgentDialogProps) {
+}: ShareInterviewerDialogProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchUser[]>([]);
   const [searching, setSearching] = useState(false);
-  const [invitePermission, setInvitePermission] = useState<AgentPermission>('viewer');
-  const [pendingInvites, setPendingInvites] = useState<Array<SearchUser & { permission: AgentPermission }>>([]);
+  const [invitePermission, setInvitePermission] = useState<InterviewerRole>('viewer');
+  const [pendingInvites, setPendingInvites] = useState<Array<SearchUser & { permission: InterviewerRole }>>([]);
   const [transferDialogOpen, setTransferDialogOpen] = useState(false);
-  const [selectedTransferUser, setSelectedTransferUser] = useState<AgentCollaborator | null>(null);
+  const [selectedTransferUser, setSelectedTransferUser] = useState<InterviewerCollaborator | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  // Search for users when query changes
   useEffect(() => {
     const searchUsers = async () => {
       if (searchQuery.length < 2) {
@@ -89,8 +88,7 @@ export function ShareAgentDialog({
 
       setSearching(true);
       try {
-        const results = await agentsService.searchUsers(searchQuery, agentId);
-        // Filter out users already in pending invites
+        const results = await interviewersService.searchUsers(searchQuery, interviewerId);
         const filtered = results.filter(
           user => !pendingInvites.find(p => p.id === user.id)
         );
@@ -104,7 +102,7 @@ export function ShareAgentDialog({
 
     const debounce = setTimeout(searchUsers, 300);
     return () => clearTimeout(debounce);
-  }, [searchQuery, agentId, pendingInvites]);
+  }, [searchQuery, interviewerId, pendingInvites]);
 
   const addToPendingInvites = (user: SearchUser) => {
     setPendingInvites(prev => [...prev, { ...user, permission: invitePermission }]);
@@ -116,7 +114,7 @@ export function ShareAgentDialog({
     setPendingInvites(prev => prev.filter(p => p.id !== userId));
   };
 
-  const updatePendingPermission = (userId: string, permission: AgentPermission) => {
+  const updatePendingPermission = (userId: string, permission: InterviewerRole) => {
     setPendingInvites(prev =>
       prev.map(p => p.id === userId ? { ...p, permission } : p)
     );
@@ -128,7 +126,7 @@ export function ShareAgentDialog({
     setIsSubmitting(true);
     try {
       for (const invite of pendingInvites) {
-        await agentsService.inviteCollaborator(agentId, invite.id, invite.permission);
+        await interviewersService.inviteCollaborator(interviewerId, invite.id, invite.permission);
       }
       
       toast({
@@ -149,9 +147,9 @@ export function ShareAgentDialog({
     }
   };
 
-  const handleUpdatePermission = async (collaboratorId: string, permission: AgentPermission) => {
+  const handleUpdatePermission = async (collaboratorId: string, permission: InterviewerRole) => {
     try {
-      await agentsService.updateCollaboratorPermission(collaboratorId, permission);
+      await interviewersService.updateCollaboratorPermission(collaboratorId, permission);
       toast({
         title: 'Permission Updated',
         description: 'Collaborator permission has been updated.'
@@ -168,10 +166,10 @@ export function ShareAgentDialog({
 
   const handleRemoveCollaborator = async (collaboratorId: string) => {
     try {
-      await agentsService.removeCollaborator(collaboratorId);
+      await interviewersService.removeCollaborator(collaboratorId);
       toast({
         title: 'Collaborator Removed',
-        description: 'Collaborator has been removed from this agent.'
+        description: 'Collaborator has been removed from this interviewer.'
       });
       onCollaboratorsChange();
     } catch (error: any) {
@@ -188,10 +186,10 @@ export function ShareAgentDialog({
 
     setIsSubmitting(true);
     try {
-      await agentsService.transferOwnership(agentId, selectedTransferUser.userId);
+      await interviewersService.transferOwnership(interviewerId, selectedTransferUser.userId);
       toast({
         title: 'Ownership Transferred',
-        description: `${selectedTransferUser.user.name} is now the owner of this agent.`
+        description: `${selectedTransferUser.user.name} is now the owner of this interviewer.`
       });
       setTransferDialogOpen(false);
       setSelectedTransferUser(null);
@@ -210,19 +208,21 @@ export function ShareAgentDialog({
   const owner = collaborators.find(c => c.permission === 'owner');
   const otherCollaborators = collaborators.filter(c => c.permission !== 'owner');
 
-  const getPermissionIcon = (permission: AgentPermission) => {
+  const getPermissionIcon = (permission: InterviewerRole) => {
     switch (permission) {
       case 'owner': return <Crown className="h-4 w-4" />;
       case 'editor': return <Edit className="h-4 w-4" />;
       case 'viewer': return <Eye className="h-4 w-4" />;
+      default: return null;
     }
   };
 
-  const getPermissionColor = (permission: AgentPermission) => {
+  const getPermissionColor = (permission: InterviewerRole) => {
     switch (permission) {
       case 'owner': return 'bg-amber-500/10 text-amber-600 border-amber-200';
       case 'editor': return 'bg-blue-500/10 text-blue-600 border-blue-200';
       case 'viewer': return 'bg-slate-500/10 text-slate-600 border-slate-200';
+      default: return '';
     }
   };
 
@@ -231,16 +231,15 @@ export function ShareAgentDialog({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Share "{agentName}"</DialogTitle>
+            <DialogTitle>Share "{interviewerName}"</DialogTitle>
             <DialogDescription>
               {isOwner 
-                ? 'Manage who can access this agent and their permission levels.'
-                : 'View who has access to this agent.'}
+                ? 'Manage who can access this interviewer and their permission levels.'
+                : 'View who has access to this interviewer.'}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-6">
-            {/* Owner Section */}
             {owner && (
               <div className="space-y-2">
                 <Label className="text-sm font-medium">Owner</Label>
@@ -261,7 +260,6 @@ export function ShareAgentDialog({
               </div>
             )}
 
-            {/* Invite New Users (Owner only) */}
             {isOwner && (
               <div className="space-y-3">
                 <Label className="text-sm font-medium">Invite Collaborators</Label>
@@ -275,7 +273,7 @@ export function ShareAgentDialog({
                       className="pl-10"
                     />
                   </div>
-                  <Select value={invitePermission} onValueChange={(v: AgentPermission) => setInvitePermission(v)}>
+                  <Select value={invitePermission} onValueChange={(v: InterviewerRole) => setInvitePermission(v)}>
                     <SelectTrigger className="w-32">
                       <SelectValue />
                     </SelectTrigger>
@@ -287,7 +285,6 @@ export function ShareAgentDialog({
                   </Select>
                 </div>
 
-                {/* Search Results */}
                 {searchQuery.length >= 2 && (
                   <div className="max-h-40 overflow-y-auto border rounded-md">
                     {searching ? (
@@ -326,7 +323,6 @@ export function ShareAgentDialog({
                   </div>
                 )}
 
-                {/* Pending Invites */}
                 {pendingInvites.length > 0 && (
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">Pending Invitations ({pendingInvites.length})</Label>
@@ -347,7 +343,7 @@ export function ShareAgentDialog({
                           <div className="flex items-center gap-2">
                             <Select 
                               value={invite.permission} 
-                              onValueChange={(v: AgentPermission) => updatePendingPermission(invite.id, v)}
+                              onValueChange={(v: InterviewerRole) => updatePendingPermission(invite.id, v)}
                             >
                               <SelectTrigger className="h-8 w-24 text-xs">
                                 <SelectValue />
@@ -393,7 +389,6 @@ export function ShareAgentDialog({
               </div>
             )}
 
-            {/* Existing Collaborators */}
             {otherCollaborators.length > 0 && (
               <div className="space-y-2">
                 <Label className="text-sm font-medium">Collaborators ({otherCollaborators.length})</Label>
@@ -417,7 +412,7 @@ export function ShareAgentDialog({
                           <>
                             <Select 
                               value={collab.permission} 
-                              onValueChange={(v: AgentPermission) => handleUpdatePermission(collab.id, v)}
+                              onValueChange={(v: InterviewerRole) => handleUpdatePermission(collab.id, v)}
                             >
                               <SelectTrigger className="h-8 w-24 text-xs">
                                 <SelectValue />
@@ -437,24 +432,10 @@ export function ShareAgentDialog({
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
-
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0 text-muted-foreground hover:text-amber-600"
-                              onClick={() => {
-                                setSelectedTransferUser(collab);
-                                setTransferDialogOpen(true);
-                              }}
-                              title="Transfer ownership"
-                            >
-                              <ArrowRightLeft className="h-4 w-4" />
-                            </Button>
                           </>
                         ) : (
                           <Badge className={getPermissionColor(collab.permission)}>
-                            {getPermissionIcon(collab.permission)}
-                            <span className="ml-1">{AGENT_PERMISSIONS[collab.permission].label}</span>
+                            {INTERVIEWER_ROLES[collab.permission]?.label}
                           </Badge>
                         )}
                       </div>
@@ -464,52 +445,45 @@ export function ShareAgentDialog({
               </div>
             )}
 
-            {/* Permission Legend */}
-            <div className="space-y-3 p-4 bg-muted/30 rounded-lg">
-              <h4 className="font-medium text-sm">Permission Levels</h4>
-              <div className="space-y-2 text-sm">
-                {(['viewer', 'editor', 'owner'] as AgentPermission[]).map((perm) => (
-                  <div key={perm} className="flex items-start gap-2">
-                    <span className={`p-1 rounded ${getPermissionColor(perm)}`}>
-                      {getPermissionIcon(perm)}
-                    </span>
-                    <div>
-                      <span className="font-medium">{AGENT_PERMISSIONS[perm].label}:</span>
-                      <span className="text-muted-foreground ml-1">{AGENT_PERMISSIONS[perm].description}</span>
-                    </div>
-                  </div>
-                ))}
+            <div className="pt-4 border-t">
+              <h4 className="text-sm font-medium mb-2">Permission Levels</h4>
+              <div className="space-y-2 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  {getPermissionIcon('viewer')}
+                  <span><strong>Viewer:</strong> {INTERVIEWER_ROLES.viewer.description}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {getPermissionIcon('editor')}
+                  <span><strong>Editor:</strong> {INTERVIEWER_ROLES.editor.description}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {getPermissionIcon('owner')}
+                  <span><strong>Owner:</strong> {INTERVIEWER_ROLES.owner.description}</span>
+                </div>
               </div>
             </div>
           </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => onOpenChange(false)}>
-              {isOwner ? 'Done' : 'Close'}
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Transfer Ownership Confirmation */}
       <AlertDialog open={transferDialogOpen} onOpenChange={setTransferDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Transfer Ownership</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to transfer ownership of "{agentName}" to{' '}
-              <span className="font-medium">{selectedTransferUser?.user.name}</span>?
-              <br /><br />
-              You will become an Editor and lose the ability to manage collaborators, 
-              archive, or delete this agent.
+              Are you sure you want to transfer ownership to {selectedTransferUser?.user.name}? 
+              You will become an Editor and lose owner privileges.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleTransferOwnership}
-              className="bg-amber-600 hover:bg-amber-700"
-            >
+            <AlertDialogAction onClick={handleTransferOwnership} disabled={isSubmitting}>
               {isSubmitting ? 'Transferring...' : 'Transfer Ownership'}
             </AlertDialogAction>
           </AlertDialogFooter>

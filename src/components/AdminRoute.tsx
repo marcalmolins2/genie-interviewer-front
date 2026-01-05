@@ -18,8 +18,8 @@ export function AdminRoute({ children }: AdminRouteProps) {
   }
 
   if (!isAdmin) {
-    // Redirect non-admins to agents page
-    return <Navigate to="/app/agents" state={{ from: location }} replace />;
+    // Redirect non-admins to interviewers page
+    return <Navigate to="/app/interviewers" state={{ from: location }} replace />;
   }
 
   return <>{children}</>;

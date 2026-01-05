@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { agentsService } from '@/services/agents';
-import { Agent } from '@/types';
+import { interviewersService } from '@/services/interviewers';
+import { Interviewer } from '@/types';
 import { InterviewWelcome } from '@/components/interview/InterviewWelcome';
 import { InterviewLive } from '@/components/interview/InterviewLive';
 import { InterviewComplete } from '@/components/interview/InterviewComplete';
@@ -12,7 +12,7 @@ type InterviewState = 'loading' | 'unavailable' | 'welcome' | 'live' | 'complete
 export default function PublicInterview() {
   const { linkId } = useParams<{ linkId: string }>();
   const [state, setState] = useState<InterviewState>('loading');
-  const [agent, setAgent] = useState<Agent | null>(null);
+  const [interviewer, setInterviewer] = useState<Interviewer | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [interviewDuration, setInterviewDuration] = useState(0);
 
@@ -23,24 +23,23 @@ export default function PublicInterview() {
   }, [linkId]);
 
   const validateLink = async () => {
-    // Simulate validation delay
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    const foundAgent = await agentsService.getAgentByLinkId(linkId!);
+    const foundInterviewer = await interviewersService.getInterviewerByLinkId(linkId!);
     
-    if (!foundAgent) {
+    if (!foundInterviewer) {
       setErrorMessage('This interview link is invalid or has expired.');
       setState('unavailable');
       return;
     }
 
-    if (foundAgent.status !== 'live') {
+    if (foundInterviewer.status !== 'live') {
       setErrorMessage('This interview is currently not accepting participants. Please contact the interviewer.');
       setState('unavailable');
       return;
     }
 
-    setAgent(foundAgent);
+    setInterviewer(foundInterviewer);
     setState('welcome');
   };
 
@@ -68,19 +67,19 @@ export default function PublicInterview() {
     return <InterviewUnavailable message={errorMessage} />;
   }
 
-  if (state === 'welcome' && agent) {
+  if (state === 'welcome' && interviewer) {
     return (
       <InterviewWelcome 
-        agent={agent} 
+        agent={interviewer} 
         onStart={handleStartInterview} 
       />
     );
   }
 
-  if (state === 'live' && agent) {
+  if (state === 'live' && interviewer) {
     return (
       <InterviewLive 
-        agent={agent} 
+        agent={interviewer} 
         onEnd={handleEndInterview} 
       />
     );
