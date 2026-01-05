@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Agent } from '@/types';
+import { Interviewer } from '@/types';
 import { Mic, Clock, Shield, AlertCircle, ExternalLink, Bot, CheckCircle2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
 import { Checkbox } from '@/components/ui/checkbox';
 
 interface InterviewWelcomeProps {
-  agent: Agent;
+  agent: Interviewer;
   onStart: () => void;
 }
 
@@ -45,7 +45,7 @@ export function InterviewWelcome({ agent, onStart }: InterviewWelcomeProps) {
     requestMicrophonePermission();
   };
 
-  const estimatedDuration = (agent as any).targetDurationMin || 20;
+  const estimatedDuration = agent.targetDurationMin || 20;
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -72,7 +72,6 @@ export function InterviewWelcome({ agent, onStart }: InterviewWelcomeProps) {
         <CardContent className="space-y-6">
           {step === 'consent' && (
             <>
-              {/* Interview Info */}
               <div className="space-y-3">
                 <div className="flex items-center gap-3 text-sm text-muted-foreground">
                   <Clock className="h-4 w-4" />
@@ -88,7 +87,6 @@ export function InterviewWelcome({ agent, onStart }: InterviewWelcomeProps) {
                 </div>
               </div>
 
-              {/* Consent Section */}
               <div className="border rounded-lg p-4 space-y-4 bg-muted/30">
                 <p className="text-sm text-muted-foreground">
                   By participating in this interview, you consent to the recording and processing of your responses.{' '}
@@ -117,7 +115,6 @@ export function InterviewWelcome({ agent, onStart }: InterviewWelcomeProps) {
                 </div>
               </div>
 
-              {/* Continue Button */}
               <Button 
                 onClick={handleConsentContinue} 
                 className="w-full" 
@@ -131,7 +128,6 @@ export function InterviewWelcome({ agent, onStart }: InterviewWelcomeProps) {
 
           {step === 'mic' && (
             <>
-              {/* Microphone Permission */}
               <div className="border rounded-lg p-4 space-y-3">
                 <h4 className="font-medium flex items-center gap-2">
                   <Mic className="h-4 w-4" />
@@ -182,7 +178,6 @@ export function InterviewWelcome({ agent, onStart }: InterviewWelcomeProps) {
                 )}
               </div>
 
-              {/* Start Button */}
               <Button 
                 onClick={onStart} 
                 className="w-full" 
@@ -192,7 +187,6 @@ export function InterviewWelcome({ agent, onStart }: InterviewWelcomeProps) {
                 Start Interview
               </Button>
 
-              {/* Back option */}
               <button 
                 onClick={() => setStep('consent')}
                 className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
