@@ -287,6 +287,18 @@
     color: hsl(var(--muted-foreground));
   }
 
+  .status-badge-paused {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold tracking-wide;
+    background-color: hsl(38 92% 50% / 0.15);
+    color: hsl(38 92% 50%);
+  }
+
+  .status-badge-archived {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold tracking-wide;
+    background-color: hsl(var(--muted));
+    color: hsl(var(--muted-foreground));
+  }
+
   /* Genie Logo Text */
   .genie-logo {
     font-family: 'Instrument Sans', sans-serif;

@@ -73,6 +73,17 @@ export default function EditAgent() {
         navigate('/app/agents');
         return;
       }
+
+      // Block editing for archived interviewers
+      if (agentData.status === 'archived') {
+        toast({
+          title: 'Cannot Edit',
+          description: 'Archived interviewers cannot be edited. Unarchive first to make changes.',
+          variant: 'destructive',
+        });
+        navigate(`/app/agents/${agentId}`);
+        return;
+      }
       
       setAgent(agentData);
       setGuide(guideData);
@@ -92,7 +103,7 @@ export default function EditAgent() {
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Failed to load agent data.',
+        description: 'Failed to load interviewer data.',
         variant: 'destructive',
       });
       navigate('/app/agents');

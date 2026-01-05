@@ -10,9 +10,13 @@ import { agentsService } from "@/services/agents";
 import { toast } from "@/hooks/use-toast";
 import { AgentStatusBadge } from "@/components/AgentStatusBadge";
 
+interface ArchivedInterviewerWithLastDate extends Agent {
+  lastInterviewDate?: string | null;
+}
+
 const AgentsArchive = () => {
   const navigate = useNavigate();
-  const [agents, setAgents] = useState<Agent[]>([]);
+  const [agents, setAgents] = useState<ArchivedInterviewerWithLastDate[]>([]);
   const [loading, setLoading] = useState(true);
   const [unarchiveDialogOpen, setUnarchiveDialogOpen] = useState(false);
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
@@ -21,12 +25,21 @@ const AgentsArchive = () => {
     try {
       setLoading(true);
       const data = await agentsService.getArchivedAgents();
-      setAgents(data);
+      
+      // Fetch last interview dates for each agent
+      const agentsWithDates = await Promise.all(
+        data.map(async (agent) => {
+          const lastDate = await agentsService.getLastInterviewDate(agent.id);
+          return { ...agent, lastInterviewDate: lastDate };
+        })
+      );
+      
+      setAgents(agentsWithDates);
     } catch (error) {
-      console.error("Failed to load archived agents:", error);
+      console.error("Failed to load archived interviewers:", error);
       toast({
         title: "Error",
-        description: "Failed to load archived agents",
+        description: "Failed to load archived interviewers",
         variant: "destructive",
       });
     } finally {
@@ -50,10 +63,10 @@ const AgentsArchive = () => {
       setSelectedAgentId(null);
       loadArchivedAgents();
     } catch (error) {
-      console.error("Failed to unarchive agent:", error);
+      console.error("Failed to unarchive interviewer:", error);
       toast({
         title: "Error",
-        description: "Failed to unarchive agent",
+        description: "Failed to unarchive interviewer",
         variant: "destructive",
       });
     }
@@ -85,16 +98,16 @@ const AgentsArchive = () => {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Archive</h1>
         <p className="text-muted-foreground mt-1">
-          Archived agents are hidden from your active list
+          Archived interviewers are hidden from your active list
         </p>
       </div>
 
       {agents.length === 0 ? (
         <Card className="p-12 text-center">
           <ArchiveIcon className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-          <h3 className="text-lg font-semibold mb-2">No archived agents</h3>
+          <h3 className="text-lg font-semibold mb-2">No archived interviewers</h3>
           <p className="text-muted-foreground">
-            Agents you archive will appear here
+            Interviewers you archive will appear here
           </p>
         </Card>
       ) : (
@@ -120,9 +133,13 @@ const AgentsArchive = () => {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                    <span>Interviews: {agent.interviewsCount}</span>
-                    <span>•</span>
-                    <span>Created: {formatDate(agent.createdAt)}</span>
+                    <span>Sessions: {agent.interviewsCount}</span>
+                    {agent.lastInterviewDate && (
+                      <>
+                        <span>•</span>
+                        <span>Last interview: {formatDate(agent.lastInterviewDate)}</span>
+                      </>
+                    )}
                     {agent.archivedAt && (
                       <>
                         <span>•</span>
@@ -181,7 +198,7 @@ const AgentsArchive = () => {
                       } catch (error) {
                         toast({
                           title: "Error",
-                          description: "Failed to delete agent",
+                          description: "Failed to delete interviewer",
                           variant: "destructive",
                         });
                       }
