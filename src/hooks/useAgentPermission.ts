@@ -1,10 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
-import { InterviewerRole, InterviewerCollaborator } from '@/types';
-import { interviewersService } from '@/services/interviewers';
+import { AgentPermission, AgentCollaborator } from '@/types';
+import { agentsService } from '@/services/agents';
 
-interface UseInterviewerPermissionResult {
-  permission: InterviewerRole | null;
-  collaborators: InterviewerCollaborator[];
+interface UseAgentPermissionResult {
+  permission: AgentPermission | null;
+  collaborators: AgentCollaborator[];
   isOwner: boolean;
   canEdit: boolean;
   canView: boolean;
@@ -15,13 +15,13 @@ interface UseInterviewerPermissionResult {
   reload: () => Promise<void>;
 }
 
-export function useInterviewerPermission(interviewerId: string | undefined): UseInterviewerPermissionResult {
-  const [permission, setPermission] = useState<InterviewerRole | null>(null);
-  const [collaborators, setCollaborators] = useState<InterviewerCollaborator[]>([]);
+export function useAgentPermission(agentId: string | undefined): UseAgentPermissionResult {
+  const [permission, setPermission] = useState<AgentPermission | null>(null);
+  const [collaborators, setCollaborators] = useState<AgentCollaborator[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadData = async () => {
-    if (!interviewerId) {
+    if (!agentId) {
       setLoading(false);
       return;
     }
@@ -29,8 +29,8 @@ export function useInterviewerPermission(interviewerId: string | undefined): Use
     setLoading(true);
     try {
       const [userPermission, collabs] = await Promise.all([
-        interviewersService.getUserPermission(interviewerId),
-        interviewersService.getInterviewerCollaborators(interviewerId)
+        agentsService.getUserPermission(agentId),
+        agentsService.getAgentCollaborators(agentId)
       ]);
       setPermission(userPermission);
       setCollaborators(collabs);
@@ -45,7 +45,7 @@ export function useInterviewerPermission(interviewerId: string | undefined): Use
 
   useEffect(() => {
     loadData();
-  }, [interviewerId]);
+  }, [agentId]);
 
   const derived = useMemo(() => {
     const isOwner = permission === 'owner';

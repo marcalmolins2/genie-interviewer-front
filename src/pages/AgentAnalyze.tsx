@@ -45,8 +45,8 @@ import {
   Minus
 } from 'lucide-react';
 import { SessionFeedback } from '@/components/SessionFeedback';
-import { Interviewer, InterviewSummary, SessionFeedback as SessionFeedbackType } from '@/types';
-import { interviewersService } from '@/services/interviewers';
+import { Agent, InterviewSummary, SessionFeedback as SessionFeedbackType } from '@/types';
+import { agentsService } from '@/services/agents';
 import { useToast } from '@/hooks/use-toast';
 
 // Mock chart component for demo

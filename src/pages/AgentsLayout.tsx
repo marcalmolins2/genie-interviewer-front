@@ -16,12 +16,12 @@ import { LayoutGrid, Trash2, Archive } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const navigation = [
-  { name: 'Overview', href: '/app/interviewers', icon: LayoutGrid },
-  { name: 'Trash', href: '/app/interviewers/trash', icon: Trash2 },
-  { name: 'Archive', href: '/app/interviewers/archive', icon: Archive },
+  { name: 'Overview', href: '/app/agents', icon: LayoutGrid },
+  { name: 'Trash', href: '/app/agents/trash', icon: Trash2 },
+  { name: 'Archive', href: '/app/agents/archive', icon: Archive },
 ];
 
-function InterviewersSidebar() {
+function AgentsSidebar() {
   const location = useLocation();
   const { open } = useSidebar();
 
@@ -67,11 +67,11 @@ function InterviewersSidebar() {
   );
 }
 
-export default function InterviewersLayout() {
+export default function AgentsLayout() {
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="flex w-full">
-        <InterviewersSidebar />
+        <AgentsSidebar />
 
         <main className="flex-1 py-8 min-h-[calc(100vh-4rem)]">
           <div className="container">

@@ -1,12 +1,12 @@
-import { InterviewerStatus } from '@/types';
+import { AgentStatus } from '@/types';
 import { cn } from '@/lib/utils';
 
-interface InterviewerStatusBadgeProps {
-  status: InterviewerStatus;
+interface AgentStatusBadgeProps {
+  status: AgentStatus;
   className?: string;
 }
 
-const statusConfig: Record<string, { label: string; className: string }> = {
+const statusConfig = {
   live: {
     label: 'LIVE',
     className: 'status-badge-live',
@@ -31,22 +31,10 @@ const statusConfig: Record<string, { label: string; className: string }> = {
     label: 'FINISHED',
     className: 'status-badge-finished',
   },
-  draft: {
-    label: 'DRAFT',
-    className: 'status-badge-ready',
-  },
-  published: {
-    label: 'LIVE',
-    className: 'status-badge-live',
-  },
-  unpublished: {
-    label: 'PAUSED',
-    className: 'status-badge-paused',
-  },
 };
 
-export function InterviewerStatusBadge({ status, className }: InterviewerStatusBadgeProps) {
-  const config = statusConfig[status] || { label: status.toUpperCase(), className: 'status-badge-ready' };
+export function AgentStatusBadge({ status, className }: AgentStatusBadgeProps) {
+  const config = statusConfig[status];
   
   return (
     <span className={cn(config.className, className)}>

@@ -1,15 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Interviewer } from '@/types';
+import { Agent } from '@/types';
 import { Mic, MicOff, PhoneOff } from 'lucide-react';
 import { LiveTranscript, TranscriptMessage } from './LiveTranscript';
 import { cn } from '@/lib/utils';
 
 interface InterviewLiveProps {
-  agent: Interviewer;
+  agent: Agent;
   onEnd: (duration: number) => void;
 }
 
+// Mock interview questions based on agent type
 const mockQuestions = [
   "Hello! Thank you for joining this interview. Before we begin, could you briefly introduce yourself and your role?",
   "That's great context. Now, thinking about your day-to-day work, what are the biggest challenges you face?",
@@ -36,6 +37,7 @@ export function InterviewLive({ agent, onEnd }: InterviewLiveProps) {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const questionTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Timer for interview duration
   useEffect(() => {
     timerRef.current = setInterval(() => {
       setDuration(prev => prev + 1);
@@ -46,7 +48,9 @@ export function InterviewLive({ agent, onEnd }: InterviewLiveProps) {
     };
   }, []);
 
+  // Start the mock interview flow
   useEffect(() => {
+    // Initial AI greeting
     const greetingTimer = setTimeout(() => {
       addAiMessage(mockQuestions[0]);
     }, 1500);
@@ -54,11 +58,14 @@ export function InterviewLive({ agent, onEnd }: InterviewLiveProps) {
     return () => clearTimeout(greetingTimer);
   }, []);
 
+  // Progress the mock conversation
   useEffect(() => {
     if (currentQuestionIndex > 0 && currentQuestionIndex < mockQuestions.length) {
+      // Simulate user response after AI question
       const userResponseTimer = setTimeout(() => {
         addUserMessage(mockResponses[currentQuestionIndex - 1]);
         
+        // Then AI asks next question
         const nextQuestionTimer = setTimeout(() => {
           if (currentQuestionIndex < mockQuestions.length) {
             addAiMessage(mockQuestions[currentQuestionIndex]);
@@ -78,6 +85,7 @@ export function InterviewLive({ agent, onEnd }: InterviewLiveProps) {
   const addAiMessage = (content: string) => {
     setIsAiSpeaking(true);
     
+    // Simulate typing effect
     setMessages(prev => [...prev, {
       id: `ai-${Date.now()}`,
       role: 'assistant',
@@ -85,6 +93,7 @@ export function InterviewLive({ agent, onEnd }: InterviewLiveProps) {
       timestamp: new Date().toISOString(),
     }]);
 
+    // Simulate speaking duration
     setTimeout(() => {
       setIsAiSpeaking(false);
       setCurrentQuestionIndex(prev => prev + 1);
@@ -119,6 +128,7 @@ export function InterviewLive({ agent, onEnd }: InterviewLiveProps) {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // Simulate random speaking when mic is on
   useEffect(() => {
     if (isRecording && !isAiSpeaking) {
       const speakingInterval = setInterval(() => {
@@ -133,6 +143,7 @@ export function InterviewLive({ agent, onEnd }: InterviewLiveProps) {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      {/* Header */}
       <div className="border-b bg-card p-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div>
@@ -152,13 +163,17 @@ export function InterviewLive({ agent, onEnd }: InterviewLiveProps) {
         </div>
       </div>
 
+      {/* Main Content */}
       <div className="flex-1 flex max-w-4xl mx-auto w-full">
+        {/* Transcript Panel */}
         <div className="flex-1 border-r">
           <LiveTranscript messages={messages} isAiSpeaking={isAiSpeaking} />
         </div>
 
+        {/* Voice Controls Panel */}
         <div className="w-80 p-6 flex flex-col items-center justify-center bg-muted/30">
           <div className="text-center space-y-6">
+            {/* Speaking Indicator */}
             <div className="space-y-2">
               {isAiSpeaking ? (
                 <>
@@ -200,6 +215,7 @@ export function InterviewLive({ agent, onEnd }: InterviewLiveProps) {
               )}
             </div>
 
+            {/* Instructions */}
             <div className="text-xs text-muted-foreground max-w-[200px]">
               <p>Speak naturally. The AI will listen and respond to your answers.</p>
             </div>

@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Trash2, RotateCcw, AlertTriangle } from "lucide-react";
-import { Interviewer } from "@/types";
-import { interviewersService } from "@/services/interviewers";
+import { Loader2, Trash2, RotateCcw, AlertTriangle, ArrowLeft } from "lucide-react";
+import { Agent } from "@/types";
+import { agentsService } from "@/services/agents";
 import { toast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -19,21 +19,21 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-const InterviewersTrash = () => {
+const AgentsTrash = () => {
   const navigate = useNavigate();
-  const [interviewers, setInterviewers] = useState<Interviewer[]>([]);
+  const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const loadTrashedInterviewers = async () => {
+  const loadTrashedAgents = async () => {
     try {
       setLoading(true);
-      const data = await interviewersService.getTrashedInterviewers();
-      setInterviewers(data);
+      const data = await agentsService.getTrashedAgents();
+      setAgents(data);
     } catch (error) {
-      console.error("Failed to load trashed interviewers:", error);
+      console.error("Failed to load trashed agents:", error);
       toast({
         title: "Error",
-        description: "Failed to load trashed interviewers",
+        description: "Failed to load trashed agents",
         variant: "destructive",
       });
     } finally {
@@ -42,40 +42,40 @@ const InterviewersTrash = () => {
   };
 
   useEffect(() => {
-    loadTrashedInterviewers();
+    loadTrashedAgents();
   }, []);
 
-  const handleRestore = async (interviewerId: string) => {
+  const handleRestore = async (agentId: string) => {
     try {
-      await interviewersService.restoreInterviewer(interviewerId);
+      await agentsService.restoreAgent(agentId);
       toast({
-        title: "Interviewer restored",
-        description: "The interviewer has been restored successfully",
+        title: "Agent restored",
+        description: "The agent has been restored successfully",
       });
-      loadTrashedInterviewers();
+      loadTrashedAgents();
     } catch (error) {
-      console.error("Failed to restore interviewer:", error);
+      console.error("Failed to restore agent:", error);
       toast({
         title: "Error",
-        description: "Failed to restore interviewer",
+        description: "Failed to restore agent",
         variant: "destructive",
       });
     }
   };
 
-  const handlePermanentDelete = async (interviewerId: string) => {
+  const handlePermanentDelete = async (agentId: string) => {
     try {
-      await interviewersService.permanentlyDeleteInterviewer(interviewerId);
+      await agentsService.permanentlyDeleteAgent(agentId);
       toast({
-        title: "Interviewer deleted permanently",
-        description: "The interviewer and all its data have been permanently deleted",
+        title: "Agent deleted permanently",
+        description: "The agent and all its data have been permanently deleted",
       });
-      loadTrashedInterviewers();
+      loadTrashedAgents();
     } catch (error) {
-      console.error("Failed to delete interviewer:", error);
+      console.error("Failed to delete agent:", error);
       toast({
         title: "Error",
-        description: "Failed to delete interviewer permanently",
+        description: "Failed to delete agent permanently",
         variant: "destructive",
       });
     }
@@ -101,32 +101,32 @@ const InterviewersTrash = () => {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Trash</h1>
         <p className="text-muted-foreground mt-1">
-          Interviewers will be permanently deleted after 30 days
+          Agents will be permanently deleted after 30 days
         </p>
       </div>
 
-      {interviewers.length === 0 ? (
+      {agents.length === 0 ? (
         <Card className="p-12 text-center">
           <Trash2 className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
           <h3 className="text-lg font-semibold mb-2">Trash is empty</h3>
           <p className="text-muted-foreground">
-            Deleted interviewers will appear here
+            Deleted agents will appear here
           </p>
         </Card>
       ) : (
         <div className="space-y-4">
-          {interviewers.map((interviewer) => {
-            const daysLeft = getDaysUntilDeletion(interviewer.deletedAt!);
+          {agents.map((agent) => {
+            const daysLeft = getDaysUntilDeletion(agent.deletedAt!);
             return (
-              <Card key={interviewer.id} className="p-6">
+              <Card key={agent.id} className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="space-y-3 flex-1">
                     <div className="flex items-start gap-3">
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold">{interviewer.name}</h3>
+                        <h3 className="text-lg font-semibold">{agent.name}</h3>
                         <div className="flex items-center gap-2 mt-2">
-                          <Badge variant="secondary">{interviewer.archetype}</Badge>
-                          <Badge variant="outline">{interviewer.channel}</Badge>
+                          <Badge variant="secondary">{agent.archetype}</Badge>
+                          <Badge variant="outline">{agent.channel}</Badge>
                         </div>
                       </div>
                     </div>
@@ -146,7 +146,7 @@ const InterviewersTrash = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleRestore(interviewer.id)}
+                      onClick={() => handleRestore(agent.id)}
                       className="gap-2"
                     >
                       <RotateCcw className="w-4 h-4" />
@@ -167,10 +167,10 @@ const InterviewersTrash = () => {
                       <AlertDialogContent>
                         <AlertDialogHeader>
                           <AlertDialogTitle>
-                            Permanently delete interviewer?
+                            Permanently delete agent?
                           </AlertDialogTitle>
                           <AlertDialogDescription>
-                            This will permanently delete "{interviewer.name}" and all
+                            This will permanently delete "{agent.name}" and all
                             its associated data including interviews, transcripts,
                             and insights. This action cannot be undone.
                           </AlertDialogDescription>
@@ -178,7 +178,7 @@ const InterviewersTrash = () => {
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
                           <AlertDialogAction
-                            onClick={() => handlePermanentDelete(interviewer.id)}
+                            onClick={() => handlePermanentDelete(agent.id)}
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                           >
                             Delete Forever
@@ -197,4 +197,4 @@ const InterviewersTrash = () => {
   );
 };
 
-export default InterviewersTrash;
+export default AgentsTrash;
