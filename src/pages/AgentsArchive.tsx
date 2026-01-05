@@ -196,11 +196,19 @@ const AgentsArchive = () => {
                         });
                         loadArchivedAgents();
                       } catch (error) {
-                        toast({
-                          title: "Error",
-                          description: "Failed to delete interviewer",
-                          variant: "destructive",
-                        });
+                        if (error instanceof Error && error.message === 'ACTIVE_CALL_IN_PROGRESS') {
+                          toast({
+                            title: "Cannot move to trash",
+                            description: "This interviewer has an active call in progress. Please wait until the call ends.",
+                            variant: "destructive",
+                          });
+                        } else {
+                          toast({
+                            title: "Error",
+                            description: "Failed to delete interviewer",
+                            variant: "destructive",
+                          });
+                        }
                       }
                     }}
                     className="gap-2 text-destructive hover:text-destructive"

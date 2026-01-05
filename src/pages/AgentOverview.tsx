@@ -230,11 +230,19 @@ export default function AgentOverview() {
       toast({ description: "Moved to trash" });
       navigate("/app/agents");
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to move interviewer to trash.",
-        variant: "destructive",
-      });
+      if (error instanceof Error && error.message === 'ACTIVE_CALL_IN_PROGRESS') {
+        toast({
+          title: "Cannot move to trash",
+          description: "This interviewer has an active call in progress. Please wait until the call ends before moving to trash.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to move interviewer to trash.",
+          variant: "destructive",
+        });
+      }
     }
     setTrashDialogOpen(false);
   };
