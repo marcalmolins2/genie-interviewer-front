@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ChannelSelector } from '@/components/ChannelSelector';
-import { AgentStatusBadge } from '@/components/AgentStatusBadge';
+import { InterviewerStatusBadge, AgentStatusBadge } from '@/components/InterviewerStatusBadge';
 import { 
   ArrowLeft,
   Save,
@@ -27,7 +27,7 @@ import {
   Trash2
 } from 'lucide-react';
 import { Agent, InterviewGuide, KnowledgeAsset, Channel, PRICE_BY_CHANNEL } from '@/types';
-import { agentsService } from '@/services/agents';
+import { interviewersService, agentsService } from '@/services/interviewers';
 import { useToast } from '@/hooks/use-toast';
 import { InterviewGuideEditor } from '@/components/InterviewGuideEditor';
 

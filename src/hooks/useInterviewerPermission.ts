@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { AgentPermission, AgentCollaborator } from '@/types';
-import { agentsService } from '@/services/agents';
+import { interviewersService } from '@/services/interviewers';
 
-interface UseAgentPermissionResult {
+interface UseInterviewerPermissionResult {
   permission: AgentPermission | null;
   collaborators: AgentCollaborator[];
   isOwner: boolean;
@@ -15,13 +15,13 @@ interface UseAgentPermissionResult {
   reload: () => Promise<void>;
 }
 
-export function useAgentPermission(agentId: string | undefined): UseAgentPermissionResult {
+export function useInterviewerPermission(interviewerId: string | undefined): UseInterviewerPermissionResult {
   const [permission, setPermission] = useState<AgentPermission | null>(null);
   const [collaborators, setCollaborators] = useState<AgentCollaborator[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadData = async () => {
-    if (!agentId) {
+    if (!interviewerId) {
       setLoading(false);
       return;
     }
@@ -29,8 +29,8 @@ export function useAgentPermission(agentId: string | undefined): UseAgentPermiss
     setLoading(true);
     try {
       const [userPermission, collabs] = await Promise.all([
-        agentsService.getUserPermission(agentId),
-        agentsService.getAgentCollaborators(agentId)
+        interviewersService.getUserPermission(interviewerId),
+        interviewersService.getAgentCollaborators(interviewerId)
       ]);
       setPermission(userPermission);
       setCollaborators(collabs);
@@ -45,7 +45,7 @@ export function useAgentPermission(agentId: string | undefined): UseAgentPermiss
 
   useEffect(() => {
     loadData();
-  }, [agentId]);
+  }, [interviewerId]);
 
   const derived = useMemo(() => {
     const isOwner = permission === 'owner';
@@ -73,3 +73,6 @@ export function useAgentPermission(agentId: string | undefined): UseAgentPermiss
     reload: loadData
   };
 }
+
+// Legacy alias for backward compatibility
+export const useAgentPermission = useInterviewerPermission;

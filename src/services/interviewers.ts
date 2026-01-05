@@ -660,7 +660,7 @@ const mockInterviews: InterviewSummary[] = [
 ];
 
 // API Service Functions
-export const agentsService = {
+export const interviewersService = {
   // Get all agents (excludes deleted and auto-removes items deleted > 30 days ago)
   async getAgents(): Promise<Agent[]> {
     await delay(500);
@@ -1103,6 +1103,9 @@ export const agentsService = {
     newOwnerCollab.updatedAt = new Date().toISOString();
   }
 };
+
+// Legacy alias for backward compatibility
+export const agentsService = interviewersService;
 
 // Utility function for simulating API delays
 function delay(ms: number): Promise<void> {

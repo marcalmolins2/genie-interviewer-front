@@ -6,9 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Loader2, RotateCcw, Archive as ArchiveIcon, Eye, Copy, Trash2 } from "lucide-react";
 import { Agent } from "@/types";
-import { agentsService } from "@/services/agents";
+import { interviewersService, agentsService } from "@/services/interviewers";
 import { toast } from "@/hooks/use-toast";
-import { AgentStatusBadge } from "@/components/AgentStatusBadge";
+import { InterviewerStatusBadge, AgentStatusBadge } from "@/components/InterviewerStatusBadge";
 
 interface ArchivedInterviewerWithLastDate extends Agent {
   lastInterviewDate?: string | null;

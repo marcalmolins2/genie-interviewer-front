@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Trash2, RotateCcw, AlertTriangle, ArrowLeft } from "lucide-react";
 import { Agent } from "@/types";
-import { agentsService } from "@/services/agents";
+import { interviewersService, agentsService } from "@/services/interviewers";
 import { toast } from "@/hooks/use-toast";
 import {
   AlertDialog,

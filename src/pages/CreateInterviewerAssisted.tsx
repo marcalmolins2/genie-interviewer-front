@@ -17,7 +17,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { Channel, Archetype, ARCHETYPES, PRICE_BY_CHANNEL } from '@/types';
-import { agentsService } from '@/services/agents';
+import { interviewersService, agentsService } from '@/services/interviewers';
 import { useToast } from '@/hooks/use-toast';
 
 // Conversation phases for tracking progress

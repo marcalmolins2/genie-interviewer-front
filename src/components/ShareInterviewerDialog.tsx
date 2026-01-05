@@ -40,10 +40,10 @@ import {
   Check
 } from 'lucide-react';
 import { AgentCollaborator, AgentPermission, AGENT_PERMISSIONS } from '@/types';
-import { agentsService } from '@/services/agents';
+import { interviewersService, agentsService } from '@/services/interviewers';
 import { useToast } from '@/hooks/use-toast';
 
-interface ShareAgentDialogProps {
+interface ShareInterviewerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   agentId: string;
@@ -60,7 +60,7 @@ interface SearchUser {
   department: string;
 }
 
-export function ShareAgentDialog({
+export function ShareInterviewerDialog({
   open,
   onOpenChange,
   agentId,
@@ -68,7 +68,7 @@ export function ShareAgentDialog({
   collaborators,
   isOwner,
   onCollaboratorsChange
-}: ShareAgentDialogProps) {
+}: ShareInterviewerDialogProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchUser[]>([]);
   const [searching, setSearching] = useState(false);
@@ -518,3 +518,6 @@ export function ShareAgentDialog({
     </>
   );
 }
+
+// Legacy alias for backward compatibility
+export const ShareAgentDialog = ShareInterviewerDialog;
