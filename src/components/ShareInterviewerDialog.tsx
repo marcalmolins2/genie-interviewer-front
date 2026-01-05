@@ -171,7 +171,7 @@ export function ShareInterviewerDialog({
       await agentsService.removeCollaborator(collaboratorId);
       toast({
         title: 'Collaborator Removed',
-        description: 'Collaborator has been removed from this agent.'
+        description: 'Collaborator has been removed from this interviewer.'
       });
       onCollaboratorsChange();
     } catch (error: any) {
@@ -191,7 +191,7 @@ export function ShareInterviewerDialog({
       await agentsService.transferOwnership(agentId, selectedTransferUser.userId);
       toast({
         title: 'Ownership Transferred',
-        description: `${selectedTransferUser.user.name} is now the owner of this agent.`
+        description: `${selectedTransferUser.user.name} is now the owner of this interviewer.`
       });
       setTransferDialogOpen(false);
       setSelectedTransferUser(null);
@@ -234,8 +234,8 @@ export function ShareInterviewerDialog({
             <DialogTitle>Share "{agentName}"</DialogTitle>
             <DialogDescription>
               {isOwner 
-                ? 'Manage who can access this agent and their permission levels.'
-                : 'View who has access to this agent.'}
+                ? 'Manage who can access this interviewer and their permission levels.'
+                : 'View who has access to this interviewer.'}
             </DialogDescription>
           </DialogHeader>
 

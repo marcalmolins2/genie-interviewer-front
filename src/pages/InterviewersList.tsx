@@ -69,7 +69,7 @@ export default function AgentsList() {
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Failed to load agents. Please try again.',
+        description: 'Failed to load interviewers. Please try again.',
         variant: 'destructive'
       });
     } finally {
@@ -82,12 +82,12 @@ export default function AgentsList() {
       setAgents(prev => prev.map(a => a.id === agent.id ? updatedAgent : a));
       toast({
         title: 'Success',
-        description: 'Agent activated successfully.'
+        description: 'Interviewer activated successfully.'
       });
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Failed to activate agent.',
+        description: 'Failed to activate interviewer.',
         variant: 'destructive'
       });
     }
@@ -132,7 +132,7 @@ export default function AgentsList() {
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Failed to archive agent.',
+        description: 'Failed to archive interviewer.',
         variant: 'destructive'
       });
     }
@@ -161,15 +161,15 @@ export default function AgentsList() {
         <div>
           <h1 className="text-3xl font-bold">Overview</h1>
           <p className="text-muted-foreground">
-            Manage your interview agents and view performance
+            Manage your interviewers and view performance
           </p>
         </div>
         
         <div className="flex items-center gap-2">
-          <Link to="/app/agents/new/assisted">
+          <Link to="/app/interviewers/new/assisted">
             <Button className="gap-2">
               <Plus className="h-4 w-4" />
-              New Agent
+              New Interviewer
             </Button>
           </Link>
         </div>
@@ -179,7 +179,7 @@ export default function AgentsList() {
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search agents..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-10" />
+          <Input placeholder="Search interviewers..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-10" />
         </div>
         
         <div className="flex gap-2">
@@ -347,21 +347,21 @@ export default function AgentsList() {
             <Users className="h-12 w-12 text-muted-foreground" />
           </div>
           <CardTitle className="mb-2">
-            {searchQuery ? 'No agents found' : 'No agents yet'}
+            {searchQuery ? 'No interviewers found' : 'No interviewers yet'}
           </CardTitle>
           <CardDescription className="mb-6">
-            {searchQuery ? 'Try adjusting your search terms' : 'Create your first interview agent to get started'}
+            {searchQuery ? 'Try adjusting your search terms' : 'Create your first interviewer to get started'}
           </CardDescription>
-          {!searchQuery && <Link to="/app/agents/new/assisted">
+          {!searchQuery && <Link to="/app/interviewers/new/assisted">
               <Button className="gap-2">
                 <Plus className="h-4 w-4" />
-                Create Your First Agent
+                Create Your First Interviewer
               </Button>
             </Link>}
         </Card> : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredAgents.map(agent => {
         const ChannelIcon = channelIcons[agent.channel as Channel];
-        return <Card key={agent.id} className="hover:shadow-lg hover:border-primary/30 hover:bg-accent/5 transition-all duration-200 border-border/20 bg-card cursor-pointer group" onClick={() => navigate(`/app/agents/${agent.id}`)}>
+        return <Card key={agent.id} className="hover:shadow-lg hover:border-primary/30 hover:bg-accent/5 transition-all duration-200 border-border/20 bg-card cursor-pointer group" onClick={() => navigate(`/app/interviewers/${agent.id}`)}>
                 <CardHeader className="space-y-4 pb-6">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -383,7 +383,7 @@ export default function AgentsList() {
                       <DropdownMenuContent align="end" onClick={e => e.stopPropagation()}>
                         <DropdownMenuItem onClick={e => {
                     e.stopPropagation();
-                    navigate(`/app/agents/${agent.id}/edit`);
+                    navigate(`/app/interviewers/${agent.id}/edit`);
                   }}>
                           <Edit className="h-4 w-4 mr-2" />
                           Edit

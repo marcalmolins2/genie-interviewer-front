@@ -160,15 +160,15 @@ export default function AgentAnalyze() {
         setInterviews(mockInterviews);
         setStats(statsData);
       } else {
-        navigate('/app/agents');
+        navigate('/app/interviewers');
       }
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Failed to load agent analytics.',
+        description: 'Failed to load interviewer analytics.',
         variant: 'destructive',
       });
-      navigate('/app/agents');
+      navigate('/app/interviewers');
     } finally {
       setLoading(false);
     }
@@ -360,12 +360,12 @@ SLIDE 4: Recommendations
     return (
       <div className="container py-8">
         <Card className="p-12 text-center">
-          <CardTitle className="mb-2">Agent not found</CardTitle>
+          <CardTitle className="mb-2">Interviewer not found</CardTitle>
           <CardDescription className="mb-6">
-            The requested agent could not be found.
+            The requested interviewer could not be found.
           </CardDescription>
-          <Link to="/app/agents">
-            <Button>Back to Agents</Button>
+          <Link to="/app/interviewers">
+            <Button>Back to Interviewers</Button>
           </Link>
         </Card>
       </div>
@@ -377,14 +377,14 @@ SLIDE 4: Recommendations
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate(`/app/agents/${agent.id}`)}>
+          <Button variant="ghost" onClick={() => navigate(`/app/interviewers/${agent.id}`)}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Agent
+            Back to Interviewer
           </Button>
           <div>
             <h1 className="text-3xl font-bold">Analytics: {agent.name}</h1>
             <p className="text-muted-foreground">
-              Insights and performance metrics for your agent
+              Insights and performance metrics for your interviewer
             </p>
           </div>
         </div>

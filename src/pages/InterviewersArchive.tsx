@@ -163,7 +163,7 @@ const AgentsArchive = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => navigate(`/app/agents/${agent.id}`)}
+                    onClick={() => navigate(`/app/interviewers/${agent.id}`)}
                     className="gap-2"
                   >
                     <Eye className="w-4 h-4" />

@@ -70,7 +70,7 @@ export default function EditAgent() {
       ]);
       
       if (!agentData) {
-        navigate('/app/agents');
+        navigate('/app/interviewers');
         return;
       }
 
@@ -81,7 +81,7 @@ export default function EditAgent() {
           description: 'Archived interviewers cannot be edited. Unarchive first to make changes.',
           variant: 'destructive',
         });
-        navigate(`/app/agents/${agentId}`);
+        navigate(`/app/interviewers/${agentId}`);
         return;
       }
       
@@ -106,7 +106,7 @@ export default function EditAgent() {
         description: 'Failed to load interviewer data.',
         variant: 'destructive',
       });
-      navigate('/app/agents');
+      navigate('/app/interviewers');
     } finally {
       setLoading(false);
     }
@@ -134,14 +134,14 @@ export default function EditAgent() {
       
       toast({
         title: 'Success',
-        description: 'Agent updated successfully.',
+        description: 'Interviewer updated successfully.',
       });
       
-      navigate(`/app/agents/${agentId}`);
+      navigate(`/app/interviewers/${agentId}`);
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Failed to update agent.',
+        description: 'Failed to update interviewer.',
         variant: 'destructive',
       });
     } finally {
@@ -211,12 +211,12 @@ export default function EditAgent() {
     return (
       <div className="container py-8">
         <Card className="p-12 text-center">
-          <CardTitle className="mb-2">Agent not found</CardTitle>
+          <CardTitle className="mb-2">Interviewer not found</CardTitle>
           <CardDescription className="mb-6">
-            The requested agent could not be found.
+            The requested interviewer could not be found.
           </CardDescription>
-          <Link to="/app/agents">
-            <Button>Back to Agents</Button>
+          <Link to="/app/interviewers">
+            <Button>Back to Interviewers</Button>
           </Link>
         </Card>
       </div>
@@ -228,12 +228,12 @@ export default function EditAgent() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate(`/app/agents/${agentId}`)}>
+          <Button variant="ghost" onClick={() => navigate(`/app/interviewers/${agentId}`)}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Overview
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">Edit Agent</h1>
+            <h1 className="text-3xl font-bold">Edit Interviewer</h1>
             <div className="flex items-center gap-2 mt-1">
               <AgentStatusBadge status={agent.status} />
               <Badge variant="outline">{agent.archetype.replace('_', ' ')}</Badge>
@@ -242,7 +242,7 @@ export default function EditAgent() {
         </div>
         
         <div className="flex items-center gap-2">
-          <Link to={`/app/agents/${agentId}`}>
+          <Link to={`/app/interviewers/${agentId}`}>
             <Button variant="outline">Cancel</Button>
           </Link>
           <Button onClick={handleSave} disabled={saving || !formData.name.trim()}>
@@ -266,16 +266,16 @@ export default function EditAgent() {
         <Card>
           <CardHeader>
             <CardTitle>Basic Information</CardTitle>
-            <CardDescription>Update the agent's core configuration</CardDescription>
+            <CardDescription>Update the interviewer's core configuration</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="name">Agent Name *</Label>
+              <Label htmlFor="name">Interviewer Name *</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="Enter agent name"
+                placeholder="Enter interviewer name"
                 className="mt-1"
               />
             </div>
@@ -318,7 +318,7 @@ export default function EditAgent() {
         <Card>
           <CardHeader>
             <CardTitle>Channel Configuration</CardTitle>
-            <CardDescription>How participants will access this agent</CardDescription>
+            <CardDescription>How participants will access this interviewer</CardDescription>
           </CardHeader>
           <CardContent>
             <ChannelSelector
@@ -378,7 +378,7 @@ export default function EditAgent() {
               <Brain className="h-5 w-5" />
               Knowledge Base
             </CardTitle>
-            <CardDescription>Manage information and resources for the agent</CardDescription>
+            <CardDescription>Manage information and resources for the interviewer</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Existing Knowledge Assets */}
