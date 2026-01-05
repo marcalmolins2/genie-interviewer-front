@@ -199,7 +199,7 @@ const AgentsArchive = () => {
                         if (error instanceof Error && error.message === 'ACTIVE_CALL_IN_PROGRESS') {
                           toast({
                             title: "Cannot move to trash",
-                            description: "This interviewer has an active call in progress. Please wait until the call ends.",
+                            description: "This interviewer has an active call in progress. Please wait until the call ends before moving to trash.",
                             variant: "destructive",
                           });
                         } else {
