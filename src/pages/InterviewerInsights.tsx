@@ -70,10 +70,10 @@ const SimpleBarChart = ({ data, title }: { data: any[], title: string }) => (
   </div>
 );
 
-export default function InterviewerAnalyze() {
+export default function InterviewerInsights() {
   const { interviewerId } = useParams<{ interviewerId: string }>();
   const [searchParams] = useSearchParams();
-  const defaultTab = searchParams.get('tab') || 'overview';
+  const defaultTab = searchParams.get('tab') || 'cross-session';
   const [interviewer, setInterviewer] = useState<Agent | null>(null);
   const [interviews, setInterviews] = useState<InterviewSummary[]>([]);
   const [stats, setStats] = useState<any>(null);
@@ -382,25 +382,24 @@ SLIDE 4: Recommendations
             Back to Interviewer
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">Analytics: {interviewer.name}</h1>
+            <h1 className="text-3xl font-bold">Insights: {interviewer.name}</h1>
             <p className="text-muted-foreground">
-              Insights and performance metrics for your interviewer
+              Cross-session insights and individual interview sessions
             </p>
           </div>
         </div>
 
       </div>
 
-      {/* Analytics Tabs */}
+      {/* Insights Tabs */}
       <Tabs defaultValue={defaultTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="transcripts">Transcripts</TabsTrigger>
-          <TabsTrigger value="insights">Insights</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="cross-session">Cross-Session Insights</TabsTrigger>
+          <TabsTrigger value="sessions">Sessions</TabsTrigger>
         </TabsList>
 
-        {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-6">
+        {/* Cross-Session Insights Tab (Default) */}
+        <TabsContent value="cross-session" className="space-y-6">
           {/* KPI Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card>
@@ -484,148 +483,7 @@ SLIDE 4: Recommendations
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
-
-        {/* Transcripts Tab */}
-        <TabsContent value="transcripts" className="space-y-4">
-          {/* Filters */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search interviews..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Interviews</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="incomplete">Incomplete</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Interviews Table */}
-          <Card>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Interview ID</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Duration</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                  <TableHead>Feedback</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredInterviews.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8">
-                      <div className="text-muted-foreground">
-                        {searchQuery || statusFilter !== 'all' 
-                          ? 'No interviews match your filters' 
-                          : 'No interviews yet'
-                        }
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredInterviews.map((interview) => (
-                    <TableRow key={interview.id}>
-                      <TableCell className="font-medium">
-                        {interview.id.substring(0, 8)}...
-                      </TableCell>
-                      <TableCell>{formatDate(interview.startedAt)}</TableCell>
-                      <TableCell>{formatDuration(interview.durationSec)}</TableCell>
-                      <TableCell>
-                        <Badge variant={interview.completed ? 'default' : 'secondary'}>
-                          {interview.completed ? (
-                            <>
-                              <CheckCircle className="h-3 w-3 mr-1" />
-                              Completed
-                            </>
-                          ) : (
-                            <>
-                              <XCircle className="h-3 w-3 mr-1" />
-                              Incomplete
-                            </>
-                          )}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => navigate(`/app/interviewers/${interviewerId}/sessions/${interview.id}`)}
-                          disabled={!interview.completed}
-                        >
-                          View Transcript
-                        </Button>
-                      </TableCell>
-                      <TableCell>
-                        {interview.completed ? (
-                          (() => {
-                            const storedFeedback = localStorage.getItem(`session-feedback-${interview.id}`);
-                            const feedback = storedFeedback ? JSON.parse(storedFeedback) as SessionFeedbackType : interview.feedback;
-                            return feedback?.rating === 'positive' ? (
-                              <ThumbsUp className="h-4 w-4 text-emerald-600" />
-                            ) : feedback?.rating === 'negative' ? (
-                              <ThumbsDown className="h-4 w-4 text-rose-600" />
-                            ) : (
-                              <Minus className="h-4 w-4 text-muted-foreground" />
-                            );
-                          })()
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </Card>
-        </TabsContent>
-
-        {/* Insights Tab */}
-        <TabsContent value="insights" className="space-y-6">
-          {/* Ask a Question */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Ask a Question</CardTitle>
-              <CardDescription>
-                Generate custom insights from your interview data
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-2">
-                <Input
-                  value={insightQuery}
-                  onChange={(e) => setInsightQuery(e.target.value)}
-                  placeholder="e.g., What are the main pain points mentioned by users?"
-                  className="flex-1"
-                />
-                <Button disabled={!insightQuery.trim()}>
-                  <Search className="h-4 w-4 mr-2" />
-                  Ask
-                </Button>
-              </div>
-              
-              <div className="text-sm text-muted-foreground">
-                Try asking about sentiment, topics, user feedback, or specific themes
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Predefined Insights */}
+          {/* Sentiment Analysis & Key Themes */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
@@ -709,6 +567,176 @@ SLIDE 4: Recommendations
             </Card>
           </div>
         </TabsContent>
+
+        {/* Sessions Tab */}
+        <TabsContent value="sessions" className="space-y-6">
+          {/* KPI Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Interviews</CardTitle>
+                <MessageSquare className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats?.totalInterviews || 0}</div>
+                <p className="text-xs text-muted-foreground">
+                  {stats?.last7Days || 0} in last 7 days
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Completion Rate</CardTitle>
+                <CheckCircle className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {Math.round((stats?.completionRate || 0) * 100)}%
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {stats?.completedInterviews || 0} completed
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Avg Duration</CardTitle>
+                <Clock className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {formatDuration(stats?.averageDuration || 0)}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Per completed interview
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Revenue</CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  ${(stats?.completedInterviews || 0) * interviewer.pricePerInterviewUsd}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  From completed interviews
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+          {/* Filters */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search interviews..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Interviews</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="incomplete">Incomplete</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Interviews Table */}
+          <Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Interview ID</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Duration</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
+                  <TableHead>Feedback</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredInterviews.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8">
+                      <div className="text-muted-foreground">
+                        {searchQuery || statusFilter !== 'all' 
+                          ? 'No interviews match your filters' 
+                          : 'No interviews yet'
+                        }
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredInterviews.map((interview) => (
+                    <TableRow key={interview.id}>
+                      <TableCell className="font-medium">
+                        {interview.id.substring(0, 8)}...
+                      </TableCell>
+                      <TableCell>{formatDate(interview.startedAt)}</TableCell>
+                      <TableCell>{formatDuration(interview.durationSec)}</TableCell>
+                      <TableCell>
+                        <Badge variant={interview.completed ? 'default' : 'secondary'}>
+                          {interview.completed ? (
+                            <>
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              Completed
+                            </>
+                          ) : (
+                            <>
+                              <XCircle className="h-3 w-3 mr-1" />
+                              Incomplete
+                            </>
+                          )}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => navigate(`/app/interviewers/${interviewerId}/sessions/${interview.id}`)}
+                          disabled={!interview.completed}
+                        >
+                          View Session Details
+                        </Button>
+                      </TableCell>
+                      <TableCell>
+                        {interview.completed ? (
+                          (() => {
+                            const storedFeedback = localStorage.getItem(`session-feedback-${interview.id}`);
+                            const feedback = storedFeedback ? JSON.parse(storedFeedback) as SessionFeedbackType : interview.feedback;
+                            return feedback?.rating === 'positive' ? (
+                              <ThumbsUp className="h-4 w-4 text-emerald-600" />
+                            ) : feedback?.rating === 'negative' ? (
+                              <ThumbsDown className="h-4 w-4 text-rose-600" />
+                            ) : (
+                              <Minus className="h-4 w-4 text-muted-foreground" />
+                            );
+                          })()
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </Card>
+        </TabsContent>
+
       </Tabs>
 
       {/* Transcript Modal */}

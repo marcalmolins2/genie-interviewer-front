@@ -15,7 +15,7 @@ import CreateInterviewerManual from "./pages/CreateInterviewerManual";
 import CreateInterviewerAssisted from "./pages/CreateInterviewerAssisted";
 import InterviewerOverview from "./pages/InterviewerOverview";
 import EditInterviewer from "./pages/EditInterviewer";
-import InterviewerAnalyze from "./pages/InterviewerAnalyze";
+import InterviewerInsights from "./pages/InterviewerInsights";
 import SessionDetail from "./pages/SessionDetail";
 import NotFound from "./pages/NotFound";
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -28,7 +28,8 @@ import {
   LegacyAgentRedirect,
   LegacyAgentEditRedirect,
   LegacyAgentAnalyzeRedirect,
-  LegacyAgentSessionRedirect
+  LegacyAgentSessionRedirect,
+  LegacyAnalyzeRedirect
 } from "./components/LegacyAgentRedirect";
 
 const queryClient = new QueryClient();
@@ -56,7 +57,9 @@ const App = () => (
             <Route path="interviewers/new/assisted" element={<CreateInterviewerAssisted />} />
             <Route path="interviewers/:interviewerId" element={<InterviewerOverview />} />
             <Route path="interviewers/:interviewerId/edit" element={<EditInterviewer />} />
-            <Route path="interviewers/:interviewerId/analyze" element={<InterviewerAnalyze />} />
+            <Route path="interviewers/:interviewerId/insights" element={<InterviewerInsights />} />
+            {/* Legacy redirect from /analyze to /insights */}
+            <Route path="interviewers/:interviewerId/analyze" element={<LegacyAnalyzeRedirect />} />
             <Route path="interviewers/:interviewerId/sessions/:sessionId" element={<SessionDetail />} />
             
             {/* Legacy redirects - /app/agents -> /app/interviewers */}
