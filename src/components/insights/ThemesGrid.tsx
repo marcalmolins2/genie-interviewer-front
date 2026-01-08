@@ -14,9 +14,9 @@ interface ThemesGridProps {
 
 export function ThemesGrid({ themes }: ThemesGridProps) {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div className="space-y-4">
       {themes.map((theme) => (
-        <Card key={theme.id} className="border-l-4 border-l-primary/50">
+        <Card key={theme.id}>
           <CardHeader className="pb-2">
             <div className="flex items-start justify-between gap-2">
               <CardTitle className="text-base font-semibold">{theme.title}</CardTitle>
