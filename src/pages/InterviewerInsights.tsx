@@ -541,7 +541,7 @@ SLIDE 4: Recommendations
             <ResizablePanelGroup direction="horizontal" className="min-h-[600px] rounded-lg border">
               {/* Left Panel: Tabbed Insights */}
               <ResizablePanel defaultSize={60} minSize={40}>
-                <div className="h-full p-4 overflow-auto">
+                <div className="h-full p-4 overflow-auto bg-background rounded-lg">
                   <Tabs value={insightTab} onValueChange={setInsightTab}>
                     <TabsList className="grid w-full grid-cols-3">
                       <TabsTrigger value="themes">Themes</TabsTrigger>
@@ -575,7 +575,7 @@ SLIDE 4: Recommendations
               
               {/* Right Panel: Q&A */}
               <ResizablePanel defaultSize={40} minSize={30}>
-                <div className="h-full">
+                <div className="h-full rounded-lg overflow-hidden">
                   <CrossSessionQA 
                     interviewerId={interviewerId!}
                     sessions={sessionsForQA}
