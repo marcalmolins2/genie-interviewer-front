@@ -215,6 +215,19 @@ export interface QAMessage {
   citations?: string[]; // Array of section IDs referenced in the response
 }
 
+// ============= Cross-Session Summary Types =============
+
+export interface CrossSessionSummary {
+  headline?: string;                    // Optional custom headline, defaults to "Executive Summary"
+  narrativeParagraph: string;           // 2-3 sentence executive overview
+  keyTakeaways: string[];               // 3-5 actionable bullet points
+  stats: {
+    sessionCount: number;
+    totalDurationMinutes: number;
+    dateRange: { start: string; end: string };
+  };
+}
+
 // ============= Key Findings Types =============
 
 export interface KeyFinding {
