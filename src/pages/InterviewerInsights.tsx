@@ -50,11 +50,8 @@ import {
 } from 'lucide-react';
 import { SessionFeedback } from '@/components/SessionFeedback';
 import { 
-  InsightsStatsBar, 
-  ThemesGrid, 
   KeyFindingsList, 
   CrossSessionQA,
-  type Theme,
 } from '@/components/insights';
 import { Agent, InterviewSummary, SessionFeedback as SessionFeedbackType, FindingsCategory } from '@/types';
 import { interviewersService, agentsService } from '@/services/interviewers';
@@ -71,47 +68,80 @@ export default function InterviewerInsights() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [insightTab, setInsightTab] = useState<string>('themes');
+  
   const [selectedTranscript, setSelectedTranscript] = useState<InterviewSummary | null>(null);
   const [isTranscriptOpen, setIsTranscriptOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const isMobile = useIsMobile();
   
-  // Mock data for themes, insights, and quotes
-  const mockThemes: Theme[] = [
-    {
-      id: 'theme-1',
-      title: 'AI Adoption Barriers',
-      description: 'Participants consistently mention lack of training and unclear ROI as primary barriers to AI adoption in their organizations.',
-      sessionCount: 4,
-    },
-    {
-      id: 'theme-2',
-      title: 'Change Management Challenges',
-      description: 'Stakeholder buy-in and fear of job displacement emerge as recurring concerns across interviews.',
-      sessionCount: 5,
-    },
-    {
-      id: 'theme-3',
-      title: 'Training & Skill Gaps',
-      description: 'Teams lack necessary skills to implement new tools effectively, creating friction in adoption.',
-      sessionCount: 3,
-    },
-    {
-      id: 'theme-4',
-      title: 'Integration Complexity',
-      description: 'Existing systems are difficult to connect with new solutions, leading to fragmented workflows.',
-      sessionCount: 4,
-    },
-  ];
-
-  // Mock key findings - categories derived from interview guide sections
+  // Mock key findings - categories from both interview guide sections AND emergent themes
   const mockKeyFindings: FindingsCategory[] = [
+    // Emergent themes (derived from cross-session analysis)
     {
-      id: 'cat-1',
+      id: 'theme-adoption-barriers',
+      category: 'AI Adoption Barriers',
+      summary: 'Participants consistently mention lack of training and unclear ROI as primary barriers to AI adoption in their organizations.',
+      source: 'emergent',
+      sessionCount: 4,
+      findings: [
+        {
+          id: 'finding-barriers-1',
+          insight: 'Unclear ROI metrics make it difficult to secure leadership buy-in for AI initiatives',
+          supportingQuote: {
+            text: "We can't justify the investment without concrete numbers. Leadership keeps asking for ROI projections we simply don't have.",
+            sessionId: 'int-20241201-001',
+            sessionDate: '2024-12-01T14:30:00Z',
+          },
+          sessionIds: ['int-20241201-001', 'int-20241130-004'],
+        },
+        {
+          id: 'finding-barriers-2',
+          insight: 'Organizations lack practical AI skills training, leaving employees unable to leverage tools effectively',
+          supportingQuote: {
+            text: "We bought the tools, but nobody knows how to use them effectively. It's like having a sports car but only driving it in first gear.",
+            sessionId: 'int-20241201-001',
+            sessionDate: '2024-12-01T14:30:00Z',
+          },
+          sessionIds: ['int-20241201-001', 'int-20241201-002'],
+        },
+      ],
+    },
+    {
+      id: 'theme-change-management',
+      category: 'Change Management Challenges',
+      summary: 'Stakeholder buy-in and fear of job displacement emerge as recurring concerns across interviews.',
+      source: 'emergent',
+      sessionCount: 5,
+      findings: [
+        {
+          id: 'finding-change-1',
+          insight: 'Fear of job displacement creates organizational resistance that slows adoption',
+          supportingQuote: {
+            text: "The biggest hurdle has been getting buy-in from stakeholders. There's a lot of fear around AI replacing jobs.",
+            sessionId: 'int-20241201-001',
+            sessionDate: '2024-12-01T14:30:00Z',
+          },
+          sessionIds: ['int-20241201-001', 'int-20241201-002', 'int-20241130-004'],
+        },
+        {
+          id: 'finding-change-2',
+          insight: 'Generational divide affects AI adoption, with younger employees embracing tools faster',
+          supportingQuote: {
+            text: "Some pushback from the old guard, definitely. They're worried about quality control. But the younger consultants are embracing it fully.",
+            sessionId: 'int-20241201-002',
+            sessionDate: '2024-12-01T09:15:00Z',
+          },
+          sessionIds: ['int-20241201-002'],
+        },
+      ],
+    },
+    // Interview guide categories
+    {
+      id: 'cat-challenges',
       category: 'Current Challenges',
       summary: 'Users consistently struggle with the initial learning curve and lack of clear documentation for advanced features.',
+      source: 'interview_guide',
       findings: [
         {
           id: 'finding-1',
@@ -136,9 +166,10 @@ export default function InterviewerInsights() {
       ],
     },
     {
-      id: 'cat-2',
+      id: 'cat-strategies',
       category: 'Adoption Strategies',
       summary: 'Organizations that start with small pilots and invest in training see significantly higher adoption rates.',
+      source: 'interview_guide',
       findings: [
         {
           id: 'finding-3',
@@ -163,9 +194,10 @@ export default function InterviewerInsights() {
       ],
     },
     {
-      id: 'cat-3',
+      id: 'cat-recommendations',
       category: 'Implementation Recommendations',
       summary: 'Users want better integration capabilities and more intuitive onboarding experiences.',
+      source: 'interview_guide',
       findings: [
         {
           id: 'finding-5',
@@ -345,7 +377,7 @@ export default function InterviewerInsights() {
         profiles: profiles.slice(0, 5), // Show top 5 profiles
         revenue: completedInterviews.length * interviewer.pricePerInterviewUsd,
         avgDuration: formatDuration(stats?.averageDuration || 0),
-        topTopics: mockThemes.slice(0, 3).map(t => ({ name: t.title, value: t.sessionCount }))
+        topTopics: mockKeyFindings.filter(c => c.source === 'emergent').slice(0, 3).map(c => ({ name: c.category, value: c.sessionCount || 0 }))
       }
     };
 
@@ -509,26 +541,14 @@ SLIDE 4: Recommendations
           {isMobile ? (
             // Stacked layout for mobile/tablet
             <div className="space-y-6">
-              {/* Left Content: Tabbed Insights */}
+              {/* Left Content: Key Findings */}
               <div className="space-y-4">
-                <Tabs value={insightTab} onValueChange={setInsightTab}>
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="themes">Themes</TabsTrigger>
-                    <TabsTrigger value="findings">Key Findings</TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="themes" className="mt-4">
-                    <ThemesGrid themes={mockThemes} />
-                  </TabsContent>
-                  
-                  <TabsContent value="findings" className="mt-4">
-                    <KeyFindingsList 
-                      categories={mockKeyFindings} 
-                      interviewerId={interviewerId!}
-                      sessionDates={sessionDates}
-                    />
-                  </TabsContent>
-                </Tabs>
+                <h3 className="text-lg font-semibold">Key Findings</h3>
+                <KeyFindingsList 
+                  categories={mockKeyFindings} 
+                  interviewerId={interviewerId!}
+                  sessionDates={sessionDates}
+                />
               </div>
 
               {/* Right Content: Q&A */}
@@ -542,27 +562,15 @@ SLIDE 4: Recommendations
           ) : (
             // Side-by-side layout for desktop
             <ResizablePanelGroup direction="horizontal" className="min-h-[600px] rounded-lg border">
-              {/* Left Panel: Tabbed Insights */}
+              {/* Left Panel: Key Findings */}
               <ResizablePanel defaultSize={60} minSize={40}>
-                <div className="h-full p-4 overflow-auto bg-background rounded-lg">
-                  <Tabs value={insightTab} onValueChange={setInsightTab}>
-                    <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger value="themes">Themes</TabsTrigger>
-                      <TabsTrigger value="findings">Key Findings</TabsTrigger>
-                    </TabsList>
-                    
-                    <TabsContent value="themes" className="mt-4">
-                      <ThemesGrid themes={mockThemes} />
-                    </TabsContent>
-                    
-                    <TabsContent value="findings" className="mt-4">
-                      <KeyFindingsList 
-                        categories={mockKeyFindings} 
-                        interviewerId={interviewerId!}
-                        sessionDates={sessionDates}
-                      />
-                    </TabsContent>
-                  </Tabs>
+                <div className="h-full p-4 overflow-auto bg-background rounded-lg space-y-4">
+                  <h3 className="text-lg font-semibold">Key Findings</h3>
+                  <KeyFindingsList 
+                    categories={mockKeyFindings} 
+                    interviewerId={interviewerId!}
+                    sessionDates={sessionDates}
+                  />
                 </div>
               </ResizablePanel>
               
