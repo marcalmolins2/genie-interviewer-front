@@ -161,28 +161,24 @@ export function ChatBot() {
   };
   
   return (
-    <>
-      {/* Floating Button */}
-      <button
-        onClick={() => setIsOpen(true)}
-        className={cn(
-          "fixed bottom-6 right-6 z-50 flex items-center justify-center",
-          "w-14 h-14 rounded-full shadow-lg transition-all duration-300",
-          "bg-primary text-primary-foreground hover:scale-105",
-          "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-          isOpen && "scale-0 opacity-0"
-        )}
+    <div className="relative">
+      {/* Header Button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setIsOpen(!isOpen)}
+        className="rounded-full h-10 w-10"
         aria-label="Open chat assistant"
       >
-        <MessageCircle className="h-6 w-6" />
-      </button>
+        <MessageCircle className="h-5 w-5" />
+      </Button>
       
-      {/* Chat Modal */}
+      {/* Chat Modal - Dropdown from header */}
       <div
         className={cn(
-          "fixed bottom-6 right-6 z-50 w-[380px] max-h-[600px]",
+          "fixed top-16 right-4 z-50 w-[380px] max-h-[calc(100vh-5rem)]",
           "bg-card border border-border rounded-2xl shadow-xl",
-          "flex flex-col overflow-hidden transition-all duration-300 origin-bottom-right",
+          "flex flex-col overflow-hidden transition-all duration-300 origin-top-right",
           isOpen ? "scale-100 opacity-100" : "scale-0 opacity-0 pointer-events-none"
         )}
       >
@@ -297,6 +293,6 @@ export function ChatBot() {
           </div>
         </form>
       </div>
-    </>
+    </div>
   );
 }
