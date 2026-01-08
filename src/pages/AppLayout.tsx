@@ -76,7 +76,7 @@ export default function AppLayout() {
 
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             {/* Admin Link - only visible to admins */}
             {isAdmin && (
               <Button variant="outline" size="sm" asChild className="hidden md:flex">
@@ -96,6 +96,9 @@ export default function AppLayout() {
             >
               {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </Button>
+
+            {/* Genie Assistant */}
+            <ChatBot />
 
             {/* User Menu */}
             <DropdownMenu>
@@ -142,9 +145,6 @@ export default function AppLayout() {
       <main className="flex-1">
         <Outlet />
       </main>
-      
-      {/* Chat Assistant */}
-      <ChatBot />
     </div>
   );
 }
