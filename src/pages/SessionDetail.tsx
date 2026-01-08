@@ -6,10 +6,13 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { TranscriptSection } from '@/components/TranscriptSection';
 import { TranscriptSearch } from '@/components/TranscriptSearch';
 import { TranscriptQA } from '@/components/TranscriptQA';
 import { SessionFeedback } from '@/components/SessionFeedback';
+import { useIsMobile } from '@/hooks/use-mobile';
 import type { SessionDetail as SessionDetailType, QAMessage, SessionFeedback as SessionFeedbackType } from '@/types';
 
 // Mock session data
@@ -222,6 +225,7 @@ const getMockSessionDetail = (sessionId: string, agentId: string): SessionDetail
 export default function SessionDetail() {
   const { interviewerId, sessionId } = useParams<{ interviewerId: string; sessionId: string }>();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [session, setSession] = useState<SessionDetailType | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -356,116 +360,154 @@ export default function SessionDetail() {
     );
   }
 
-  return (
-    <div className="container py-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate(`/app/interviewers/${interviewerId}/insights?tab=sessions`)}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold">Interview Session</h1>
-            <p className="text-sm text-muted-foreground">{session.id}</p>
-          </div>
-        </div>
-        
-        <Button variant="outline" size="sm" onClick={handleExport}>
-          <Download className="h-4 w-4 mr-2" />
-          Export
-        </Button>
-      </div>
-
-      {/* Session Metadata */}
-      <Card className="p-4">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-6 text-sm">
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <span>{formatDate(session.startedAt)}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-muted-foreground" />
-              <span>{formatDuration(session.durationSec)}</span>
-            </div>
-            <Badge variant={session.completed ? 'default' : 'secondary'}>
-              {session.completed ? (
-                <><CheckCircle className="h-3 w-3 mr-1" /> Completed</>
-              ) : (
-                <><XCircle className="h-3 w-3 mr-1" /> Incomplete</>
-              )}
-            </Badge>
-          </div>
-          
-          {session.completed && (
-            <SessionFeedback
-              sessionId={session.id}
-              currentFeedback={feedback}
-              onFeedbackSubmit={handleFeedbackSubmit}
-            />
-          )}
-        </div>
-      </Card>
-
-      {/* Main Content - Split View */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 min-h-[600px]">
-        {/* Transcript Panel (60%) */}
-        <div className="lg:col-span-3 space-y-4">
-          <div className="flex items-center justify-between gap-4">
-            <div className="min-w-[280px]">
-              <TranscriptSearch 
-                onSearch={handleSearch} 
-                matchCount={matchCount}
-                placeholder="Search questions & answers..."
-              />
-            </div>
-            
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <span className="text-sm text-muted-foreground">View:</span>
-              <Label 
-                htmlFor="view-mode" 
-                className={`text-sm cursor-pointer ${viewMode === 'clean' ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
-              >
-                Clean
-              </Label>
-              <Switch
-                id="view-mode"
-                checked={viewMode === 'original'}
-                onCheckedChange={(checked) => setViewMode(checked ? 'original' : 'clean')}
-              />
-              <Label 
-                htmlFor="view-mode" 
-                className={`text-sm cursor-pointer ${viewMode === 'original' ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
-              >
-                Original
-              </Label>
-            </div>
-          </div>
-          
-          <div className="space-y-3">
-            {session.transcript.sections.map((section) => (
-              <TranscriptSection
-                key={section.id}
-                section={section}
-                searchQuery={searchQuery}
-                viewMode={viewMode}
-                isHighlighted={highlightedSectionId === section.id}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Q&A Panel (40%) */}
-        <div className="lg:col-span-2 h-[600px]">
-          <TranscriptQA
-            sessionId={session.id}
-            transcript={session.transcript}
-            initialMessages={qaMessages}
-            onSaveMessage={handleSaveMessage}
-            onCitationClick={handleCitationClick}
+  // Transcript content renderer
+  const renderTranscriptContent = () => (
+    <>
+      <div className="flex items-center justify-between gap-4 flex-shrink-0">
+        <div className="min-w-[280px]">
+          <TranscriptSearch 
+            onSearch={handleSearch} 
+            matchCount={matchCount}
+            placeholder="Search questions & answers..."
           />
         </div>
+        
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <span className="text-sm text-muted-foreground">View:</span>
+          <Label 
+            htmlFor="view-mode" 
+            className={`text-sm cursor-pointer ${viewMode === 'clean' ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
+          >
+            Clean
+          </Label>
+          <Switch
+            id="view-mode"
+            checked={viewMode === 'original'}
+            onCheckedChange={(checked) => setViewMode(checked ? 'original' : 'clean')}
+          />
+          <Label 
+            htmlFor="view-mode" 
+            className={`text-sm cursor-pointer ${viewMode === 'original' ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
+          >
+            Original
+          </Label>
+        </div>
+      </div>
+      
+      <div className="space-y-3">
+        {session.transcript.sections.map((section) => (
+          <TranscriptSection
+            key={section.id}
+            section={section}
+            searchQuery={searchQuery}
+            viewMode={viewMode}
+            isHighlighted={highlightedSectionId === section.id}
+          />
+        ))}
+      </div>
+    </>
+  );
+
+  return (
+    <div className="container flex flex-col" style={{ height: 'calc(100dvh - 64px)' }}>
+      {/* Header */}
+      <div className="flex-shrink-0 py-6 space-y-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="sm" onClick={() => navigate(`/app/interviewers/${interviewerId}/insights?tab=sessions`)}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold">Interview Session</h1>
+              <p className="text-sm text-muted-foreground">{session.id}</p>
+            </div>
+          </div>
+          
+          <Button variant="outline" size="sm" onClick={handleExport}>
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
+        </div>
+
+        {/* Session Metadata */}
+        <Card className="p-4">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex flex-wrap items-center gap-6 text-sm">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <span>{formatDate(session.startedAt)}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                <span>{formatDuration(session.durationSec)}</span>
+              </div>
+              <Badge variant={session.completed ? 'default' : 'secondary'}>
+                {session.completed ? (
+                  <><CheckCircle className="h-3 w-3 mr-1" /> Completed</>
+                ) : (
+                  <><XCircle className="h-3 w-3 mr-1" /> Incomplete</>
+                )}
+              </Badge>
+            </div>
+            
+            {session.completed && (
+              <SessionFeedback
+                sessionId={session.id}
+                currentFeedback={feedback}
+                onFeedbackSubmit={handleFeedbackSubmit}
+              />
+            )}
+          </div>
+        </Card>
+      </div>
+
+      {/* Main Content - Split View */}
+      <div className="flex-1 min-h-0 pb-4">
+        {isMobile ? (
+          // Mobile: Stacked layout
+          <div className="h-full overflow-auto space-y-4">
+            <div className="space-y-4 pb-4">
+              {renderTranscriptContent()}
+            </div>
+            <div className="min-h-[500px]">
+              <TranscriptQA
+                sessionId={session.id}
+                transcript={session.transcript}
+                initialMessages={qaMessages}
+                onSaveMessage={handleSaveMessage}
+                onCitationClick={handleCitationClick}
+              />
+            </div>
+          </div>
+        ) : (
+          // Desktop: Resizable panels
+          <ResizablePanelGroup direction="horizontal" className="h-full rounded-lg border">
+            {/* Transcript Panel */}
+            <ResizablePanel defaultSize={60} minSize={40}>
+              <ScrollArea className="h-full">
+                <div className="p-4 space-y-4">
+                  {renderTranscriptContent()}
+                </div>
+              </ScrollArea>
+            </ResizablePanel>
+            
+            <ResizableHandle withHandle />
+            
+            {/* Q&A Panel */}
+            <ResizablePanel defaultSize={40} minSize={30}>
+              <div className="h-full flex flex-col overflow-hidden bg-muted/30">
+                <TranscriptQA
+                  sessionId={session.id}
+                  transcript={session.transcript}
+                  initialMessages={qaMessages}
+                  onSaveMessage={handleSaveMessage}
+                  onCitationClick={handleCitationClick}
+                />
+              </div>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        )}
       </div>
     </div>
   );
