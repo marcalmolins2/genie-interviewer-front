@@ -12,7 +12,12 @@ export function LegacyAgentEditRedirect() {
 
 export function LegacyAgentAnalyzeRedirect() {
   const { agentId } = useParams<{ agentId: string }>();
-  return <Navigate to={`/app/interviewers/${agentId}/analyze`} replace />;
+  return <Navigate to={`/app/interviewers/${agentId}/insights`} replace />;
+}
+
+export function LegacyAnalyzeRedirect() {
+  const { interviewerId } = useParams<{ interviewerId: string }>();
+  return <Navigate to={`/app/interviewers/${interviewerId}/insights`} replace />;
 }
 
 export function LegacyAgentSessionRedirect() {
