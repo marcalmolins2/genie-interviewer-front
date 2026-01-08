@@ -24,6 +24,12 @@ import AdminArchetypes from "./pages/admin/AdminArchetypes";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import PublicInterview from "./pages/PublicInterview";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import {
+  LegacyAgentRedirect,
+  LegacyAgentEditRedirect,
+  LegacyAgentAnalyzeRedirect,
+  LegacyAgentSessionRedirect
+} from "./components/LegacyAgentRedirect";
 
 const queryClient = new QueryClient();
 
@@ -60,7 +66,10 @@ const App = () => (
             <Route path="agents/new" element={<Navigate to="/app/interviewers/new" replace />} />
             <Route path="agents/new/manual" element={<Navigate to="/app/interviewers/new/manual" replace />} />
             <Route path="agents/new/assisted" element={<Navigate to="/app/interviewers/new/assisted" replace />} />
-            <Route path="agents/:agentId" element={<Navigate to="/app/interviewers/:agentId" replace />} />
+            <Route path="agents/:agentId" element={<LegacyAgentRedirect />} />
+            <Route path="agents/:agentId/edit" element={<LegacyAgentEditRedirect />} />
+            <Route path="agents/:agentId/analyze" element={<LegacyAgentAnalyzeRedirect />} />
+            <Route path="agents/:agentId/sessions/:sessionId" element={<LegacyAgentSessionRedirect />} />
             
             {/* Admin Routes */}
             <Route path="admin" element={<AdminLayout />}>
