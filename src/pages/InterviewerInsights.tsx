@@ -52,14 +52,11 @@ import { SessionFeedback } from '@/components/SessionFeedback';
 import { 
   InsightsStatsBar, 
   ThemesGrid, 
-  KeyInsightsList, 
-  KeyQuotesList, 
+  KeyFindingsList, 
   CrossSessionQA,
   type Theme,
-  type InsightCategory,
-  type KeyQuote,
 } from '@/components/insights';
-import { Agent, InterviewSummary, SessionFeedback as SessionFeedbackType } from '@/types';
+import { Agent, InterviewSummary, SessionFeedback as SessionFeedbackType, FindingsCategory } from '@/types';
 import { interviewersService, agentsService } from '@/services/interviewers';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -109,74 +106,88 @@ export default function InterviewerInsights() {
     },
   ];
 
-  const mockInsightCategories: InsightCategory[] = [
+  // Mock key findings - categories derived from interview guide sections
+  const mockKeyFindings: FindingsCategory[] = [
     {
       id: 'cat-1',
-      category: 'Pain Points',
+      category: 'Current Challenges',
       summary: 'Users consistently struggle with the initial learning curve and lack of clear documentation for advanced features.',
-      insights: [
-        { text: 'Most users feel overwhelmed during the first week of use', sessionIds: ['int-20241201-001', 'int-20241201-002'] },
-        { text: 'Documentation gaps are cited as primary friction point', sessionIds: ['int-20241201-001', 'int-20241130-004'] },
-        { text: 'Self-service troubleshooting is preferred over support tickets', sessionIds: ['int-20241201-002', 'int-20241130-004'] },
+      findings: [
+        {
+          id: 'finding-1',
+          insight: 'Most users feel overwhelmed during the first week of use due to lack of structured onboarding',
+          supportingQuote: {
+            text: "We bought the tools, but nobody knows how to use them effectively. It's like having a sports car but only driving it in first gear.",
+            sessionId: 'int-20241201-001',
+            sessionDate: '2024-12-01T14:30:00Z',
+          },
+          sessionIds: ['int-20241201-001', 'int-20241201-002'],
+        },
+        {
+          id: 'finding-2',
+          insight: 'Documentation gaps are cited as primary friction point for advanced feature adoption',
+          supportingQuote: {
+            text: "The biggest hurdle has been getting buy-in from stakeholders. There's a lot of fear around AI replacing jobs.",
+            sessionId: 'int-20241201-001',
+            sessionDate: '2024-12-01T14:30:00Z',
+          },
+          sessionIds: ['int-20241201-001', 'int-20241130-004'],
+        },
       ],
     },
     {
       id: 'cat-2',
-      category: 'Success Factors',
+      category: 'Adoption Strategies',
       summary: 'Organizations that start with small pilots and invest in training see significantly higher adoption rates.',
-      insights: [
-        { text: 'Pilot programs demonstrate value without overwhelming teams', sessionIds: ['int-20241201-001', 'int-20241130-004'] },
-        { text: 'Executive sponsorship correlates with faster adoption', sessionIds: ['int-20241201-002'] },
-        { text: 'Transparent communication about AI role reduces resistance', sessionIds: ['int-20241201-001', 'int-20241201-002', 'int-20241130-004'] },
+      findings: [
+        {
+          id: 'finding-3',
+          insight: 'Pilot programs demonstrate value without overwhelming teams and reduce organizational resistance',
+          supportingQuote: {
+            text: "We started with small pilot programs that showed clear value without displacing anyone. The results spoke for themselves.",
+            sessionId: 'int-20241201-002',
+            sessionDate: '2024-12-01T09:15:00Z',
+          },
+          sessionIds: ['int-20241201-001', 'int-20241130-004'],
+        },
+        {
+          id: 'finding-4',
+          insight: 'Transparent communication about AI role reduces resistance and builds trust',
+          supportingQuote: {
+            text: "Response times dropped by 60%, and our CSAT scores went up by 15 points. But the real win was higher job satisfaction.",
+            sessionId: 'int-20241130-004',
+            sessionDate: '2024-11-30T11:20:00Z',
+          },
+          sessionIds: ['int-20241201-001', 'int-20241201-002', 'int-20241130-004'],
+        },
       ],
     },
     {
       id: 'cat-3',
-      category: 'Feature Requests',
+      category: 'Implementation Recommendations',
       summary: 'Users want better integration capabilities and more intuitive onboarding experiences.',
-      insights: [
-        { text: 'API integrations with existing tools are highly requested', sessionIds: ['int-20241130-004'] },
-        { text: 'Interactive tutorials preferred over documentation', sessionIds: ['int-20241201-001', 'int-20241201-002'] },
-        { text: 'Dashboard customization for different user roles', sessionIds: ['int-20241201-002', 'int-20241130-004'] },
+      findings: [
+        {
+          id: 'finding-5',
+          insight: 'Starting with low-risk administrative functions allows teams to build confidence before tackling core workflows',
+          supportingQuote: {
+            text: "Start with administrative functions first - they're lower risk but high impact. Get legal and compliance involved early.",
+            sessionId: 'int-20241130-004',
+            sessionDate: '2024-11-30T11:20:00Z',
+          },
+          sessionIds: ['int-20241130-004'],
+        },
+        {
+          id: 'finding-6',
+          insight: 'Interactive tutorials are preferred over static documentation for onboarding new users',
+          supportingQuote: {
+            text: "We bought the tools, but nobody knows how to use them effectively. It's like having a sports car but only driving it in first gear.",
+            sessionId: 'int-20241201-001',
+            sessionDate: '2024-12-01T14:30:00Z',
+          },
+          sessionIds: ['int-20241201-001', 'int-20241201-002'],
+        },
       ],
-    },
-  ];
-
-  const mockQuotes: KeyQuote[] = [
-    {
-      id: 'quote-1',
-      text: "We bought the tools, but nobody knows how to use them effectively. It's like having a sports car but only driving it in first gear.",
-      sessionId: 'int-20241201-001',
-      sessionDate: '2024-12-01T14:30:00Z',
-      speakerType: 'respondent',
-    },
-    {
-      id: 'quote-2',
-      text: "The biggest hurdle has been getting buy-in from stakeholders. There's a lot of fear around AI replacing jobs.",
-      sessionId: 'int-20241201-001',
-      sessionDate: '2024-12-01T14:30:00Z',
-      speakerType: 'respondent',
-    },
-    {
-      id: 'quote-3',
-      text: "We started with small pilot programs that showed clear value without displacing anyone. The results spoke for themselves.",
-      sessionId: 'int-20241201-002',
-      sessionDate: '2024-12-01T09:15:00Z',
-      speakerType: 'respondent',
-    },
-    {
-      id: 'quote-4',
-      text: "Response times dropped by 60%, and our CSAT scores went up by 15 points. But the real win was higher job satisfaction.",
-      sessionId: 'int-20241130-004',
-      sessionDate: '2024-11-30T11:20:00Z',
-      speakerType: 'respondent',
-    },
-    {
-      id: 'quote-5',
-      text: "Start with administrative functions first - they're lower risk but high impact. Get legal and compliance involved early.",
-      sessionId: 'int-20241130-004',
-      sessionDate: '2024-11-30T11:20:00Z',
-      speakerType: 'respondent',
     },
   ];
 
@@ -501,28 +512,20 @@ SLIDE 4: Recommendations
               {/* Left Content: Tabbed Insights */}
               <div className="space-y-4">
                 <Tabs value={insightTab} onValueChange={setInsightTab}>
-                  <TabsList className="grid w-full grid-cols-3">
+                  <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="themes">Themes</TabsTrigger>
-                    <TabsTrigger value="insights">Key Insights</TabsTrigger>
-                    <TabsTrigger value="quotes">Key Quotes</TabsTrigger>
+                    <TabsTrigger value="findings">Key Findings</TabsTrigger>
                   </TabsList>
                   
                   <TabsContent value="themes" className="mt-4">
                     <ThemesGrid themes={mockThemes} />
                   </TabsContent>
                   
-                  <TabsContent value="insights" className="mt-4">
-                    <KeyInsightsList 
-                      categories={mockInsightCategories} 
+                  <TabsContent value="findings" className="mt-4">
+                    <KeyFindingsList 
+                      categories={mockKeyFindings} 
                       interviewerId={interviewerId!}
                       sessionDates={sessionDates}
-                    />
-                  </TabsContent>
-                  
-                  <TabsContent value="quotes" className="mt-4">
-                    <KeyQuotesList 
-                      quotes={mockQuotes} 
-                      interviewerId={interviewerId!}
                     />
                   </TabsContent>
                 </Tabs>
@@ -543,28 +546,20 @@ SLIDE 4: Recommendations
               <ResizablePanel defaultSize={60} minSize={40}>
                 <div className="h-full p-4 overflow-auto bg-background rounded-lg">
                   <Tabs value={insightTab} onValueChange={setInsightTab}>
-                    <TabsList className="grid w-full grid-cols-3">
+                    <TabsList className="grid w-full grid-cols-2">
                       <TabsTrigger value="themes">Themes</TabsTrigger>
-                      <TabsTrigger value="insights">Key Insights</TabsTrigger>
-                      <TabsTrigger value="quotes">Key Quotes</TabsTrigger>
+                      <TabsTrigger value="findings">Key Findings</TabsTrigger>
                     </TabsList>
                     
                     <TabsContent value="themes" className="mt-4">
                       <ThemesGrid themes={mockThemes} />
                     </TabsContent>
                     
-                    <TabsContent value="insights" className="mt-4">
-                      <KeyInsightsList 
-                        categories={mockInsightCategories} 
+                    <TabsContent value="findings" className="mt-4">
+                      <KeyFindingsList 
+                        categories={mockKeyFindings} 
                         interviewerId={interviewerId!}
                         sessionDates={sessionDates}
-                      />
-                    </TabsContent>
-                    
-                    <TabsContent value="quotes" className="mt-4">
-                      <KeyQuotesList 
-                        quotes={mockQuotes} 
-                        interviewerId={interviewerId!}
                       />
                     </TabsContent>
                   </Tabs>

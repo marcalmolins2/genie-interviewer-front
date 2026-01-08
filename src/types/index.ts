@@ -215,6 +215,26 @@ export interface QAMessage {
   citations?: string[]; // Array of section IDs referenced in the response
 }
 
+// ============= Key Findings Types =============
+
+export interface KeyFinding {
+  id: string;
+  insight: string;
+  supportingQuote: {
+    text: string;
+    sessionId: string;
+    sessionDate: string;
+  };
+  sessionIds: string[];
+}
+
+export interface FindingsCategory {
+  id: string;
+  category: string;
+  summary: string;
+  findings: KeyFinding[];
+}
+
 // ============= Archetype Types =============
 
 export interface ArchetypeInfo {
