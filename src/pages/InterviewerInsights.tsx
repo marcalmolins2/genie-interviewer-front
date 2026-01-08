@@ -32,6 +32,7 @@ import {
   ResizablePanel,
   ResizableHandle,
 } from '@/components/ui/resizable';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   ArrowLeft,
   BarChart3,
@@ -582,23 +583,25 @@ SLIDE 4: Recommendations
             </div>
           ) : (
             // Side-by-side layout for desktop
-            <ResizablePanelGroup direction="horizontal" className="min-h-[600px] rounded-lg border">
+            <ResizablePanelGroup direction="horizontal" className="h-[calc(100vh-280px)] rounded-lg border">
               {/* Left Panel: Executive Summary + Key Findings */}
               <ResizablePanel defaultSize={60} minSize={40}>
-                <div className="h-full p-4 overflow-auto bg-background rounded-lg space-y-6">
-                  {/* Executive Summary */}
-                  <CrossSessionSummary summary={mockCrossSessionSummary} />
+                <ScrollArea className="h-full">
+                  <div className="p-4 bg-background rounded-lg space-y-6">
+                    {/* Executive Summary */}
+                    <CrossSessionSummary summary={mockCrossSessionSummary} />
 
-                  {/* Key Findings */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Key Findings</h3>
-                    <KeyFindingsList 
-                      categories={mockKeyFindings} 
-                      interviewerId={interviewerId!}
-                      sessionDates={sessionDates}
-                    />
+                    {/* Key Findings */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold">Key Findings</h3>
+                      <KeyFindingsList 
+                        categories={mockKeyFindings} 
+                        interviewerId={interviewerId!}
+                        sessionDates={sessionDates}
+                      />
+                    </div>
                   </div>
-                </div>
+                </ScrollArea>
               </ResizablePanel>
               
               <ResizableHandle withHandle />
