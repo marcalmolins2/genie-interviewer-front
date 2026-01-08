@@ -575,7 +575,7 @@ SLIDE 4: Recommendations
               
               {/* Right Panel: Q&A */}
               <ResizablePanel defaultSize={40} minSize={30}>
-                <div className="h-full rounded-lg overflow-hidden">
+                <div className="h-full rounded-lg overflow-hidden bg-muted/30">
                   <CrossSessionQA 
                     interviewerId={interviewerId!}
                     sessions={sessionsForQA}
