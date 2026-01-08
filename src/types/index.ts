@@ -461,6 +461,31 @@ export interface Share {
   users: { email: string; role: 'owner' | 'editor' | 'viewer' }[];
 }
 
+// ============= Session-Level Summary Types =============
+
+export interface SessionSummary {
+  headline: string;
+  narrativeParagraph: string;
+}
+
+export interface RespondentProfile {
+  role: string;
+  organization?: string;
+  background: string;
+  relevantContext: string[];
+}
+
+export interface TopicFinding {
+  id: string;
+  topicName: string;
+  summary: string;
+  keyInsights: string[];
+  supportingQuote?: {
+    text: string;
+    timestamp?: string;
+  };
+}
+
 export interface SessionDetail {
   id: string;
   agentId: string;
@@ -471,4 +496,8 @@ export interface SessionDetail {
   channel: Channel;
   transcript: CleanedTranscript;
   feedback?: SessionFeedback;
+  recordingUrl?: string;
+  summary?: SessionSummary;
+  respondentProfile?: RespondentProfile;
+  topicFindings?: TopicFinding[];
 }

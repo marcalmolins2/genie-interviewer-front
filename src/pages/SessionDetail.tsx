@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Clock, Calendar, Download, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowLeft, Clock, Calendar, Download, CheckCircle, XCircle, Headphones } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -8,10 +8,12 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TranscriptSection } from '@/components/TranscriptSection';
 import { TranscriptSearch } from '@/components/TranscriptSearch';
 import { TranscriptQA } from '@/components/TranscriptQA';
 import { SessionFeedback } from '@/components/SessionFeedback';
+import { SessionExecutiveSummary, RespondentProfileCard, SessionTopicFindings } from '@/components/insights';
 import { useIsMobile } from '@/hooks/use-mobile';
 import type { SessionDetail as SessionDetailType, QAMessage, SessionFeedback as SessionFeedbackType } from '@/types';
 
@@ -26,6 +28,79 @@ const getMockSessionDetail = (sessionId: string, agentId: string): SessionDetail
       completed: true,
       respondentId: 'sarah.chen@company.com',
       channel: 'inbound_call',
+      recordingUrl: '/recordings/int-20241201-001.mp3',
+      summary: {
+        headline: "AI adoption insights from fintech PM",
+        narrativeParagraph: "Sarah Chen, a Product Manager at a fintech company, shared her 18-month journey implementing AI for customer service and risk assessment. The discussion revealed key themes around stakeholder buy-in, the importance of positioning AI as augmentation, and measurable success through pilot programs."
+      },
+      respondentProfile: {
+        role: "Product Manager",
+        organization: "Fintech Company",
+        background: "Experienced PM with 18 months focused on AI integration, specializing in customer service automation and risk assessment solutions.",
+        relevantContext: [
+          "Primary focus on customer service automation",
+          "Leading team evaluating AI solutions for platform integration",
+          "Has successfully run pilot programs demonstrating ROI"
+        ]
+      },
+      topicFindings: [
+        {
+          id: 'topic-1',
+          topicName: 'Current AI Landscape',
+          summary: 'Organization is 18 months into AI exploration with clear strategic focus areas.',
+          keyInsights: [
+            'Primary focus on customer service automation and risk assessment',
+            'Actively evaluating various AI solutions for platform integration',
+            'Taking a methodical approach with pilot programs'
+          ],
+          supportingQuote: {
+            text: "We've been exploring AI integration for about 18 months now, mainly focusing on customer service automation and risk assessment.",
+            timestamp: "00:00:45"
+          }
+        },
+        {
+          id: 'topic-2',
+          topicName: 'Implementation Challenges',
+          summary: 'Stakeholder buy-in and fear of job displacement emerged as primary obstacles.',
+          keyInsights: [
+            'Getting executive and team buy-in was the biggest hurdle',
+            'Significant organizational fear around AI replacing jobs',
+            'Required careful positioning of AI as augmentation tool'
+          ],
+          supportingQuote: {
+            text: "The biggest hurdle has been getting buy-in from stakeholders. There's a lot of fear around AI replacing jobs.",
+            timestamp: "03:15"
+          }
+        },
+        {
+          id: 'topic-3',
+          topicName: 'Success Strategies',
+          summary: 'Small pilot programs with measurable outcomes proved most effective.',
+          keyInsights: [
+            'Started with low-risk pilot programs to demonstrate value',
+            'AI chatbot handling routine queries freed human agents',
+            'Customer satisfaction improved as a result'
+          ],
+          supportingQuote: {
+            text: "We started with small pilot programs that showed clear value without displacing anyone.",
+            timestamp: "05:42"
+          }
+        },
+        {
+          id: 'topic-4',
+          topicName: 'Measurable Outcomes',
+          summary: 'Clear metrics showed significant improvements across multiple dimensions.',
+          keyInsights: [
+            'Response times dropped by 60%',
+            'Customer satisfaction scores increased by 15 points',
+            'Human agents reported higher job satisfaction'
+          ],
+          supportingQuote: {
+            text: "Response times dropped by 60%, and our CSAT scores went up by 15 points.",
+            timestamp: "08:30"
+          }
+        }
+      ],
       transcript: {
         sections: [
           {
@@ -233,6 +308,7 @@ export default function SessionDetail() {
   const [viewMode, setViewMode] = useState<'clean' | 'original'>('clean');
   const [highlightedSectionId, setHighlightedSectionId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<SessionFeedbackType | null>(null);
+  const [activeTab, setActiveTab] = useState<'summary' | 'transcript'>('summary');
 
   // Load feedback from localStorage
   useEffect(() => {
@@ -424,10 +500,20 @@ export default function SessionDetail() {
             </div>
           </div>
           
-          <Button variant="outline" size="sm" onClick={handleExport}>
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
+          <div className="flex items-center gap-2">
+            {session.recordingUrl && (
+              <Button variant="outline" size="sm" asChild>
+                <a href={session.recordingUrl} download>
+                  <Headphones className="h-4 w-4 mr-2" />
+                  Recording
+                </a>
+              </Button>
+            )}
+            <Button variant="outline" size="sm" onClick={handleExport}>
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </Button>
+          </div>
         </div>
 
         {/* Session Metadata */}
@@ -465,11 +551,30 @@ export default function SessionDetail() {
       {/* Main Content - Split View */}
       <div className="flex-1 min-h-0 pb-4">
         {isMobile ? (
-          // Mobile: Stacked layout
+          // Mobile: Stacked layout with tabs
           <div className="h-full overflow-auto space-y-4">
-            <div className="space-y-4 pb-4">
-              {renderTranscriptContent()}
-            </div>
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'summary' | 'transcript')}>
+              <TabsList className="grid w-full grid-cols-2 max-w-[300px]">
+                <TabsTrigger value="summary">Summary</TabsTrigger>
+                <TabsTrigger value="transcript">Transcript</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="summary" className="mt-4 space-y-4">
+                <SessionExecutiveSummary
+                  summary={session.summary}
+                  date={new Date(session.startedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  duration={formatDuration(session.durationSec)}
+                  channel={session.channel}
+                />
+                <RespondentProfileCard profile={session.respondentProfile} />
+                <SessionTopicFindings findings={session.topicFindings} />
+              </TabsContent>
+              
+              <TabsContent value="transcript" className="mt-4 space-y-4">
+                {renderTranscriptContent()}
+              </TabsContent>
+            </Tabs>
+            
             <div className="min-h-[500px]">
               <TranscriptQA
                 sessionId={session.id}
@@ -483,13 +588,37 @@ export default function SessionDetail() {
         ) : (
           // Desktop: Resizable panels
           <ResizablePanelGroup direction="horizontal" className="h-full rounded-lg border">
-            {/* Transcript Panel */}
+            {/* Left Panel with Tabs */}
             <ResizablePanel defaultSize={60} minSize={40}>
-              <ScrollArea className="h-full">
-                <div className="p-4 space-y-4">
-                  {renderTranscriptContent()}
+              <div className="h-full flex flex-col overflow-hidden">
+                <div className="flex-shrink-0 p-4 pb-0">
+                  <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'summary' | 'transcript')}>
+                    <TabsList className="grid w-full grid-cols-2 max-w-[300px]">
+                      <TabsTrigger value="summary">Summary</TabsTrigger>
+                      <TabsTrigger value="transcript">Transcript</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
                 </div>
-              </ScrollArea>
+                
+                <ScrollArea className="flex-1 min-h-0">
+                  <div className="p-4 space-y-4">
+                    {activeTab === 'summary' ? (
+                      <>
+                        <SessionExecutiveSummary
+                          summary={session.summary}
+                          date={new Date(session.startedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          duration={formatDuration(session.durationSec)}
+                          channel={session.channel}
+                        />
+                        <RespondentProfileCard profile={session.respondentProfile} />
+                        <SessionTopicFindings findings={session.topicFindings} />
+                      </>
+                    ) : (
+                      renderTranscriptContent()
+                    )}
+                  </div>
+                </ScrollArea>
+              </div>
             </ResizablePanel>
             
             <ResizableHandle withHandle />
