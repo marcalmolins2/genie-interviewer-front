@@ -582,7 +582,7 @@ SLIDE 4: Recommendations
             </div>
           ) : (
             // Side-by-side layout for desktop
-            <ResizablePanelGroup direction="horizontal" className="h-[calc(100vh-280px)] min-h-[500px] rounded-lg border">
+            <ResizablePanelGroup direction="horizontal" className="min-h-[600px] rounded-lg border">
               {/* Left Panel: Executive Summary + Key Findings */}
               <ResizablePanel defaultSize={60} minSize={40}>
                 <div className="h-full p-4 overflow-auto bg-background rounded-lg space-y-6">
