@@ -1,5 +1,4 @@
 export { InsightsStatsBar } from './InsightsStatsBar';
-export { ThemesGrid, type Theme } from './ThemesGrid';
 export { KeyFindingsList } from './KeyFindingsList';
 export { CrossSessionQA } from './CrossSessionQA';
 export { SessionCitation } from './SessionCitation';

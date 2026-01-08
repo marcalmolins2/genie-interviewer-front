@@ -233,6 +233,8 @@ export interface FindingsCategory {
   category: string;
   summary: string;
   findings: KeyFinding[];
+  source?: 'interview_guide' | 'emergent';
+  sessionCount?: number;
 }
 
 // ============= Archetype Types =============

@@ -70,6 +70,11 @@ export function KeyFindingsList({ categories, interviewerId, sessionDates }: Key
                 <div className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors rounded-t-lg">
                   <div className="flex items-center gap-3">
                     <h3 className="text-base font-semibold text-left">{category.category}</h3>
+                    {category.sessionCount && (
+                      <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                        {category.sessionCount} sessions
+                      </span>
+                    )}
                     <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
                       {category.findings.length} finding{category.findings.length !== 1 ? 's' : ''}
                     </span>
