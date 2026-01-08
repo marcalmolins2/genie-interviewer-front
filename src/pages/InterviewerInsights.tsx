@@ -494,13 +494,6 @@ SLIDE 4: Recommendations
 
         {/* Cross-Session Insights Tab (Default) */}
         <TabsContent value="cross-session" className="space-y-4">
-          {/* Compact KPI Stats Bar */}
-          <InsightsStatsBar
-            totalSessions={interviews.length}
-            completionRate={completionRatePercent}
-            avgDuration={formatDuration(stats?.averageDuration || 0)}
-          />
-
           {/* Split Panel Layout */}
           {isMobile ? (
             // Stacked layout for mobile/tablet
