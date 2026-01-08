@@ -529,33 +529,34 @@ SLIDE 4: Recommendations
   }
 
   return (
-    <div className="container py-8 space-y-6">
+    <div className="container flex flex-col" style={{ height: 'calc(100dvh - 64px)' }}>
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate(`/app/interviewers/${interviewer.id}`)}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Interviewer
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold">Insights: {interviewer.name}</h1>
-            <p className="text-muted-foreground">
-              Cross-session insights and individual interview sessions
-            </p>
+      <div className="flex-shrink-0 pt-8 pb-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" onClick={() => navigate(`/app/interviewers/${interviewer.id}`)}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Interviewer
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold">Insights: {interviewer.name}</h1>
+              <p className="text-muted-foreground">
+                Cross-session insights and individual interview sessions
+              </p>
+            </div>
           </div>
         </div>
-
       </div>
 
       {/* Insights Tabs */}
-      <Tabs defaultValue={defaultTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
+      <Tabs defaultValue={defaultTab} className="flex-1 flex flex-col min-h-0">
+        <TabsList className="flex-shrink-0 grid w-full grid-cols-2">
           <TabsTrigger value="cross-session">Cross-Session Insights</TabsTrigger>
           <TabsTrigger value="sessions">Sessions</TabsTrigger>
         </TabsList>
 
         {/* Cross-Session Insights Tab (Default) */}
-        <TabsContent value="cross-session" className="mt-0">
+        <TabsContent value="cross-session" className="flex-1 min-h-0 mt-4">
           {/* Split Panel Layout */}
           {isMobile ? (
             // Stacked layout for mobile/tablet
@@ -582,47 +583,45 @@ SLIDE 4: Recommendations
               </div>
             </div>
           ) : (
-            // Side-by-side layout for desktop - fixed height container
-            <div className="h-[calc(100dvh-320px)] min-h-[420px]">
-              <ResizablePanelGroup direction="horizontal" className="h-full rounded-lg border">
-                {/* Left Panel: Executive Summary + Key Findings */}
-                <ResizablePanel defaultSize={60} minSize={40}>
-                  <ScrollArea className="h-full">
-                    <div className="p-4 bg-background rounded-lg space-y-6">
-                      {/* Executive Summary */}
-                      <CrossSessionSummary summary={mockCrossSessionSummary} />
+            // Side-by-side layout for desktop - flexbox fills remaining space
+            <ResizablePanelGroup direction="horizontal" className="h-full rounded-lg border">
+              {/* Left Panel: Executive Summary + Key Findings */}
+              <ResizablePanel defaultSize={60} minSize={40}>
+                <ScrollArea className="h-full">
+                  <div className="p-4 bg-background rounded-lg space-y-6">
+                    {/* Executive Summary */}
+                    <CrossSessionSummary summary={mockCrossSessionSummary} />
 
-                      {/* Key Findings */}
-                      <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">Key Findings</h3>
-                        <KeyFindingsList 
-                          categories={mockKeyFindings} 
-                          interviewerId={interviewerId!}
-                          sessionDates={sessionDates}
-                        />
-                      </div>
+                    {/* Key Findings */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold">Key Findings</h3>
+                      <KeyFindingsList 
+                        categories={mockKeyFindings} 
+                        interviewerId={interviewerId!}
+                        sessionDates={sessionDates}
+                      />
                     </div>
-                  </ScrollArea>
-                </ResizablePanel>
-                
-                <ResizableHandle withHandle />
-                
-                {/* Right Panel: Q&A */}
-                <ResizablePanel defaultSize={40} minSize={30}>
-                  <div className="h-full flex flex-col overflow-hidden bg-muted/30">
-                    <CrossSessionQA 
-                      interviewerId={interviewerId!}
-                      sessions={sessionsForQA}
-                    />
                   </div>
-                </ResizablePanel>
-              </ResizablePanelGroup>
-            </div>
+                </ScrollArea>
+              </ResizablePanel>
+              
+              <ResizableHandle withHandle />
+              
+              {/* Right Panel: Q&A */}
+              <ResizablePanel defaultSize={40} minSize={30}>
+                <div className="h-full flex flex-col overflow-hidden bg-muted/30">
+                  <CrossSessionQA 
+                    interviewerId={interviewerId!}
+                    sessions={sessionsForQA}
+                  />
+                </div>
+              </ResizablePanel>
+            </ResizablePanelGroup>
           )}
         </TabsContent>
 
         {/* Sessions Tab */}
-        <TabsContent value="sessions" className="space-y-6">
+        <TabsContent value="sessions" className="flex-1 min-h-0 overflow-auto pb-8">
           {/* KPI Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card>
