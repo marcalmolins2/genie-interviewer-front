@@ -164,7 +164,7 @@ export function ChatBot() {
     <div className="relative">
       {/* Header Button */}
       <Button
-        variant="ghost"
+        variant="outline"
         size="icon"
         onClick={() => setIsOpen(!isOpen)}
         className="rounded-full h-10 w-10"
