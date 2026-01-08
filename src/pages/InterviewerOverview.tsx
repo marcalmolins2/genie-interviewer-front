@@ -69,7 +69,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function AgentOverview() {
-  const { agentId } = useParams<{ agentId: string }>();
+  const { interviewerId } = useParams<{ interviewerId: string }>();
+  const agentId = interviewerId; // Alias for backward compatibility
   const [agent, setAgent] = useState<Agent | null>(null);
   const [stats, setStats] = useState<any>(null);
   const [guide, setGuide] = useState<InterviewGuide | null>(null);

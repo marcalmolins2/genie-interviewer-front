@@ -32,7 +32,8 @@ import { useToast } from '@/hooks/use-toast';
 import { InterviewGuideEditor } from '@/components/InterviewGuideEditor';
 
 export default function EditAgent() {
-  const { agentId } = useParams<{ agentId: string }>();
+  const { interviewerId } = useParams<{ interviewerId: string }>();
+  const agentId = interviewerId; // Alias for backward compatibility
   const [agent, setAgent] = useState<Agent | null>(null);
   const [guide, setGuide] = useState<InterviewGuide | null>(null);
   const [knowledge, setKnowledge] = useState<KnowledgeAsset[]>([]);

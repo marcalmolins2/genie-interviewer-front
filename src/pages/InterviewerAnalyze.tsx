@@ -71,7 +71,8 @@ const SimpleBarChart = ({ data, title }: { data: any[], title: string }) => (
 );
 
 export default function AgentAnalyze() {
-  const { agentId } = useParams<{ agentId: string }>();
+  const { interviewerId } = useParams<{ interviewerId: string }>();
+  const agentId = interviewerId; // Alias for backward compatibility
   const [searchParams] = useSearchParams();
   const defaultTab = searchParams.get('tab') || 'overview';
   const [agent, setAgent] = useState<Agent | null>(null);
