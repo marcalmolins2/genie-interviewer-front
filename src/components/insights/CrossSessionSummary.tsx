@@ -40,10 +40,6 @@ export function CrossSessionSummary({ summary }: CrossSessionSummaryProps) {
               {stats.sessionCount} sessions
             </Badge>
             <Badge variant="secondary" className="gap-1.5 font-normal">
-              <Clock className="h-3 w-3" />
-              {formatDuration(stats.totalDurationMinutes)}
-            </Badge>
-            <Badge variant="secondary" className="gap-1.5 font-normal">
               <Calendar className="h-3 w-3" />
               {formatDateRange(stats.dateRange.start, stats.dateRange.end)}
             </Badge>
