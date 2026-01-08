@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,6 +27,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from '@/components/ui/resizable';
 import { 
   ArrowLeft,
   BarChart3,
@@ -44,30 +49,20 @@ import {
   Minus
 } from 'lucide-react';
 import { SessionFeedback } from '@/components/SessionFeedback';
+import { 
+  InsightsStatsBar, 
+  ThemesGrid, 
+  KeyInsightsList, 
+  KeyQuotesList, 
+  CrossSessionQA,
+  type Theme,
+  type InsightCategory,
+  type KeyQuote,
+} from '@/components/insights';
 import { Agent, InterviewSummary, SessionFeedback as SessionFeedbackType } from '@/types';
 import { interviewersService, agentsService } from '@/services/interviewers';
 import { useToast } from '@/hooks/use-toast';
-
-// Mock chart component for demo
-const SimpleBarChart = ({ data, title }: { data: any[], title: string }) => (
-  <div className="space-y-4">
-    <h4 className="font-medium">{title}</h4>
-    <div className="space-y-2">
-      {data.map((item, index) => (
-        <div key={index} className="flex items-center gap-3">
-          <div className="w-20 text-sm text-muted-foreground">{item.name}</div>
-          <div className="flex-1 bg-muted rounded-full h-2">
-            <div 
-              className="bg-primary h-2 rounded-full" 
-              style={{ width: `${(item.value / Math.max(...data.map(d => d.value))) * 100}%` }}
-            />
-          </div>
-          <div className="w-12 text-sm font-medium">{item.value}</div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export default function InterviewerInsights() {
   const { interviewerId } = useParams<{ interviewerId: string }>();
@@ -79,11 +74,123 @@ export default function InterviewerInsights() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [insightQuery, setInsightQuery] = useState('');
+  const [insightTab, setInsightTab] = useState<string>('themes');
   const [selectedTranscript, setSelectedTranscript] = useState<InterviewSummary | null>(null);
   const [isTranscriptOpen, setIsTranscriptOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
+  
+  // Mock data for themes, insights, and quotes
+  const mockThemes: Theme[] = [
+    {
+      id: 'theme-1',
+      title: 'AI Adoption Barriers',
+      description: 'Participants consistently mention lack of training and unclear ROI as primary barriers to AI adoption in their organizations.',
+      sessionCount: 4,
+    },
+    {
+      id: 'theme-2',
+      title: 'Change Management Challenges',
+      description: 'Stakeholder buy-in and fear of job displacement emerge as recurring concerns across interviews.',
+      sessionCount: 5,
+    },
+    {
+      id: 'theme-3',
+      title: 'Training & Skill Gaps',
+      description: 'Teams lack necessary skills to implement new tools effectively, creating friction in adoption.',
+      sessionCount: 3,
+    },
+    {
+      id: 'theme-4',
+      title: 'Integration Complexity',
+      description: 'Existing systems are difficult to connect with new solutions, leading to fragmented workflows.',
+      sessionCount: 4,
+    },
+  ];
+
+  const mockInsightCategories: InsightCategory[] = [
+    {
+      id: 'cat-1',
+      category: 'Pain Points',
+      summary: 'Users consistently struggle with the initial learning curve and lack of clear documentation for advanced features.',
+      insights: [
+        { text: 'Most users feel overwhelmed during the first week of use', sessionIds: ['int-20241201-001', 'int-20241201-002'] },
+        { text: 'Documentation gaps are cited as primary friction point', sessionIds: ['int-20241201-001', 'int-20241130-004'] },
+        { text: 'Self-service troubleshooting is preferred over support tickets', sessionIds: ['int-20241201-002', 'int-20241130-004'] },
+      ],
+    },
+    {
+      id: 'cat-2',
+      category: 'Success Factors',
+      summary: 'Organizations that start with small pilots and invest in training see significantly higher adoption rates.',
+      insights: [
+        { text: 'Pilot programs demonstrate value without overwhelming teams', sessionIds: ['int-20241201-001', 'int-20241130-004'] },
+        { text: 'Executive sponsorship correlates with faster adoption', sessionIds: ['int-20241201-002'] },
+        { text: 'Transparent communication about AI role reduces resistance', sessionIds: ['int-20241201-001', 'int-20241201-002', 'int-20241130-004'] },
+      ],
+    },
+    {
+      id: 'cat-3',
+      category: 'Feature Requests',
+      summary: 'Users want better integration capabilities and more intuitive onboarding experiences.',
+      insights: [
+        { text: 'API integrations with existing tools are highly requested', sessionIds: ['int-20241130-004'] },
+        { text: 'Interactive tutorials preferred over documentation', sessionIds: ['int-20241201-001', 'int-20241201-002'] },
+        { text: 'Dashboard customization for different user roles', sessionIds: ['int-20241201-002', 'int-20241130-004'] },
+      ],
+    },
+  ];
+
+  const mockQuotes: KeyQuote[] = [
+    {
+      id: 'quote-1',
+      text: "We bought the tools, but nobody knows how to use them effectively. It's like having a sports car but only driving it in first gear.",
+      sessionId: 'int-20241201-001',
+      sessionDate: '2024-12-01T14:30:00Z',
+      speakerType: 'respondent',
+    },
+    {
+      id: 'quote-2',
+      text: "The biggest hurdle has been getting buy-in from stakeholders. There's a lot of fear around AI replacing jobs.",
+      sessionId: 'int-20241201-001',
+      sessionDate: '2024-12-01T14:30:00Z',
+      speakerType: 'respondent',
+    },
+    {
+      id: 'quote-3',
+      text: "We started with small pilot programs that showed clear value without displacing anyone. The results spoke for themselves.",
+      sessionId: 'int-20241201-002',
+      sessionDate: '2024-12-01T09:15:00Z',
+      speakerType: 'respondent',
+    },
+    {
+      id: 'quote-4',
+      text: "Response times dropped by 60%, and our CSAT scores went up by 15 points. But the real win was higher job satisfaction.",
+      sessionId: 'int-20241130-004',
+      sessionDate: '2024-11-30T11:20:00Z',
+      speakerType: 'respondent',
+    },
+    {
+      id: 'quote-5',
+      text: "Start with administrative functions first - they're lower risk but high impact. Get legal and compliance involved early.",
+      sessionId: 'int-20241130-004',
+      sessionDate: '2024-11-30T11:20:00Z',
+      speakerType: 'respondent',
+    },
+  ];
+
+  // Build session date mapping for citations
+  const sessionDates: Record<string, string> = {
+    'int-20241201-001': '2024-12-01T14:30:00Z',
+    'int-20241201-002': '2024-12-01T09:15:00Z',
+    'int-20241130-003': '2024-11-30T16:45:00Z',
+    'int-20241130-004': '2024-11-30T11:20:00Z',
+    'int-20241129-005': '2024-11-29T13:00:00Z',
+  };
+
+  // Sessions for Q&A component
+  const sessionsForQA = interviews.map(i => ({ id: i.id, date: i.startedAt }));
 
   useEffect(() => {
     if (interviewerId) {
@@ -227,7 +334,7 @@ export default function InterviewerInsights() {
         profiles: profiles.slice(0, 5), // Show top 5 profiles
         revenue: completedInterviews.length * interviewer.pricePerInterviewUsd,
         avgDuration: formatDuration(stats?.averageDuration || 0),
-        topTopics: topicsDiscussed.slice(0, 3)
+        topTopics: mockThemes.slice(0, 3).map(t => ({ name: t.title, value: t.sessionCount }))
       }
     };
 
@@ -327,14 +434,11 @@ SLIDE 4: Recommendations
     };
   };
 
-  // Mock data for charts
-  const topicsDiscussed = [
-    { name: 'Product Features', value: 45 },
-    { name: 'Pricing', value: 32 },
-    { name: 'Support', value: 28 },
-    { name: 'Competition', value: 22 },
-    { name: 'Future Needs', value: 18 },
-  ];
+  // Computed stats for the bar
+  const completedCount = interviews.filter(i => i.completed).length;
+  const completionRatePercent = interviews.length > 0 
+    ? Math.round((completedCount / interviews.length) * 100) 
+    : 0;
 
   if (loading) {
     return (
@@ -389,96 +493,104 @@ SLIDE 4: Recommendations
         </TabsList>
 
         {/* Cross-Session Insights Tab (Default) */}
-        <TabsContent value="cross-session" className="space-y-6">
-          {/* KPI Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Interviews</CardTitle>
-                <MessageSquare className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats?.totalInterviews || 0}</div>
-                <p className="text-xs text-muted-foreground">
-                  {stats?.last7Days || 0} in last 7 days
-                </p>
-              </CardContent>
-            </Card>
+        <TabsContent value="cross-session" className="space-y-4">
+          {/* Compact KPI Stats Bar */}
+          <InsightsStatsBar
+            totalSessions={interviews.length}
+            completionRate={completionRatePercent}
+            avgDuration={formatDuration(stats?.averageDuration || 0)}
+          />
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Completion Rate</CardTitle>
-                <CheckCircle className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {Math.round((stats?.completionRate || 0) * 100)}%
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {stats?.completedInterviews || 0} completed
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Avg Duration</CardTitle>
-                <Clock className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {formatDuration(stats?.averageDuration || 0)}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Per completed interview
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Key Themes & Topics */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Top Discussion Topics</CardTitle>
-                <CardDescription>Most frequently mentioned themes</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <SimpleBarChart data={topicsDiscussed} title="" />
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Key Themes</CardTitle>
-                <CardDescription>Emerging patterns across sessions</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  <Badge>Product Quality</Badge>
-                  <Badge>Customer Service</Badge>
-                  <Badge>Pricing Concerns</Badge>
-                  <Badge>Feature Requests</Badge>
-                  <Badge>User Experience</Badge>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Placeholder for future cross-session insights */}
-          <Card className="border-dashed">
-            <CardHeader>
-              <CardTitle className="text-muted-foreground">Cross-Session Q&A</CardTitle>
-              <CardDescription>Ask questions across all interview transcripts</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8 text-muted-foreground">
-                <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Cross-session Q&A coming soon</p>
-                <p className="text-sm">Query insights across multiple interview sessions</p>
+          {/* Split Panel Layout */}
+          {isMobile ? (
+            // Stacked layout for mobile/tablet
+            <div className="space-y-6">
+              {/* Left Content: Tabbed Insights */}
+              <div className="space-y-4">
+                <Tabs value={insightTab} onValueChange={setInsightTab}>
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="themes">Themes</TabsTrigger>
+                    <TabsTrigger value="insights">Key Insights</TabsTrigger>
+                    <TabsTrigger value="quotes">Key Quotes</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="themes" className="mt-4">
+                    <ThemesGrid themes={mockThemes} />
+                  </TabsContent>
+                  
+                  <TabsContent value="insights" className="mt-4">
+                    <KeyInsightsList 
+                      categories={mockInsightCategories} 
+                      interviewerId={interviewerId!}
+                      sessionDates={sessionDates}
+                    />
+                  </TabsContent>
+                  
+                  <TabsContent value="quotes" className="mt-4">
+                    <KeyQuotesList 
+                      quotes={mockQuotes} 
+                      interviewerId={interviewerId!}
+                    />
+                  </TabsContent>
+                </Tabs>
               </div>
-            </CardContent>
-          </Card>
+
+              {/* Right Content: Q&A */}
+              <div className="min-h-[500px]">
+                <CrossSessionQA 
+                  interviewerId={interviewerId!}
+                  sessions={sessionsForQA}
+                />
+              </div>
+            </div>
+          ) : (
+            // Side-by-side layout for desktop
+            <ResizablePanelGroup direction="horizontal" className="min-h-[600px] rounded-lg border">
+              {/* Left Panel: Tabbed Insights */}
+              <ResizablePanel defaultSize={60} minSize={40}>
+                <div className="h-full p-4 overflow-auto">
+                  <Tabs value={insightTab} onValueChange={setInsightTab}>
+                    <TabsList className="grid w-full grid-cols-3">
+                      <TabsTrigger value="themes">Themes</TabsTrigger>
+                      <TabsTrigger value="insights">Key Insights</TabsTrigger>
+                      <TabsTrigger value="quotes">Key Quotes</TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="themes" className="mt-4">
+                      <ThemesGrid themes={mockThemes} />
+                    </TabsContent>
+                    
+                    <TabsContent value="insights" className="mt-4">
+                      <KeyInsightsList 
+                        categories={mockInsightCategories} 
+                        interviewerId={interviewerId!}
+                        sessionDates={sessionDates}
+                      />
+                    </TabsContent>
+                    
+                    <TabsContent value="quotes" className="mt-4">
+                      <KeyQuotesList 
+                        quotes={mockQuotes} 
+                        interviewerId={interviewerId!}
+                      />
+                    </TabsContent>
+                  </Tabs>
+                </div>
+              </ResizablePanel>
+              
+              <ResizableHandle withHandle />
+              
+              {/* Right Panel: Q&A */}
+              <ResizablePanel defaultSize={40} minSize={30}>
+                <div className="h-full">
+                  <CrossSessionQA 
+                    interviewerId={interviewerId!}
+                    sessions={sessionsForQA}
+                  />
+                </div>
+              </ResizablePanel>
+            </ResizablePanelGroup>
+          )}
         </TabsContent>
 
         {/* Sessions Tab */}
