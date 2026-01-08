@@ -279,7 +279,7 @@ export function CrossSessionQA({ interviewerId, sessions }: CrossSessionQAProps)
   ];
 
   return (
-    <div className="flex flex-col h-full bg-background border rounded-lg">
+    <div className="flex flex-col h-full bg-background">
       {/* Header */}
       <div className="p-4 border-b">
         <h3 className="font-semibold flex items-center gap-2">
