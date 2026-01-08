@@ -555,7 +555,7 @@ SLIDE 4: Recommendations
         </TabsList>
 
         {/* Cross-Session Insights Tab (Default) */}
-        <TabsContent value="cross-session" className="space-y-4">
+        <TabsContent value="cross-session" className="mt-0">
           {/* Split Panel Layout */}
           {isMobile ? (
             // Stacked layout for mobile/tablet
@@ -582,40 +582,42 @@ SLIDE 4: Recommendations
               </div>
             </div>
           ) : (
-            // Side-by-side layout for desktop
-            <ResizablePanelGroup direction="horizontal" className="h-[calc(100vh-280px)] rounded-lg border">
-              {/* Left Panel: Executive Summary + Key Findings */}
-              <ResizablePanel defaultSize={60} minSize={40}>
-                <ScrollArea className="h-full">
-                  <div className="p-4 bg-background rounded-lg space-y-6">
-                    {/* Executive Summary */}
-                    <CrossSessionSummary summary={mockCrossSessionSummary} />
+            // Side-by-side layout for desktop - fixed height container
+            <div className="h-[calc(100vh-220px)] min-h-[500px]">
+              <ResizablePanelGroup direction="horizontal" className="h-full rounded-lg border">
+                {/* Left Panel: Executive Summary + Key Findings */}
+                <ResizablePanel defaultSize={60} minSize={40}>
+                  <ScrollArea className="h-full">
+                    <div className="p-4 bg-background rounded-lg space-y-6">
+                      {/* Executive Summary */}
+                      <CrossSessionSummary summary={mockCrossSessionSummary} />
 
-                    {/* Key Findings */}
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-semibold">Key Findings</h3>
-                      <KeyFindingsList 
-                        categories={mockKeyFindings} 
-                        interviewerId={interviewerId!}
-                        sessionDates={sessionDates}
-                      />
+                      {/* Key Findings */}
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-semibold">Key Findings</h3>
+                        <KeyFindingsList 
+                          categories={mockKeyFindings} 
+                          interviewerId={interviewerId!}
+                          sessionDates={sessionDates}
+                        />
+                      </div>
                     </div>
+                  </ScrollArea>
+                </ResizablePanel>
+                
+                <ResizableHandle withHandle />
+                
+                {/* Right Panel: Q&A */}
+                <ResizablePanel defaultSize={40} minSize={30}>
+                  <div className="h-full rounded-lg overflow-hidden bg-muted/30">
+                    <CrossSessionQA 
+                      interviewerId={interviewerId!}
+                      sessions={sessionsForQA}
+                    />
                   </div>
-                </ScrollArea>
-              </ResizablePanel>
-              
-              <ResizableHandle withHandle />
-              
-              {/* Right Panel: Q&A */}
-              <ResizablePanel defaultSize={40} minSize={30}>
-                <div className="h-full rounded-lg overflow-hidden bg-muted/30">
-                  <CrossSessionQA 
-                    interviewerId={interviewerId!}
-                    sessions={sessionsForQA}
-                  />
-                </div>
-              </ResizablePanel>
-            </ResizablePanelGroup>
+                </ResizablePanel>
+              </ResizablePanelGroup>
+            </div>
           )}
         </TabsContent>
 
