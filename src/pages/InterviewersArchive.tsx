@@ -8,33 +8,33 @@ import { Loader2, RotateCcw, Archive as ArchiveIcon, Eye, Copy, Trash2 } from "l
 import { Agent } from "@/types";
 import { interviewersService, agentsService } from "@/services/interviewers";
 import { toast } from "@/hooks/use-toast";
-import { InterviewerStatusBadge, AgentStatusBadge } from "@/components/InterviewerStatusBadge";
+import { InterviewerStatusBadge } from "@/components/InterviewerStatusBadge";
 
 interface ArchivedInterviewerWithLastDate extends Agent {
   lastInterviewDate?: string | null;
 }
 
-const AgentsArchive = () => {
+const InterviewersArchive = () => {
   const navigate = useNavigate();
-  const [agents, setAgents] = useState<ArchivedInterviewerWithLastDate[]>([]);
+  const [interviewers, setInterviewers] = useState<ArchivedInterviewerWithLastDate[]>([]);
   const [loading, setLoading] = useState(true);
   const [unarchiveDialogOpen, setUnarchiveDialogOpen] = useState(false);
-  const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
+  const [selectedInterviewerId, setSelectedInterviewerId] = useState<string | null>(null);
 
-  const loadArchivedAgents = async () => {
+  const loadArchivedInterviewers = async () => {
     try {
       setLoading(true);
       const data = await agentsService.getArchivedAgents();
       
-      // Fetch last interview dates for each agent
-      const agentsWithDates = await Promise.all(
-        data.map(async (agent) => {
-          const lastDate = await agentsService.getLastInterviewDate(agent.id);
-          return { ...agent, lastInterviewDate: lastDate };
+      // Fetch last interview dates for each interviewer
+      const interviewersWithDates = await Promise.all(
+        data.map(async (interviewer) => {
+          const lastDate = await agentsService.getLastInterviewDate(interviewer.id);
+          return { ...interviewer, lastInterviewDate: lastDate };
         })
       );
       
-      setAgents(agentsWithDates);
+      setInterviewers(interviewersWithDates);
     } catch (error) {
       console.error("Failed to load archived interviewers:", error);
       toast({
@@ -48,20 +48,20 @@ const AgentsArchive = () => {
   };
 
   useEffect(() => {
-    loadArchivedAgents();
+    loadArchivedInterviewers();
   }, []);
 
   const handleUnarchive = async () => {
-    if (!selectedAgentId) return;
+    if (!selectedInterviewerId) return;
     
     try {
-      await agentsService.unarchiveAgent(selectedAgentId);
+      await agentsService.unarchiveAgent(selectedInterviewerId);
       toast({
         description: "Unarchived",
       });
       setUnarchiveDialogOpen(false);
-      setSelectedAgentId(null);
-      loadArchivedAgents();
+      setSelectedInterviewerId(null);
+      loadArchivedInterviewers();
     } catch (error) {
       console.error("Failed to unarchive interviewer:", error);
       toast({
@@ -72,8 +72,8 @@ const AgentsArchive = () => {
     }
   };
 
-  const openUnarchiveDialog = (agentId: string) => {
-    setSelectedAgentId(agentId);
+  const openUnarchiveDialog = (interviewerId: string) => {
+    setSelectedInterviewerId(interviewerId);
     setUnarchiveDialogOpen(true);
   };
 
@@ -102,7 +102,7 @@ const AgentsArchive = () => {
         </p>
       </div>
 
-      {agents.length === 0 ? (
+      {interviewers.length === 0 ? (
         <Card className="p-12 text-center">
           <ArchiveIcon className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
           <h3 className="text-lg font-semibold mb-2">No archived interviewers</h3>
@@ -112,38 +112,38 @@ const AgentsArchive = () => {
         </Card>
       ) : (
         <div className="space-y-4">
-          {agents.map((agent) => (
-            <Card key={agent.id} className="p-6 hover:shadow-md transition-shadow">
+          {interviewers.map((interviewer) => (
+            <Card key={interviewer.id} className="p-6 hover:shadow-md transition-shadow">
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-lg font-semibold truncate">{agent.name}</h3>
-                    <AgentStatusBadge status={agent.status} />
+                    <h3 className="text-lg font-semibold truncate">{interviewer.name}</h3>
+                    <InterviewerStatusBadge status={interviewer.status} />
                   </div>
                   
                   <div className="flex items-center gap-2 mb-3">
                     <Badge variant="outline" className="text-xs">
-                      {agent.archetype.split('_').map(word => 
+                      {interviewer.archetype.split('_').map(word => 
                         word.charAt(0).toUpperCase() + word.slice(1)
                       ).join(' ')}
                     </Badge>
                     <Badge variant="outline" className="text-xs">
-                      {agent.channel.replace('_', ' ')}
+                      {interviewer.channel.replace('_', ' ')}
                     </Badge>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                    <span>Sessions: {agent.interviewsCount}</span>
-                    {agent.lastInterviewDate && (
+                    <span>Sessions: {interviewer.interviewsCount}</span>
+                    {interviewer.lastInterviewDate && (
                       <>
                         <span>•</span>
-                        <span>Last interview: {formatDate(agent.lastInterviewDate)}</span>
+                        <span>Last interview: {formatDate(interviewer.lastInterviewDate)}</span>
                       </>
                     )}
-                    {agent.archivedAt && (
+                    {interviewer.archivedAt && (
                       <>
                         <span>•</span>
-                        <span>Archived: {formatDate(agent.archivedAt)}</span>
+                        <span>Archived: {formatDate(interviewer.archivedAt)}</span>
                       </>
                     )}
                   </div>
@@ -153,7 +153,7 @@ const AgentsArchive = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => openUnarchiveDialog(agent.id)}
+                    onClick={() => openUnarchiveDialog(interviewer.id)}
                     className="gap-2"
                   >
                     <RotateCcw className="w-4 h-4" />
@@ -163,7 +163,7 @@ const AgentsArchive = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => navigate(`/app/interviewers/${agent.id}`)}
+                    onClick={() => navigate(`/app/interviewers/${interviewer.id}`)}
                     className="gap-2"
                   >
                     <Eye className="w-4 h-4" />
@@ -190,11 +190,11 @@ const AgentsArchive = () => {
                     size="sm"
                     onClick={async () => {
                       try {
-                        await agentsService.moveToTrash(agent.id);
+                        await agentsService.moveToTrash(interviewer.id);
                         toast({
                           description: "Moved to trash",
                         });
-                        loadArchivedAgents();
+                        loadArchivedInterviewers();
                       } catch (error) {
                         if (error instanceof Error && error.message === 'ACTIVE_CALL_IN_PROGRESS') {
                           toast({
@@ -242,4 +242,4 @@ const AgentsArchive = () => {
   );
 };
 
-export default AgentsArchive;
+export default InterviewersArchive;

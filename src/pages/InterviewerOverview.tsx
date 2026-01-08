@@ -31,9 +31,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { InterviewerStatusBadge, AgentStatusBadge } from "@/components/InterviewerStatusBadge";
-import { ShareInterviewerDialog, ShareAgentDialog } from "@/components/ShareInterviewerDialog";
-import { useInterviewerPermission, useAgentPermission } from "@/hooks/useInterviewerPermission";
+import { InterviewerStatusBadge } from "@/components/InterviewerStatusBadge";
+import { ShareInterviewerDialog } from "@/components/ShareInterviewerDialog";
+import { useInterviewerPermission } from "@/hooks/useInterviewerPermission";
 import {
   ArrowLeft,
   Edit,
@@ -68,10 +68,9 @@ import { interviewersService, agentsService } from "@/services/interviewers";
 import { useToast } from "@/hooks/use-toast";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-export default function AgentOverview() {
+export default function InterviewerOverview() {
   const { interviewerId } = useParams<{ interviewerId: string }>();
-  const agentId = interviewerId; // Alias for backward compatibility
-  const [agent, setAgent] = useState<Agent | null>(null);
+  const [interviewer, setInterviewer] = useState<Agent | null>(null);
   const [stats, setStats] = useState<any>(null);
   const [guide, setGuide] = useState<InterviewGuide | null>(null);
   const [knowledge, setKnowledge] = useState<KnowledgeAsset[]>([]);
@@ -97,23 +96,23 @@ export default function AgentOverview() {
     canArchive,
     loading: permissionLoading,
     reload: reloadPermissions,
-  } = useAgentPermission(agentId);
+  } = useInterviewerPermission(interviewerId);
 
   useEffect(() => {
-    if (agentId) {
-      loadAgent();
+    if (interviewerId) {
+      loadInterviewer();
       loadStats();
       loadGuideAndKnowledge();
     }
-  }, [agentId]);
+  }, [interviewerId]);
 
-  const loadAgent = async () => {
-    if (!agentId) return;
+  const loadInterviewer = async () => {
+    if (!interviewerId) return;
 
     try {
-      const data = await agentsService.getAgent(agentId);
+      const data = await agentsService.getAgent(interviewerId);
       if (data) {
-        setAgent(data);
+        setInterviewer(data);
       } else {
         navigate("/app/interviewers");
       }
@@ -130,10 +129,10 @@ export default function AgentOverview() {
   };
 
   const loadStats = async () => {
-    if (!agentId) return;
+    if (!interviewerId) return;
 
     try {
-      const data = await agentsService.getAgentStats(agentId);
+      const data = await agentsService.getAgentStats(interviewerId);
       setStats(data);
     } catch (error) {
       console.error("Failed to load stats:", error);
@@ -141,12 +140,12 @@ export default function AgentOverview() {
   };
 
   const loadGuideAndKnowledge = async () => {
-    if (!agentId) return;
+    if (!interviewerId) return;
 
     try {
       const [guideData, knowledgeData] = await Promise.all([
-        agentsService.getAgentGuide(agentId),
-        agentsService.getAgentKnowledge(agentId),
+        agentsService.getAgentGuide(interviewerId),
+        agentsService.getAgentKnowledge(interviewerId),
       ]);
       setGuide(guideData);
       setKnowledge(knowledgeData);
@@ -156,11 +155,11 @@ export default function AgentOverview() {
   };
 
   const handleActivate = async () => {
-    if (!agent) return;
+    if (!interviewer) return;
 
     try {
-      const updatedAgent = await agentsService.activateAgent(agent.id);
-      setAgent(updatedAgent);
+      const updatedInterviewer = await agentsService.activateAgent(interviewer.id);
+      setInterviewer(updatedInterviewer);
 
       toast({
         title: "Success",
@@ -176,12 +175,12 @@ export default function AgentOverview() {
   };
 
   const handleDeploy = async () => {
-    if (!agent || !caseCode.trim()) return;
+    if (!interviewer || !caseCode.trim()) return;
 
     setIsDeploying(true);
     try {
-      await agentsService.deployAgent(agent.id, caseCode);
-      setAgent((prev) => (prev ? { ...prev, status: "live" } : null));
+      await agentsService.deployAgent(interviewer.id, caseCode);
+      setInterviewer((prev) => (prev ? { ...prev, status: "live" } : null));
       setDeployDialogOpen(false);
       setCaseCode("");
 
@@ -209,9 +208,9 @@ export default function AgentOverview() {
   };
 
   const handleArchive = async () => {
-    if (!agent) return;
+    if (!interviewer) return;
     try {
-      await agentsService.archiveAgent(agent.id);
+      await agentsService.archiveAgent(interviewer.id);
       toast({ description: "Archived" });
       navigate("/app/interviewers");
     } catch (error) {
@@ -225,9 +224,9 @@ export default function AgentOverview() {
   };
 
   const handleMoveToTrash = async () => {
-    if (!agent) return;
+    if (!interviewer) return;
     try {
-      await agentsService.moveToTrash(agent.id);
+      await agentsService.moveToTrash(interviewer.id);
       toast({ description: "Moved to trash" });
       navigate("/app/interviewers");
     } catch (error) {
@@ -249,10 +248,10 @@ export default function AgentOverview() {
   };
 
   const handleUnarchive = async () => {
-    if (!agent) return;
+    if (!interviewer) return;
     try {
-      const updatedAgent = await agentsService.unarchiveAgent(agent.id);
-      setAgent(updatedAgent);
+      const updatedInterviewer = await agentsService.unarchiveAgent(interviewer.id);
+      setInterviewer(updatedInterviewer);
       toast({ description: "Unarchived" });
     } catch (error) {
       toast({
@@ -286,7 +285,7 @@ export default function AgentOverview() {
     );
   }
 
-  if (!agent) {
+  if (!interviewer) {
     return (
       <div className="container py-8">
         <Card className="p-12 text-center">
@@ -300,7 +299,7 @@ export default function AgentOverview() {
     );
   }
 
-  const isArchived = agent.status === 'archived';
+  const isArchived = interviewer.status === 'archived';
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -322,18 +321,18 @@ export default function AgentOverview() {
             Back to Interviewers
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">{agent.name}</h1>
+            <h1 className="text-3xl font-bold">{interviewer.name}</h1>
             <div className="flex items-center gap-2 mt-1">
-              <AgentStatusBadge status={agent.status} />
-              <Badge variant="outline">{agent.archetype.replace("_", " ")}</Badge>
-              <Badge variant="outline">{agent.language.toUpperCase()}</Badge>
+              <InterviewerStatusBadge status={interviewer.status} />
+              <Badge variant="outline">{interviewer.archetype.replace("_", " ")}</Badge>
+              <Badge variant="outline">{interviewer.language.toUpperCase()}</Badge>
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           {/* Edit Button - disabled for archived or no permission */}
-          {agent.hasActiveCall || !canEdit || isArchived ? (
+          {interviewer.hasActiveCall || !canEdit || isArchived ? (
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -349,7 +348,7 @@ export default function AgentOverview() {
                     <AlertCircle className="h-3 w-3" />
                     {isArchived
                       ? "Unarchive to edit this interviewer"
-                      : agent.hasActiveCall
+                      : interviewer.hasActiveCall
                       ? "Cannot edit while a call is in progress"
                       : "You need Editor or Owner permission to edit"}
                   </p>
@@ -357,13 +356,13 @@ export default function AgentOverview() {
               </Tooltip>
             </TooltipProvider>
           ) : (
-            <Button variant="outline" size="sm" onClick={() => navigate(`/app/interviewers/${agent.id}/edit`)}>
+            <Button variant="outline" size="sm" onClick={() => navigate(`/app/interviewers/${interviewer.id}/edit`)}>
               <Edit className="h-4 w-4 mr-2" />
               Edit
             </Button>
           )}
 
-          {agent.status === "ready_to_test" && (
+          {interviewer.status === "ready_to_test" && (
             <Dialog open={deployDialogOpen} onOpenChange={setDeployDialogOpen}>
               <DialogTrigger asChild>
                 <Button className="gap-2">
@@ -410,7 +409,7 @@ export default function AgentOverview() {
             </Dialog>
           )}
 
-          {(agent.status === "suspended" || agent.status === "paused") && (
+          {(interviewer.status === "suspended" || interviewer.status === "paused") && (
             <Button size="sm" onClick={handleActivate}>
               <Play className="h-4 w-4 mr-2" />
               Activate
@@ -425,7 +424,7 @@ export default function AgentOverview() {
             </Button>
           )}
 
-          <Link to={`/app/interviewers/${agent.id}/analyze`}>
+          <Link to={`/app/interviewers/${interviewer.id}/analyze`}>
             <Button variant="outline" size="sm">
               <BarChart3 className="h-4 w-4 mr-2" />
               Insights
@@ -540,20 +539,20 @@ export default function AgentOverview() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                {agent.channel === 'web_link' ? <Globe className="h-5 w-5" /> : <Phone className="h-5 w-5" />}
+                {interviewer.channel === 'web_link' ? <Globe className="h-5 w-5" /> : <Phone className="h-5 w-5" />}
                 Contact Information
               </CardTitle>
               <CardDescription>How participants access your interviewer</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {agent.credentialsReady ? (
-                agent.channel === 'web_link' ? (
+              {interviewer.credentialsReady ? (
+                interviewer.channel === 'web_link' ? (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
                       <div className="flex-1 min-w-0">
                         <Label className="text-sm font-medium">Interview Link</Label>
                         <p className="text-sm font-mono truncate">
-                          {`${window.location.origin}/interview/${agent.contact.linkId}`}
+                          {`${window.location.origin}/interview/${interviewer.contact.linkId}`}
                         </p>
                       </div>
                       <div className="flex items-center gap-2 ml-3">
@@ -561,7 +560,7 @@ export default function AgentOverview() {
                           variant="outline"
                           size="sm"
                           onClick={() => copyToClipboard(
-                            `${window.location.origin}/interview/${agent.contact.linkId}`,
+                            `${window.location.origin}/interview/${interviewer.contact.linkId}`,
                             "Interview link"
                           )}
                         >
@@ -570,16 +569,16 @@ export default function AgentOverview() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => window.open(`/interview/${agent.contact.linkId}`, '_blank')}
+                          onClick={() => window.open(`/interview/${interviewer.contact.linkId}`, '_blank')}
                         >
                           <ExternalLinkIcon className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 text-sm">
-                      <div className={`w-2 h-2 rounded-full ${agent.status === 'live' ? 'bg-green-500' : 'bg-amber-500'}`} />
+                      <div className={`w-2 h-2 rounded-full ${interviewer.status === 'live' ? 'bg-green-500' : 'bg-amber-500'}`} />
                       <span className="text-muted-foreground">
-                        {agent.status === 'live' ? 'Link is active' : 'Link inactive (agent not live)'}
+                        {interviewer.status === 'live' ? 'Link is active' : 'Link inactive (interviewer not live)'}
                       </span>
                     </div>
                   </div>
@@ -587,13 +586,13 @@ export default function AgentOverview() {
                   <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
                     <div>
                       <Label className="text-sm font-medium">Phone Number</Label>
-                      <p className="text-lg font-mono">{agent.contact.phoneNumber || 'Not assigned'}</p>
+                      <p className="text-lg font-mono">{interviewer.contact.phoneNumber || 'Not assigned'}</p>
                     </div>
-                    {agent.contact.phoneNumber && (
+                    {interviewer.contact.phoneNumber && (
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => copyToClipboard(agent.contact.phoneNumber!, "Phone number")}
+                        onClick={() => copyToClipboard(interviewer.contact.phoneNumber!, "Phone number")}
                       >
                         <Copy className="h-4 w-4" />
                       </Button>
@@ -774,11 +773,11 @@ export default function AgentOverview() {
                   <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
                   <div>
                     <p className="font-medium">Interviewer Created</p>
-                    <p className="text-sm text-muted-foreground">{formatDate(agent.createdAt)}</p>
+                    <p className="text-sm text-muted-foreground">{formatDate(interviewer.createdAt)}</p>
                   </div>
                 </div>
 
-                {agent.credentialsReady && (
+                {interviewer.credentialsReady && (
                   <div className="flex items-start gap-3">
                     <div className="w-2 h-2 bg-success rounded-full mt-2"></div>
                     <div>
@@ -790,12 +789,12 @@ export default function AgentOverview() {
                   </div>
                 )}
 
-                {agent.status === "live" && (
+                {interviewer.status === "live" && (
                   <div className="flex items-start gap-3">
                     <div className="w-2 h-2 bg-success rounded-full mt-2"></div>
                     <div>
                       <p className="font-medium">Deployed to Production</p>
-                      <p className="text-sm text-muted-foreground">Agent is now accepting interviews</p>
+                      <p className="text-sm text-muted-foreground">Interviewer is now accepting interviews</p>
                     </div>
                   </div>
                 )}
@@ -814,13 +813,13 @@ export default function AgentOverview() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-3 bg-muted rounded-lg">
-                  <div className="text-2xl font-bold text-primary">{agent.interviewsCount}</div>
+                  <div className="text-2xl font-bold text-primary">{interviewer.interviewsCount}</div>
                   <div className="text-xs text-muted-foreground">Total Interviews</div>
                 </div>
 
                 <div className="text-center p-3 bg-muted rounded-lg">
                   <div className="text-2xl font-bold text-primary">
-                    ${(agent.pricePerInterviewUsd * agent.interviewsCount).toFixed(2)}
+                    ${(interviewer.pricePerInterviewUsd * interviewer.interviewsCount).toFixed(2)}
                   </div>
                   <div className="text-xs text-muted-foreground">Total Spent</div>
                 </div>
@@ -850,24 +849,24 @@ export default function AgentOverview() {
             <CardContent className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Channel</span>
-                <span className="text-sm capitalize">{agent.channel.replace("_", " ")}</span>
+                <span className="text-sm capitalize">{interviewer.channel.replace("_", " ")}</span>
               </div>
 
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Language</span>
-                <span className="text-sm">{agent.language.toUpperCase()}</span>
+                <span className="text-sm">{interviewer.language.toUpperCase()}</span>
               </div>
 
-              {agent.voiceId && (
+              {interviewer.voiceId && (
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Voice</span>
-                  <span className="text-sm">{agent.voiceId}</span>
+                  <span className="text-sm">{interviewer.voiceId}</span>
                 </div>
               )}
 
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Created</span>
-                <span className="text-sm">{formatDate(agent.createdAt)}</span>
+                <span className="text-sm">{formatDate(interviewer.createdAt)}</span>
               </div>
             </CardContent>
           </Card>
@@ -875,11 +874,11 @@ export default function AgentOverview() {
       </div>
 
       {/* Share Agent Dialog */}
-      <ShareAgentDialog
+      <ShareInterviewerDialog
         open={shareDialogOpen}
         onOpenChange={setShareDialogOpen}
-        agentId={agent.id}
-        agentName={agent.name}
+        interviewerId={interviewer.id}
+        interviewerName={interviewer.name}
         collaborators={collaborators}
         isOwner={isOwner}
         onCollaboratorsChange={reloadPermissions}

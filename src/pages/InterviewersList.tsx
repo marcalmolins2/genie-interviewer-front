@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { InterviewerStatusBadge, AgentStatusBadge } from '@/components/InterviewerStatusBadge';
+import { InterviewerStatusBadge } from '@/components/InterviewerStatusBadge';
 import { Plus, Search, MoreHorizontal, Edit, Phone, Globe, Users, Archive as ArchiveIcon, Trash2, ChevronRight, Filter, X } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -17,55 +17,58 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Agent, Channel, AgentStatus } from '@/types';
 import { interviewersService, agentsService } from '@/services/interviewers';
 import { useToast } from '@/hooks/use-toast';
+
 const channelIcons: Record<Channel, typeof Phone> = {
   inbound_call: Phone,
   web_link: Globe
 };
-export default function AgentsList() {
-  const [agents, setAgents] = useState<Agent[]>([]);
-  const [filteredAgents, setFilteredAgents] = useState<Agent[]>([]);
+
+export default function InterviewersList() {
+  const [interviewers, setInterviewers] = useState<Agent[]>([]);
+  const [filteredInterviewers, setFilteredInterviewers] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatuses, setSelectedStatuses] = useState<AgentStatus[]>([]);
   const [selectedChannels, setSelectedChannels] = useState<Channel[]>([]);
   const [selectedArchetypes, setSelectedArchetypes] = useState<string[]>([]);
   const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
-  const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
+  const [selectedInterviewerId, setSelectedInterviewerId] = useState<string | null>(null);
   const navigate = useNavigate();
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
+
   useEffect(() => {
-    loadAgents();
+    loadInterviewers();
   }, []);
+
   useEffect(() => {
-    // Filter agents based on search query and filters
-    let filtered = agents.filter(agent => 
-      agent.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      agent.archetype.toLowerCase().includes(searchQuery.toLowerCase())
+    // Filter interviewers based on search query and filters
+    let filtered = interviewers.filter(interviewer => 
+      interviewer.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      interviewer.archetype.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     // Apply status filter
     if (selectedStatuses.length > 0) {
-      filtered = filtered.filter(agent => selectedStatuses.includes(agent.status));
+      filtered = filtered.filter(interviewer => selectedStatuses.includes(interviewer.status));
     }
 
     // Apply channel filter
     if (selectedChannels.length > 0) {
-      filtered = filtered.filter(agent => selectedChannels.includes(agent.channel));
+      filtered = filtered.filter(interviewer => selectedChannels.includes(interviewer.channel));
     }
 
     // Apply archetype filter
     if (selectedArchetypes.length > 0) {
-      filtered = filtered.filter(agent => selectedArchetypes.includes(agent.archetype));
+      filtered = filtered.filter(interviewer => selectedArchetypes.includes(interviewer.archetype));
     }
 
-    setFilteredAgents(filtered);
-  }, [agents, searchQuery, selectedStatuses, selectedChannels, selectedArchetypes]);
-  const loadAgents = async () => {
+    setFilteredInterviewers(filtered);
+  }, [interviewers, searchQuery, selectedStatuses, selectedChannels, selectedArchetypes]);
+
+  const loadInterviewers = async () => {
     try {
       const data = await agentsService.getAgents();
-      setAgents(data);
+      setInterviewers(data);
     } catch (error) {
       toast({
         title: 'Error',
@@ -76,10 +79,11 @@ export default function AgentsList() {
       setLoading(false);
     }
   };
-  const handleActivate = async (agent: Agent) => {
+
+  const handleActivate = async (interviewer: Agent) => {
     try {
-      const updatedAgent = await agentsService.activateAgent(agent.id);
-      setAgents(prev => prev.map(a => a.id === agent.id ? updatedAgent : a));
+      const updatedInterviewer = await agentsService.activateAgent(interviewer.id);
+      setInterviewers(prev => prev.map(i => i.id === interviewer.id ? updatedInterviewer : i));
       toast({
         title: 'Success',
         description: 'Interviewer activated successfully.'
@@ -93,14 +97,14 @@ export default function AgentsList() {
     }
   };
 
-  const handleMoveToTrash = async (agentId: string) => {
+  const handleMoveToTrash = async (interviewerId: string) => {
     try {
-      await agentsService.moveToTrash(agentId);
+      await agentsService.moveToTrash(interviewerId);
       toast({
         title: 'Interviewer moved to trash',
         description: 'The interviewer will be permanently deleted after 30 days.'
       });
-      loadAgents();
+      loadInterviewers();
     } catch (error) {
       if (error instanceof Error && error.message === 'ACTIVE_CALL_IN_PROGRESS') {
         toast({
@@ -119,16 +123,16 @@ export default function AgentsList() {
   };
 
   const handleArchive = async () => {
-    if (!selectedAgentId) return;
+    if (!selectedInterviewerId) return;
     
     try {
-      await agentsService.archiveAgent(selectedAgentId);
+      await agentsService.archiveAgent(selectedInterviewerId);
       toast({
         description: 'Archived'
       });
       setArchiveDialogOpen(false);
-      setSelectedAgentId(null);
-      loadAgents();
+      setSelectedInterviewerId(null);
+      loadInterviewers();
     } catch (error) {
       toast({
         title: 'Error',
@@ -138,8 +142,8 @@ export default function AgentsList() {
     }
   };
 
-  const openArchiveDialog = (agentId: string) => {
-    setSelectedAgentId(agentId);
+  const openArchiveDialog = (interviewerId: string) => {
+    setSelectedInterviewerId(interviewerId);
     setArchiveDialogOpen(true);
   };
 
@@ -150,11 +154,13 @@ export default function AgentsList() {
       year: 'numeric'
     });
   };
+
   if (loading) {
     return <div className="flex items-center justify-center min-h-[400px]">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>;
   }
+
   return <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -341,8 +347,8 @@ export default function AgentsList() {
         </div>
       </div>
 
-      {/* Agents Grid */}
-      {filteredAgents.length === 0 ? <Card className="p-12 text-center">
+      {/* Interviewers Grid */}
+      {filteredInterviewers.length === 0 ? <Card className="p-12 text-center">
           <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-4">
             <Users className="h-12 w-12 text-muted-foreground" />
           </div>
@@ -359,19 +365,19 @@ export default function AgentsList() {
               </Button>
             </Link>}
         </Card> : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredAgents.map(agent => {
-        const ChannelIcon = channelIcons[agent.channel as Channel];
-        return <Card key={agent.id} className="hover:shadow-lg hover:border-primary/30 hover:bg-accent/5 transition-all duration-200 border-border/20 bg-card cursor-pointer group" onClick={() => navigate(`/app/interviewers/${agent.id}`)}>
+          {filteredInterviewers.map(interviewer => {
+        const ChannelIcon = channelIcons[interviewer.channel as Channel];
+        return <Card key={interviewer.id} className="hover:shadow-lg hover:border-primary/30 hover:bg-accent/5 transition-all duration-200 border-border/20 bg-card cursor-pointer group" onClick={() => navigate(`/app/interviewers/${interviewer.id}`)}>
                 <CardHeader className="space-y-4 pb-6">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
-                          {agent.name}
+                          {interviewer.name}
                         </h3>
                         
                       </div>
-                      <AgentStatusBadge status={agent.status} />
+                      <InterviewerStatusBadge status={interviewer.status} />
                     </div>
                     
                     <DropdownMenu>
@@ -383,7 +389,7 @@ export default function AgentsList() {
                       <DropdownMenuContent align="end" onClick={e => e.stopPropagation()}>
                         <DropdownMenuItem onClick={e => {
                     e.stopPropagation();
-                    navigate(`/app/interviewers/${agent.id}/edit`);
+                    navigate(`/app/interviewers/${interviewer.id}/edit`);
                   }}>
                           <Edit className="h-4 w-4 mr-2" />
                           Edit
@@ -391,18 +397,15 @@ export default function AgentsList() {
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={e => {
                     e.stopPropagation();
-                    openArchiveDialog(agent.id);
+                    openArchiveDialog(interviewer.id);
                   }}>
                           <ArchiveIcon className="h-4 w-4 mr-2" />
                           Archive
                         </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          className="text-destructive focus:text-destructive" 
-                          onClick={e => {
-                            e.stopPropagation();
-                            handleMoveToTrash(agent.id);
-                          }}
-                        >
+                        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={e => {
+                    e.stopPropagation();
+                    handleMoveToTrash(interviewer.id);
+                  }}>
                           <Trash2 className="h-4 w-4 mr-2" />
                           Move to Trash
                         </DropdownMenuItem>
@@ -410,31 +413,22 @@ export default function AgentsList() {
                     </DropdownMenu>
                   </div>
                   
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <ChannelIcon className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">Phone No</span>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">Archetype</span>
-                      </div>
-                      <span className="text-sm text-foreground/80 uppercase tracking-wide">
-                        {agent.archetype.replace('_', ' ')}
-                      </span>
-                    </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Badge variant="outline" className="text-xs">
+                      {interviewer.archetype.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs flex items-center gap-1">
+                      <ChannelIcon className="h-3 w-3" />
+                      {interviewer.channel.replace('_', ' ')}
+                    </Badge>
                   </div>
                 </CardHeader>
                 
-                <CardContent className="pt-0 pb-6">
-                  <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all" onClick={e => {
-              e.stopPropagation();
-              navigate(`/app/agents/${agent.id}`);
-            }}>
-                    View Details
-                    <ChevronRight className="h-4 w-4 ml-2" />
-                  </Button>
+                <CardContent className="pt-0">
+                  <div className="flex items-center justify-between text-sm text-muted-foreground">
+                    <span>{interviewer.interviewsCount || 0} sessions</span>
+                    <span>Created {formatDate(interviewer.createdAt)}</span>
+                  </div>
                 </CardContent>
               </Card>;
       })}
