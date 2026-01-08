@@ -52,8 +52,9 @@ import { SessionFeedback } from '@/components/SessionFeedback';
 import { 
   KeyFindingsList, 
   CrossSessionQA,
+  CrossSessionSummary,
 } from '@/components/insights';
-import { Agent, InterviewSummary, SessionFeedback as SessionFeedbackType, FindingsCategory } from '@/types';
+import { Agent, InterviewSummary, SessionFeedback as SessionFeedbackType, FindingsCategory, CrossSessionSummary as CrossSessionSummaryType } from '@/types';
 import { interviewersService, agentsService } from '@/services/interviewers';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -75,6 +76,23 @@ export default function InterviewerInsights() {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   
+  // Mock cross-session summary
+  const mockCrossSessionSummary: CrossSessionSummaryType = {
+    narrativeParagraph: "Across five interviews with enterprise technology leaders, this research explored AI adoption challenges and implementation strategies. Participants consistently highlighted training gaps and unclear ROI as primary barriers, while successful adopters emphasized pilot programs and transparent communication as key enablers.",
+    keyTakeaways: [
+      "ROI uncertainty is the top barrier—leadership needs concrete metrics before committing",
+      "Fear of job displacement creates resistance across all organization sizes",
+      "Pilot programs with clear, measurable wins drive broader organizational adoption",
+      "Training investment correlates strongly with successful implementation outcomes",
+      "Younger employees adopt faster but need structured governance frameworks"
+    ],
+    stats: {
+      sessionCount: 5,
+      totalDurationMinutes: 192,
+      dateRange: { start: '2024-11-29', end: '2024-12-01' }
+    }
+  };
+
   // Mock key findings - categories from both interview guide sections AND emergent themes
   const mockKeyFindings: FindingsCategory[] = [
     // Emergent themes (derived from cross-session analysis)
@@ -541,7 +559,10 @@ SLIDE 4: Recommendations
           {isMobile ? (
             // Stacked layout for mobile/tablet
             <div className="space-y-6">
-              {/* Left Content: Key Findings */}
+              {/* Executive Summary */}
+              <CrossSessionSummary summary={mockCrossSessionSummary} />
+
+              {/* Key Findings */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Key Findings</h3>
                 <KeyFindingsList 
@@ -562,15 +583,21 @@ SLIDE 4: Recommendations
           ) : (
             // Side-by-side layout for desktop
             <ResizablePanelGroup direction="horizontal" className="min-h-[600px] rounded-lg border">
-              {/* Left Panel: Key Findings */}
+              {/* Left Panel: Executive Summary + Key Findings */}
               <ResizablePanel defaultSize={60} minSize={40}>
-                <div className="h-full p-4 overflow-auto bg-background rounded-lg space-y-4">
-                  <h3 className="text-lg font-semibold">Key Findings</h3>
-                  <KeyFindingsList 
-                    categories={mockKeyFindings} 
-                    interviewerId={interviewerId!}
-                    sessionDates={sessionDates}
-                  />
+                <div className="h-full p-4 overflow-auto bg-background rounded-lg space-y-6">
+                  {/* Executive Summary */}
+                  <CrossSessionSummary summary={mockCrossSessionSummary} />
+
+                  {/* Key Findings */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Key Findings</h3>
+                    <KeyFindingsList 
+                      categories={mockKeyFindings} 
+                      interviewerId={interviewerId!}
+                      sessionDates={sessionDates}
+                    />
+                  </div>
                 </div>
               </ResizablePanel>
               
