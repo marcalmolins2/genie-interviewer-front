@@ -31,7 +31,13 @@ const getMockSessionDetail = (sessionId: string, agentId: string): SessionDetail
       recordingUrl: '/recordings/int-20241201-001.mp3',
       summary: {
         headline: "AI adoption insights from fintech PM",
-        narrativeParagraph: "Sarah Chen, a Product Manager at a fintech company, shared her 18-month journey implementing AI for customer service and risk assessment. The discussion revealed key themes around stakeholder buy-in, the importance of positioning AI as augmentation, and measurable success through pilot programs."
+        narrativeParagraph: "Sarah Chen, a Product Manager at a fintech company, shared her 18-month journey implementing AI for customer service and risk assessment. The discussion revealed key themes around stakeholder buy-in, the importance of positioning AI as augmentation, and measurable success through pilot programs.",
+        keyTakeaways: [
+          "Stakeholder buy-in is the biggest hurdle—fear of job displacement must be addressed early",
+          "Positioning AI as augmentation rather than replacement builds organizational trust",
+          "Small pilot programs with measurable ROI create momentum for broader adoption",
+          "60% response time reduction and 15-point CSAT increase demonstrate clear business value"
+        ]
       },
       respondentProfile: {
         role: "Product Manager",

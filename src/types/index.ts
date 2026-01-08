@@ -466,6 +466,7 @@ export interface Share {
 export interface SessionSummary {
   headline: string;
   narrativeParagraph: string;
+  keyTakeaways?: string[];
 }
 
 export interface RespondentProfile {

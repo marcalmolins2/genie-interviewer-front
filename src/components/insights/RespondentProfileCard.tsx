@@ -1,5 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { User, CheckCircle2 } from 'lucide-react';
+import { User } from 'lucide-react';
 import type { RespondentProfile } from '@/types';
 
 interface RespondentProfileCardProps {
@@ -36,20 +36,6 @@ export function RespondentProfileCard({ profile }: RespondentProfileCardProps) {
           <h4 className="text-sm font-medium text-muted-foreground">Background</h4>
           <p className="text-sm leading-relaxed">{profile.background}</p>
         </div>
-
-        {profile.relevantContext.length > 0 && (
-          <div className="space-y-2">
-            <h4 className="text-sm font-medium text-muted-foreground">Relevant Context</h4>
-            <ul className="space-y-1.5">
-              {profile.relevantContext.map((item, index) => (
-                <li key={index} className="flex items-start gap-2 text-sm">
-                  <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
       </CardContent>
     </Card>
   );
