@@ -279,9 +279,9 @@ export function CrossSessionQA({ interviewerId, sessions }: CrossSessionQAProps)
   ];
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full min-h-0 bg-background">
       {/* Header */}
-      <div className="p-4 border-b">
+      <div className="flex-shrink-0 p-4 border-b">
         <h3 className="font-semibold flex items-center gap-2">
           <Bot className="h-4 w-4 text-primary" />
           Cross-Session Q&A
@@ -292,7 +292,7 @@ export function CrossSessionQA({ interviewerId, sessions }: CrossSessionQAProps)
       </div>
       
       {/* Messages */}
-      <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+      <ScrollArea className="flex-1 min-h-0 p-4" ref={scrollRef}>
         {messages.length === 0 ? (
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground text-center py-4">
@@ -384,7 +384,7 @@ export function CrossSessionQA({ interviewerId, sessions }: CrossSessionQAProps)
       </ScrollArea>
       
       {/* Input */}
-      <div className="p-4 border-t">
+      <div className="flex-shrink-0 p-4 border-t bg-background">
         <div className="flex gap-2">
           <Input
             value={input}
