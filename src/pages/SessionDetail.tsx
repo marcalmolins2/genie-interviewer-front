@@ -220,7 +220,8 @@ const getMockSessionDetail = (sessionId: string, agentId: string): SessionDetail
 };
 
 export default function SessionDetail() {
-  const { agentId, sessionId } = useParams<{ agentId: string; sessionId: string }>();
+  const { interviewerId, sessionId } = useParams<{ interviewerId: string; sessionId: string }>();
+  const agentId = interviewerId; // Alias for backward compatibility
   const navigate = useNavigate();
   const [session, setSession] = useState<SessionDetailType | null>(null);
   const [loading, setLoading] = useState(true);
