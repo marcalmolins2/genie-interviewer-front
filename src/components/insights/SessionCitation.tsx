@@ -32,14 +32,21 @@ export function SessionCitation({ sessions, displayNumbers, className }: Session
   return (
     <HoverCard openDelay={200} closeDelay={100}>
       <HoverCardTrigger asChild>
-        <button
+        <span
           className={cn(
-            "inline-flex items-center text-xs text-muted-foreground hover:text-primary transition-colors underline decoration-dotted underline-offset-2",
+            "inline-flex items-center gap-0.5 cursor-pointer",
             className
           )}
         >
-          [{displayNumbers.join(',')}]
-        </button>
+          {displayNumbers.map((num) => (
+            <span
+              key={num}
+              className="inline-flex items-center justify-center w-4 h-4 text-[10px] font-medium rounded bg-primary/20 text-primary hover:bg-primary/30 transition-colors"
+            >
+              {num}
+            </span>
+          ))}
+        </span>
       </HoverCardTrigger>
       <HoverCardContent align="start" className="w-64 p-2">
         <div className="space-y-1">

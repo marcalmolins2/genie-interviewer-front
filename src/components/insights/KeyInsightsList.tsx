@@ -62,8 +62,8 @@ export function KeyInsightsList({ categories, interviewerId, sessionDates }: Key
             </p>
             <ul className="space-y-2">
               {category.insights.map((insight, index) => (
-                <li key={index} className="flex items-start gap-2 text-sm">
-                  <span className="text-primary mt-1.5">•</span>
+                <li key={index} className="flex items-start gap-3 text-sm">
+                  <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-primary mt-2" />
                   <span className="flex-1">
                     {insight.text}
                     {insight.sessionIds.length > 0 && (
