@@ -221,7 +221,6 @@ const getMockSessionDetail = (sessionId: string, agentId: string): SessionDetail
 
 export default function SessionDetail() {
   const { interviewerId, sessionId } = useParams<{ interviewerId: string; sessionId: string }>();
-  const agentId = interviewerId; // Alias for backward compatibility
   const navigate = useNavigate();
   const [session, setSession] = useState<SessionDetailType | null>(null);
   const [loading, setLoading] = useState(true);
@@ -242,15 +241,15 @@ export default function SessionDetail() {
   }, [sessionId]);
 
   useEffect(() => {
-    if (agentId && sessionId) {
+    if (interviewerId && sessionId) {
       // Simulate loading
       setTimeout(() => {
-        const sessionData = getMockSessionDetail(sessionId, agentId);
+        const sessionData = getMockSessionDetail(sessionId, interviewerId);
         setSession(sessionData);
         setLoading(false);
       }, 500);
     }
-  }, [agentId, sessionId]);
+  }, [interviewerId, sessionId]);
 
   const handleFeedbackSubmit = useCallback((newFeedback: SessionFeedbackType) => {
     setFeedback(newFeedback);
@@ -349,7 +348,7 @@ export default function SessionDetail() {
           <p className="text-muted-foreground mb-6">
             The requested interview session could not be found.
           </p>
-          <Button onClick={() => navigate(`/app/interviewers/${agentId}/analyze`)}>
+          <Button onClick={() => navigate(`/app/interviewers/${interviewerId}/analyze`)}>
             Back to Analytics
           </Button>
         </Card>
@@ -362,7 +361,7 @@ export default function SessionDetail() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate(`/app/interviewers/${agentId}/analyze?tab=transcripts`)}>
+          <Button variant="ghost" size="sm" onClick={() => navigate(`/app/interviewers/${interviewerId}/analyze?tab=transcripts`)}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>

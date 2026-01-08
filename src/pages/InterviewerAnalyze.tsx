@@ -70,12 +70,11 @@ const SimpleBarChart = ({ data, title }: { data: any[], title: string }) => (
   </div>
 );
 
-export default function AgentAnalyze() {
+export default function InterviewerAnalyze() {
   const { interviewerId } = useParams<{ interviewerId: string }>();
-  const agentId = interviewerId; // Alias for backward compatibility
   const [searchParams] = useSearchParams();
   const defaultTab = searchParams.get('tab') || 'overview';
-  const [agent, setAgent] = useState<Agent | null>(null);
+  const [interviewer, setInterviewer] = useState<Agent | null>(null);
   const [interviews, setInterviews] = useState<InterviewSummary[]>([]);
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -88,73 +87,73 @@ export default function AgentAnalyze() {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (agentId) {
+    if (interviewerId) {
       loadData();
     }
-  }, [agentId]);
+  }, [interviewerId]);
 
   const loadData = async () => {
-    if (!agentId) return;
+    if (!interviewerId) return;
     
     try {
-      const [agentData, interviewsData, statsData] = await Promise.all([
-        agentsService.getAgent(agentId),
-        agentsService.getAgentInterviews(agentId),
-        agentsService.getAgentStats(agentId),
+      const [interviewerData, interviewsData, statsData] = await Promise.all([
+        agentsService.getAgent(interviewerId),
+        agentsService.getAgentInterviews(interviewerId),
+        agentsService.getAgentStats(interviewerId),
       ]);
       
-      if (agentData) {
-        setAgent(agentData);
+      if (interviewerData) {
+        setInterviewer(interviewerData);
         
         // Add mock interviews for demo
         const mockInterviews: InterviewSummary[] = [
           {
             id: 'int-20241201-001',
-            agentId: agentId,
+            agentId: interviewerId,
             startedAt: '2024-12-01T14:30:00Z',
             durationSec: 1280,
             completed: true,
             respondentId: 'sarah.chen@company.com',
-            channel: agentData.channel,
+            channel: interviewerData.channel,
             feedback: { sessionId: 'int-20241201-001', rating: 'positive', submittedAt: '2024-12-01T15:00:00Z' }
           },
           {
             id: 'int-20241201-002', 
-            agentId: agentId,
+            agentId: interviewerId,
             startedAt: '2024-12-01T09:15:00Z',
             durationSec: 952,
             completed: true,
             respondentId: 'mike.rodriguez@company.com',
-            channel: agentData.channel,
+            channel: interviewerData.channel,
             feedback: { sessionId: 'int-20241201-002', rating: 'negative', negativeReason: 'Audio quality was poor', submittedAt: '2024-12-01T09:45:00Z' }
           },
           {
             id: 'int-20241130-003',
-            agentId: agentId,
+            agentId: interviewerId,
             startedAt: '2024-11-30T16:45:00Z', 
             durationSec: 445,
             completed: false,
             respondentId: 'emma.johnson@company.com',
-            channel: agentData.channel
+            channel: interviewerData.channel
           },
           {
             id: 'int-20241130-004',
-            agentId: agentId,
+            agentId: interviewerId,
             startedAt: '2024-11-30T11:20:00Z',
             durationSec: 1560,
             completed: true,
             respondentId: 'david.kim@company.com',
-            channel: agentData.channel
+            channel: interviewerData.channel
             // No feedback yet
           },
           {
             id: 'int-20241129-005',
-            agentId: agentId,
+            agentId: interviewerId,
             startedAt: '2024-11-29T13:00:00Z',
             durationSec: 720,
             completed: false,
             respondentId: 'lisa.wang@company.com',
-            channel: agentData.channel
+            channel: interviewerData.channel
           }
         ];
         
@@ -215,7 +214,7 @@ export default function AgentAnalyze() {
     const profiles = [...new Set(interviews.map(i => i.respondentId?.split('@')[0] || 'Unknown'))];
     
     const reportData = {
-      title: `${agent.name} - Interview Analysis Report`,
+      title: `${interviewer.name} - Interview Analysis Report`,
       date: new Date().toLocaleDateString('en-US', { 
         year: 'numeric', 
         month: 'long', 
@@ -227,7 +226,7 @@ export default function AgentAnalyze() {
         totalHours,
         completionRate,
         profiles: profiles.slice(0, 5), // Show top 5 profiles
-        revenue: completedInterviews.length * agent.pricePerInterviewUsd,
+        revenue: completedInterviews.length * interviewer.pricePerInterviewUsd,
         avgDuration: formatDuration(stats?.averageDuration || 0),
         topTopics: topicsDiscussed.slice(0, 3)
       }
@@ -263,7 +262,7 @@ SLIDE 4: Recommendations
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${agent.name.replace(/\s+/g, '_')}_Interview_Report.txt`;
+    a.download = `${interviewer.name.replace(/\s+/g, '_')}_Interview_Report.txt`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -271,7 +270,7 @@ SLIDE 4: Recommendations
 
     toast({
       title: 'PPT Report Generated',
-      description: `Interview analysis report for ${agent.name} has been downloaded.`,
+      description: `Interview analysis report for ${interviewer.name} has been downloaded.`,
     });
   };
 
@@ -357,7 +356,7 @@ SLIDE 4: Recommendations
     );
   }
 
-  if (!agent) {
+  if (!interviewer) {
     return (
       <div className="container py-8">
         <Card className="p-12 text-center">
@@ -378,12 +377,12 @@ SLIDE 4: Recommendations
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate(`/app/interviewers/${agent.id}`)}>
+          <Button variant="ghost" onClick={() => navigate(`/app/interviewers/${interviewer.id}`)}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Interviewer
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">Analytics: {agent.name}</h1>
+            <h1 className="text-3xl font-bold">Analytics: {interviewer.name}</h1>
             <p className="text-muted-foreground">
               Insights and performance metrics for your interviewer
             </p>
@@ -454,7 +453,7 @@ SLIDE 4: Recommendations
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  ${(stats?.completedInterviews || 0) * agent.pricePerInterviewUsd}
+                  ${(stats?.completedInterviews || 0) * interviewer.pricePerInterviewUsd}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   From completed interviews
@@ -565,7 +564,7 @@ SLIDE 4: Recommendations
                         <Button
                           variant="outline" 
                           size="sm"
-                          onClick={() => navigate(`/app/agents/${agentId}/sessions/${interview.id}`)}
+                          onClick={() => navigate(`/app/interviewers/${interviewerId}/sessions/${interview.id}`)}
                           disabled={!interview.completed}
                         >
                           View Transcript
