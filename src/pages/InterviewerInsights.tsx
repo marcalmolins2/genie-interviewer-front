@@ -583,7 +583,7 @@ SLIDE 4: Recommendations
             </div>
           ) : (
             // Side-by-side layout for desktop - fixed height container
-            <div className="h-[calc(100vh-220px)] min-h-[500px]">
+            <div className="h-[calc(100vh-280px)] min-h-[400px] pb-16">
               <ResizablePanelGroup direction="horizontal" className="h-full rounded-lg border">
                 {/* Left Panel: Executive Summary + Key Findings */}
                 <ResizablePanel defaultSize={60} minSize={40}>
