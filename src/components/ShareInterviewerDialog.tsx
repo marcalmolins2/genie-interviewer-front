@@ -46,8 +46,8 @@ import { useToast } from '@/hooks/use-toast';
 interface ShareInterviewerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  agentId: string;
-  agentName: string;
+  interviewerId: string;
+  interviewerName: string;
   collaborators: AgentCollaborator[];
   isOwner: boolean;
   onCollaboratorsChange: () => void;
@@ -63,8 +63,8 @@ interface SearchUser {
 export function ShareInterviewerDialog({
   open,
   onOpenChange,
-  agentId,
-  agentName,
+  interviewerId,
+  interviewerName,
   collaborators,
   isOwner,
   onCollaboratorsChange
@@ -89,7 +89,7 @@ export function ShareInterviewerDialog({
 
       setSearching(true);
       try {
-        const results = await agentsService.searchUsers(searchQuery, agentId);
+        const results = await agentsService.searchUsers(searchQuery, interviewerId);
         // Filter out users already in pending invites
         const filtered = results.filter(
           user => !pendingInvites.find(p => p.id === user.id)
@@ -104,7 +104,7 @@ export function ShareInterviewerDialog({
 
     const debounce = setTimeout(searchUsers, 300);
     return () => clearTimeout(debounce);
-  }, [searchQuery, agentId, pendingInvites]);
+  }, [searchQuery, interviewerId, pendingInvites]);
 
   const addToPendingInvites = (user: SearchUser) => {
     setPendingInvites(prev => [...prev, { ...user, permission: invitePermission }]);
@@ -128,7 +128,7 @@ export function ShareInterviewerDialog({
     setIsSubmitting(true);
     try {
       for (const invite of pendingInvites) {
-        await agentsService.inviteCollaborator(agentId, invite.id, invite.permission);
+        await agentsService.inviteCollaborator(interviewerId, invite.id, invite.permission);
       }
       
       toast({
@@ -188,7 +188,7 @@ export function ShareInterviewerDialog({
 
     setIsSubmitting(true);
     try {
-      await agentsService.transferOwnership(agentId, selectedTransferUser.userId);
+      await agentsService.transferOwnership(interviewerId, selectedTransferUser.userId);
       toast({
         title: 'Ownership Transferred',
         description: `${selectedTransferUser.user.name} is now the owner of this interviewer.`
@@ -231,7 +231,7 @@ export function ShareInterviewerDialog({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Share "{agentName}"</DialogTitle>
+            <DialogTitle>Share "{interviewerName}"</DialogTitle>
             <DialogDescription>
               {isOwner 
                 ? 'Manage who can access this interviewer and their permission levels.'
@@ -497,7 +497,7 @@ export function ShareInterviewerDialog({
           <AlertDialogHeader>
             <AlertDialogTitle>Transfer Ownership</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to transfer ownership of "{agentName}" to{' '}
+              Are you sure you want to transfer ownership of "{interviewerName}" to{' '}
               <span className="font-medium">{selectedTransferUser?.user.name}</span>?
               <br /><br />
               You will become an Editor and lose the ability to manage collaborators, 
