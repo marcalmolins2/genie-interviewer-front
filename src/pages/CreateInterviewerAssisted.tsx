@@ -41,7 +41,7 @@ interface Message {
   phase?: ConversationPhase;
 }
 
-interface AgentData {
+interface InterviewerData {
   name: string;
   archetype: Archetype | null;
   language: string;
@@ -64,12 +64,12 @@ const phaseLabels = {
   [ConversationPhase.COMPLETE]: 'Complete'
 };
 
-export default function CreateAgentAssisted() {
+export default function CreateInterviewerAssisted() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentMessage, setCurrentMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [currentPhase, setCurrentPhase] = useState(ConversationPhase.WELCOME);
-  const [agentData, setAgentData] = useState<AgentData>({
+  const [interviewerData, setInterviewerData] = useState<InterviewerData>({
     name: '',
     archetype: null,
     language: 'en',
@@ -180,7 +180,7 @@ export default function CreateAgentAssisted() {
   };
 
   const handleResearchGoals = (userMessage: string) => {
-    setAgentData(prev => ({ ...prev, researchGoals: userMessage }));
+    setInterviewerData(prev => ({ ...prev, researchGoals: userMessage }));
     
     // Suggest archetype based on goals
     const lowerMessage = userMessage.toLowerCase();
@@ -222,8 +222,8 @@ Does this sound like what you need? If not, I can suggest other types like:
     let selectedArchetype: Archetype = 'diagnostic';
     
     if (lowerMessage.includes('yes') || lowerMessage.includes('perfect') || lowerMessage.includes('sounds good')) {
-      // Keep the previously suggested archetype from agentData
-      selectedArchetype = agentData.archetype || 'diagnostic';
+      // Keep the previously suggested archetype from interviewerData
+      selectedArchetype = interviewerData.archetype || 'diagnostic';
     } else if (lowerMessage.includes('user') || lowerMessage.includes('customer') || lowerMessage.includes('ux')) {
       selectedArchetype = 'customer_user';
     } else if (lowerMessage.includes('market') || lowerMessage.includes('investigative')) {
@@ -238,7 +238,7 @@ Does this sound like what you need? If not, I can suggest other types like:
       selectedArchetype = 'client_stakeholder';
     }
 
-    setAgentData(prev => ({ ...prev, archetype: selectedArchetype }));
+    setInterviewerData(prev => ({ ...prev, archetype: selectedArchetype }));
     setCurrentPhase(ConversationPhase.ARCHETYPE_SELECTION);
     
     addAssistantMessage(
@@ -254,7 +254,7 @@ Some examples:
   };
 
   const handleAgentDetails = (userMessage: string) => {
-    setAgentData(prev => ({ ...prev, name: userMessage }));
+    setInterviewerData(prev => ({ ...prev, name: userMessage }));
     setCurrentPhase(ConversationPhase.AGENT_DETAILS);
     
     addAssistantMessage(
@@ -272,12 +272,12 @@ Or just type "auto-generate" and I'll create a comprehensive guide based on best
   const handleInterviewGuide = (userMessage: string) => {
     // Generate interview guide based on archetype and user input
     let guideContent = '';
-    const archetype = ARCHETYPES.find(a => a.id === agentData.archetype);
+    const archetype = ARCHETYPES.find(a => a.id === interviewerData.archetype);
     
     if (userMessage.toLowerCase().includes('auto') || userMessage.toLowerCase().includes('generate')) {
-      guideContent = `# ${agentData.name} Interview Guide\n
+      guideContent = `# ${interviewerData.name} Interview Guide\n
 ## Introduction
-Thank you for participating in this ${archetype?.title.toLowerCase()}. This conversation will help us ${agentData.researchGoals.toLowerCase()}.\n
+Thank you for participating in this ${archetype?.title.toLowerCase()}. This conversation will help us ${interviewerData.researchGoals.toLowerCase()}.\n
 ## Key Questions
 1. Can you tell me about your background and experience?
 2. What are your main challenges in this area?
@@ -285,7 +285,7 @@ Thank you for participating in this ${archetype?.title.toLowerCase()}. This conv
 4. What would an ideal solution look like to you?
 5. Any final thoughts or questions?`;
     } else {
-      guideContent = `# ${agentData.name} Interview Guide\n
+      guideContent = `# ${interviewerData.name} Interview Guide\n
 ## Introduction
 Thank you for participating in this ${archetype?.title.toLowerCase()}.\n
 ## Focus Areas
@@ -297,7 +297,7 @@ Based on your input: ${userMessage}\n
 4. Closing thoughts`;
     }
     
-    setAgentData(prev => ({ ...prev, interviewGuide: guideContent }));
+    setInterviewerData(prev => ({ ...prev, interviewGuide: guideContent }));
     setCurrentPhase(ConversationPhase.INTERVIEW_GUIDE);
     
     addAssistantMessage(
@@ -316,7 +316,7 @@ Or type "skip" if you don't need any additional context right now.`,
 
   const handleKnowledgeBase = (userMessage: string) => {
     if (!userMessage.toLowerCase().includes('skip')) {
-      setAgentData(prev => ({ ...prev, knowledgeText: userMessage }));
+      setInterviewerData(prev => ({ ...prev, knowledgeText: userMessage }));
     }
     
     setCurrentPhase(ConversationPhase.KNOWLEDGE_BASE);
@@ -330,19 +330,19 @@ Or type "skip" if you don't need any additional context right now.`,
       ConversationPhase.CHANNEL_SELECTION
     );
     
-    setAgentData(prev => ({ ...prev, channel: 'inbound_call' }));
+    setInterviewerData(prev => ({ ...prev, channel: 'inbound_call' }));
     setCurrentPhase(ConversationPhase.CHANNEL_SELECTION);
     
-    const archetype = ARCHETYPES.find(a => a.id === agentData.archetype);
+    const archetype = ARCHETYPES.find(a => a.id === interviewerData.archetype);
     
     addAssistantMessage(
       `Perfect! Here's a summary of your interviewer:\n
-**Interviewer Name:** ${agentData.name}\n
+**Interviewer Name:** ${interviewerData.name}\n
 **Type:** ${archetype?.title}\n
 **Communication:** Inbound Call\n
 **Price:** $${PRICE_BY_CHANNEL.inbound_call} per interview\n
-**Research Goals:** ${agentData.researchGoals}\n
-Your interviewer will have a customized interview guide and ${agentData.knowledgeText ? 'background knowledge context' : 'no additional context'}.\n
+**Research Goals:** ${interviewerData.researchGoals}\n
+Your interviewer will have a customized interview guide and ${interviewerData.knowledgeText ? 'background knowledge context' : 'no additional context'}.\n
 **Are you ready to create this interviewer?** Type "yes" to proceed or "modify" if you want to change anything.`,
       ConversationPhase.REVIEW_CONFIRM
     );
@@ -350,16 +350,16 @@ Your interviewer will have a customized interview guide and ${agentData.knowledg
 
   const handleConfirmChannel = (userMessage: string) => {
     setCurrentPhase(ConversationPhase.CHANNEL_SELECTION);
-    const archetype = ARCHETYPES.find(a => a.id === agentData.archetype);
+    const archetype = ARCHETYPES.find(a => a.id === interviewerData.archetype);
     
     addAssistantMessage(
       `Perfect! Here's a summary of your interviewer:\n
-**Interviewer Name:** ${agentData.name}\n
+**Interviewer Name:** ${interviewerData.name}\n
 **Type:** ${archetype?.title}\n
 **Communication:** Inbound Call\n
 **Price:** $${PRICE_BY_CHANNEL.inbound_call} per interview\n
-**Research Goals:** ${agentData.researchGoals}\n
-Your interviewer will have a customized interview guide and ${agentData.knowledgeText ? 'background knowledge context' : 'no additional context'}.\n
+**Research Goals:** ${interviewerData.researchGoals}\n
+Your interviewer will have a customized interview guide and ${interviewerData.knowledgeText ? 'background knowledge context' : 'no additional context'}.\n
 **Are you ready to create this interviewer?** Type "yes" to proceed or "modify" if you want to change anything.`,
       ConversationPhase.REVIEW_CONFIRM
     );
@@ -382,35 +382,35 @@ Or if you prefer more control, you can switch to our manual setup process.`,
     }
     
     setCurrentPhase(ConversationPhase.REVIEW_CONFIRM);
-    createAgent();
+    createInterviewer();
   };
 
   const handleFinalConfirmation = (userMessage: string) => {
     // Handle any final modifications or confirmations
-    createAgent();
+    createInterviewer();
   };
 
-  const createAgent = async () => {
-    if (!agentData.archetype) return;
+  const createInterviewer = async () => {
+    if (!interviewerData.archetype) return;
     
     setIsCreating(true);
     addAssistantMessage(`Creating your interviewer now... This will just take a moment! ✨`);
     
     try {
-      const agent = await agentsService.createAgent({
-        name: agentData.name,
-        archetype: agentData.archetype,
-        language: agentData.language,
-        voiceId: agentData.voiceId,
-        channel: agentData.channel,
+      const newInterviewer = await agentsService.createAgent({
+        name: interviewerData.name,
+        archetype: interviewerData.archetype,
+        language: interviewerData.language,
+        voiceId: interviewerData.voiceId,
+        channel: interviewerData.channel,
       });
 
       // Provision contact info
-      await agentsService.provisionContact(agent.id);
+      await agentsService.provisionContact(newInterviewer.id);
 
       setCurrentPhase(ConversationPhase.COMPLETE);
       addAssistantMessage(
-        `🎉 **Success!** Your interviewer "${agentData.name}" has been created and is ready to use!\n
+        `🎉 **Success!** Your interviewer "${interviewerData.name}" has been created and is ready to use!\n
 Your interviewer is now live and ready to conduct interviews. You can view details, test it out, or share it with participants.\n
 **What would you like to do next?**`,
         ConversationPhase.COMPLETE
@@ -423,7 +423,7 @@ Your interviewer is now live and ready to conduct interviews. You can view detai
 
       // Navigate to interviewer details after a short delay
       setTimeout(() => {
-        navigate(`/app/interviewers/${agent.id}`);
+        navigate(`/app/interviewers/${newInterviewer.id}`);
       }, 3000);
     } catch (error) {
       toast({
@@ -599,10 +599,10 @@ Your interviewer is now live and ready to conduct interviews. You can view detai
                       variant="outline"
                       className="flex-1"
                     >
-                      View All Agents
+                      View All Interviewers
                     </Button>
                     <Button 
-                      onClick={() => navigate(`/app/agents/${agentData.name ? 'new' : ''}`)}
+                      onClick={() => navigate(`/app/interviewers/${interviewerData.name ? 'new' : ''}`)}
                       className="flex-1"
                     >
                       Create Another

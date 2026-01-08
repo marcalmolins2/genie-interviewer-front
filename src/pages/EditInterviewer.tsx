@@ -31,10 +31,9 @@ import { interviewersService, agentsService } from '@/services/interviewers';
 import { useToast } from '@/hooks/use-toast';
 import { InterviewGuideEditor } from '@/components/InterviewGuideEditor';
 
-export default function EditAgent() {
+export default function EditInterviewer() {
   const { interviewerId } = useParams<{ interviewerId: string }>();
-  const agentId = interviewerId; // Alias for backward compatibility
-  const [agent, setAgent] = useState<Agent | null>(null);
+  const [interviewer, setInterviewer] = useState<Agent | null>(null);
   const [guide, setGuide] = useState<InterviewGuide | null>(null);
   const [knowledge, setKnowledge] = useState<KnowledgeAsset[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,47 +54,47 @@ export default function EditAgent() {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (agentId) {
-      loadAgentData();
+    if (interviewerId) {
+      loadInterviewerData();
     }
-  }, [agentId]);
+  }, [interviewerId]);
 
-  const loadAgentData = async () => {
-    if (!agentId) return;
+  const loadInterviewerData = async () => {
+    if (!interviewerId) return;
     
     try {
-      const [agentData, guideData, knowledgeData] = await Promise.all([
-        agentsService.getAgent(agentId),
-        agentsService.getAgentGuide(agentId),
-        agentsService.getAgentKnowledge(agentId)
+      const [interviewerData, guideData, knowledgeData] = await Promise.all([
+        agentsService.getAgent(interviewerId),
+        agentsService.getAgentGuide(interviewerId),
+        agentsService.getAgentKnowledge(interviewerId)
       ]);
       
-      if (!agentData) {
+      if (!interviewerData) {
         navigate('/app/interviewers');
         return;
       }
 
       // Block editing for archived interviewers
-      if (agentData.status === 'archived') {
+      if (interviewerData.status === 'archived') {
         toast({
           title: 'Cannot Edit',
           description: 'Archived interviewers cannot be edited. Unarchive first to make changes.',
           variant: 'destructive',
         });
-        navigate(`/app/interviewers/${agentId}`);
+        navigate(`/app/interviewers/${interviewerId}`);
         return;
       }
       
-      setAgent(agentData);
+      setInterviewer(interviewerData);
       setGuide(guideData);
       setKnowledge(knowledgeData);
       
       // Populate form
       setFormData({
-        name: agentData.name,
-        language: agentData.language,
-        voiceId: agentData.voiceId || '',
-        channel: agentData.channel,
+        name: interviewerData.name,
+        language: interviewerData.language,
+        voiceId: interviewerData.voiceId || '',
+        channel: interviewerData.channel,
         guideText: guideData?.rawText || '',
         textKnowledge: '',
         newTextAssetTitle: ''
@@ -114,11 +113,11 @@ export default function EditAgent() {
   };
 
   const handleSave = async () => {
-    if (!agent || !agentId) return;
+    if (!interviewer || !interviewerId) return;
     
     setSaving(true);
     try {
-      const updatedAgent: Partial<Agent> = {
+      const updatedInterviewer: Partial<Agent> = {
         name: formData.name,
         language: formData.language,
         voiceId: formData.voiceId || undefined,
@@ -126,11 +125,11 @@ export default function EditAgent() {
         pricePerInterviewUsd: PRICE_BY_CHANNEL[formData.channel]
       };
       
-      await agentsService.updateAgent(agentId, updatedAgent);
+      await agentsService.updateAgent(interviewerId, updatedInterviewer);
       
       if (formData.guideText !== (guide?.rawText || '')) {
         const guideData = guide?.structured || null;
-        await agentsService.updateAgentGuide(agentId, formData.guideText, guideData);
+        await agentsService.updateAgentGuide(interviewerId, formData.guideText, guideData);
       }
       
       toast({
@@ -138,7 +137,7 @@ export default function EditAgent() {
         description: 'Interviewer updated successfully.',
       });
       
-      navigate(`/app/interviewers/${agentId}`);
+      navigate(`/app/interviewers/${interviewerId}`);
     } catch (error) {
       toast({
         title: 'Error',
@@ -151,10 +150,10 @@ export default function EditAgent() {
   };
 
   const addTextKnowledge = async () => {
-    if (!agentId || !formData.newTextAssetTitle.trim() || !formData.textKnowledge.trim()) return;
+    if (!interviewerId || !formData.newTextAssetTitle.trim() || !formData.textKnowledge.trim()) return;
     
     try {
-      const newAsset = await agentsService.addKnowledgeAsset(agentId, {
+      const newAsset = await agentsService.addKnowledgeAsset(interviewerId, {
         title: formData.newTextAssetTitle,
         type: 'text',
         contentText: formData.textKnowledge
@@ -208,7 +207,7 @@ export default function EditAgent() {
     );
   }
 
-  if (!agent) {
+  if (!interviewer) {
     return (
       <div className="container py-8">
         <Card className="p-12 text-center">
@@ -229,21 +228,21 @@ export default function EditAgent() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate(`/app/interviewers/${agentId}`)}>
+          <Button variant="ghost" onClick={() => navigate(`/app/interviewers/${interviewerId}`)}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Overview
           </Button>
           <div>
             <h1 className="text-3xl font-bold">Edit Interviewer</h1>
             <div className="flex items-center gap-2 mt-1">
-              <AgentStatusBadge status={agent.status} />
-              <Badge variant="outline">{agent.archetype.replace('_', ' ')}</Badge>
+              <AgentStatusBadge status={interviewer.status} />
+              <Badge variant="outline">{interviewer.archetype.replace('_', ' ')}</Badge>
             </div>
           </div>
         </div>
         
         <div className="flex items-center gap-2">
-          <Link to={`/app/interviewers/${agentId}`}>
+          <Link to={`/app/interviewers/${interviewerId}`}>
             <Button variant="outline">Cancel</Button>
           </Link>
           <Button onClick={handleSave} disabled={saving || !formData.name.trim()}>
@@ -363,7 +362,7 @@ export default function EditAgent() {
                   validation: { complete: true, issues: [] }
                 } : {
                   id: `guide-${Date.now()}`,
-                  agentId: agentId!,
+                  agentId: interviewerId!,
                   structured: newGuide,
                   validation: { complete: true, issues: [] }
                 });

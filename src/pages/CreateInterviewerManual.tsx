@@ -18,7 +18,7 @@ import { interviewersService, agentsService } from "@/services/interviewers";
 import { useToast } from "@/hooks/use-toast";
 import { RichTextEditor } from "@/components/RichTextEditor";
 
-interface CreateAgentForm {
+interface CreateInterviewerForm {
   projectTitle: string;
   projectDescription: string;
   engagementType: string;
@@ -174,10 +174,10 @@ const FieldError = ({ error }: { error?: string }) => {
   return <p className="text-xs text-destructive mt-1">{error}</p>;
 };
 
-export default function CreateAgent() {
+export default function CreateInterviewerManual() {
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
-  const [form, setForm] = useState<CreateAgentForm>({
+  const [form, setForm] = useState<CreateInterviewerForm>({
     projectTitle: "",
     projectDescription: "",
     engagementType: "internal-work",
@@ -206,7 +206,7 @@ export default function CreateAgent() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const updateForm = (updates: Partial<CreateAgentForm>) => {
+  const updateForm = (updates: Partial<CreateInterviewerForm>) => {
     setForm((prev) => ({ ...prev, ...updates }));
   };
 
@@ -252,7 +252,7 @@ export default function CreateAgent() {
   }, []);
 
   const handleFieldChange = (field: string, value: string) => {
-    updateForm({ [field]: value } as Partial<CreateAgentForm>);
+    updateForm({ [field]: value } as Partial<CreateInterviewerForm>);
     validateField(field, value);
   };
 
@@ -393,7 +393,7 @@ export default function CreateAgent() {
     updateForm({ knowledgeFiles: form.knowledgeFiles.filter((_, i) => i !== index) });
   };
 
-  const createAgent = async () => {
+  const createInterviewer = async () => {
     if (!form.archetype) return;
     setIsCreating(true);
     try {
@@ -1087,7 +1087,7 @@ Key Research Goals:
                   }}
                 >
                   <Button
-                    onClick={createAgent}
+                    onClick={createInterviewer}
                     disabled={!validateStep(currentStep) || isCreating}
                     className={!validateStep(currentStep) || isCreating ? "pointer-events-none" : ""}
                   >
