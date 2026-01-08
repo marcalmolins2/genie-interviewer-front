@@ -36,7 +36,6 @@ import {
   Search,
   Filter,
   Download,
-  TrendingUp,
   CheckCircle,
   XCircle,
   FileSliders,
@@ -252,7 +251,7 @@ ${reportData.metrics.topTopics.map((topic, i) => `${i + 1}. ${topic.name} (${top
 
 SLIDE 4: Recommendations
 • ${reportData.metrics.completionRate >= 70 ? 'Continue current strategy' : 'Optimize interview flow to improve completion rates'}
-• Focus on peak performance hours (${completionByHour.sort((a, b) => b.value - a.value)[0]?.name || 'N/A'})
+• Focus on high-engagement discussion topics
 • Consider expanding successful topic areas
     `.trim();
 
@@ -329,15 +328,6 @@ SLIDE 4: Recommendations
   };
 
   // Mock data for charts
-  const completionByHour = [
-    { name: '09:00', value: 8 },
-    { name: '10:00', value: 12 },
-    { name: '11:00', value: 15 },
-    { name: '14:00', value: 22 },
-    { name: '15:00', value: 18 },
-    { name: '16:00', value: 14 },
-  ];
-
   const topicsDiscussed = [
     { name: 'Product Features', value: 45 },
     { name: 'Pricing', value: 32 },
@@ -401,7 +391,7 @@ SLIDE 4: Recommendations
         {/* Cross-Session Insights Tab (Default) */}
         <TabsContent value="cross-session" className="space-y-6">
           {/* KPI Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Interviews</CardTitle>
@@ -444,35 +434,10 @@ SLIDE 4: Recommendations
                 </p>
               </CardContent>
             </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Revenue</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  ${(stats?.completedInterviews || 0) * interviewer.pricePerInterviewUsd}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  From completed interviews
-                </p>
-              </CardContent>
-            </Card>
           </div>
 
-          {/* Charts */}
+          {/* Key Themes & Topics */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Completion by Hour</CardTitle>
-                <CardDescription>When interviews are most successful</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <SimpleBarChart data={completionByHour} title="" />
-              </CardContent>
-            </Card>
-
             <Card>
               <CardHeader>
                 <CardTitle>Top Discussion Topics</CardTitle>
@@ -482,39 +447,14 @@ SLIDE 4: Recommendations
                 <SimpleBarChart data={topicsDiscussed} title="" />
               </CardContent>
             </Card>
-          </div>
-          {/* Sentiment Analysis & Key Themes */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Sentiment Analysis</CardTitle>
-                <CardDescription>Overall emotional tone of interviews</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">Positive</span>
-                    <Badge className="bg-success/10 text-success border-success/20">68%</Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">Neutral</span>
-                    <Badge variant="secondary">22%</Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">Negative</span>
-                    <Badge className="bg-destructive/10 text-destructive border-destructive/20">10%</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
 
             <Card>
               <CardHeader>
                 <CardTitle>Key Themes</CardTitle>
-                <CardDescription>Most discussed topics</CardDescription>
+                <CardDescription>Emerging patterns across sessions</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
+                <div className="flex flex-wrap gap-2">
                   <Badge>Product Quality</Badge>
                   <Badge>Customer Service</Badge>
                   <Badge>Pricing Concerns</Badge>
@@ -523,49 +463,22 @@ SLIDE 4: Recommendations
                 </div>
               </CardContent>
             </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Drop-off Points</CardTitle>
-                <CardDescription>Where interviews commonly end early</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="text-sm">
-                    <div className="font-medium">Question 3 (Demographics)</div>
-                    <div className="text-muted-foreground">15% drop-off rate</div>
-                  </div>
-                  <div className="text-sm">
-                    <div className="font-medium">Question 7 (Pricing)</div>
-                    <div className="text-muted-foreground">8% drop-off rate</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Recommendations</CardTitle>
-                <CardDescription>AI-generated suggestions</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3 text-sm">
-                  <div className="flex items-start gap-2">
-                    <div className="w-2 h-2 bg-primary rounded-full mt-1.5"></div>
-                    <div>Reduce demographics questions to improve completion rate</div>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <div className="w-2 h-2 bg-primary rounded-full mt-1.5"></div>
-                    <div>Schedule more interviews during 2-4 PM for better engagement</div>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <div className="w-2 h-2 bg-primary rounded-full mt-1.5"></div>
-                    <div>Follow up on pricing concerns with targeted questions</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
+
+          {/* Placeholder for future cross-session insights */}
+          <Card className="border-dashed">
+            <CardHeader>
+              <CardTitle className="text-muted-foreground">Cross-Session Q&A</CardTitle>
+              <CardDescription>Ask questions across all interview transcripts</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8 text-muted-foreground">
+                <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>Cross-session Q&A coming soon</p>
+                <p className="text-sm">Query insights across multiple interview sessions</p>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Sessions Tab */}
@@ -615,20 +528,6 @@ SLIDE 4: Recommendations
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Revenue</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  ${(stats?.completedInterviews || 0) * interviewer.pricePerInterviewUsd}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  From completed interviews
-                </p>
-              </CardContent>
-            </Card>
           </div>
           {/* Filters */}
           <div className="flex flex-col sm:flex-row gap-4">
