@@ -128,23 +128,6 @@ export function CreateProjectDialog({ open, onOpenChange, onProjectCreated }: Cr
               )}
             />
 
-            {isClientWork && (
-              <FormField
-                control={form.control}
-                name="caseCode"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Case Code</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., BCG-2024-001" {...field} />
-                    </FormControl>
-                    <FormDescription>A unique identifier for this project</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-
             <FormField
               control={form.control}
               name="projectType"
@@ -169,6 +152,23 @@ export function CreateProjectDialog({ open, onOpenChange, onProjectCreated }: Cr
                 </FormItem>
               )}
             />
+
+            {isClientWork && (
+              <FormField
+                control={form.control}
+                name="caseCode"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Case Code</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., BCG-2024-001" {...field} />
+                    </FormControl>
+                    <FormDescription>A unique identifier for this project</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <FormField
               control={form.control}
