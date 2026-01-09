@@ -85,7 +85,9 @@ export interface ProjectMembership {
 export interface Interviewer {
   id: string;
   projectId: string;
-  name: string;
+  title: string;                    // Interviewer title (e.g., "EU Battery Market Expert Interview")
+  description?: string;             // Optional description of the interviewer's purpose
+  name: string;                     // Agent persona name (e.g., "Sam")
   archetype: Archetype;
   status: InterviewerStatus;
   channel: Channel;

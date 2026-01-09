@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,26 +6,33 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Stepper } from "@/components/Stepper";
 import { ArchetypeCard } from "@/components/ArchetypeCard";
 import { ChannelSelector } from "@/components/ChannelSelector";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, ArrowRight, Upload, FileText, X, Check, AlertCircle, Edit } from "lucide-react";
+import { ArrowLeft, ArrowRight, Upload, FileText, X, AlertCircle, Edit, FolderOpen } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
-import { ARCHETYPES, Channel, Archetype, PRICE_BY_CHANNEL, GuideSchema } from "@/types";
+import { ARCHETYPES, Channel, Archetype, PRICE_BY_CHANNEL, GuideSchema, PROJECT_TYPE_LABELS, Project } from "@/types";
 import { interviewersService, agentsService } from "@/services/interviewers";
 import { useToast } from "@/hooks/use-toast";
 import { RichTextEditor } from "@/components/RichTextEditor";
+import { ProjectSelector } from "@/components/ProjectSelector";
+import { CreateProjectDialog } from "@/components/CreateProjectDialog";
+import { useProjectContext } from "@/pages/InterviewersLayout";
 
 interface CreateInterviewerForm {
-  projectTitle: string;
-  projectDescription: string;
-  engagementType: string;
+  // Step 0: Project Selection
+  selectedProjectId: string | null;
+  
+  // Step 1: Interviewer Identity & Configuration
+  title: string;
+  description: string;
   name: string;
   archetype: Archetype | null;
   language: string;
   voiceId: string;
+  
+  // Step 2: Interview Content
   channel: Channel;
   targetDuration: string;
   interviewContext: string;
@@ -38,6 +45,8 @@ interface CreateInterviewerForm {
   closeContext: string;
   knowledgeText: string;
   knowledgeFiles: File[];
+  
+  // Step 5: Deploy
   caseCode: string;
 }
 
@@ -57,16 +66,9 @@ const voices = [
   { value: "voice-4", label: "James (Authoritative)" },
 ];
 
-const engagementTypes = [
-  { value: "internal-work", label: "Internal work" },
-  { value: "commercial-proposal", label: "Commercial proposal" },
-  { value: "client-investment", label: "Client investment" },
-  { value: "client-work", label: "Client work" },
-];
-
 const steps = [
-  { id: "project", title: "Project details", description: "Basic information" },
-  { id: "interviewer", title: "Configure interviewer", description: "Archetype and voice" },
+  { id: "project", title: "Select Project", description: "Choose or create" },
+  { id: "interviewer", title: "Configure Interviewer", description: "Identity and archetype" },
   { id: "content", title: "Interview Content", description: "Guide and knowledge" },
   { id: "review", title: "Review", description: "Summary" },
   { id: "test", title: "Test", description: "Try before deploying" },
@@ -74,30 +76,30 @@ const steps = [
 ];
 
 // Validation helper functions
-const PROJECT_TITLE_PATTERN = /^[a-zA-Z0-9\s.,\-_'&()]+$/;
+const TITLE_PATTERN = /^[a-zA-Z0-9\s.,\-_'&()]+$/;
 const AGENT_NAME_PATTERN = /^[a-zA-Z\s-]*$/;
 
-const validateProjectTitle = (value: string): string => {
+const validateTitle = (value: string): string => {
   const trimmed = value.trim();
-  if (!trimmed) return "Project title is required";
-  if (trimmed.length < 3) return "Project title must be at least 3 characters";
-  if (trimmed.length > 80) return "Project title must be shorter than 80 characters";
-  if (!PROJECT_TITLE_PATTERN.test(trimmed)) return "Project title contains invalid characters";
+  if (!trimmed) return "Interviewer title is required";
+  if (trimmed.length < 3) return "Title must be at least 3 characters";
+  if (trimmed.length > 80) return "Title must be shorter than 80 characters";
+  if (!TITLE_PATTERN.test(trimmed)) return "Title contains invalid characters";
   return "";
 };
 
-const validateProjectDescription = (value: string): string => {
+const validateDescription = (value: string): string => {
   const trimmed = value.trim();
-  if (trimmed.length > 2000) return "Project description must be shorter than 2000 characters";
+  if (trimmed.length > 500) return "Description must be shorter than 500 characters";
   return "";
 };
 
 const validateAgentName = (value: string): string => {
   const trimmed = value.trim();
   if (!trimmed) return ""; // Optional field
-  if (trimmed.length < 2) return "Interviewer name must be at least 2 characters";
-  if (trimmed.length > 20) return "Interviewer name must be shorter than 20 characters";
-  if (!AGENT_NAME_PATTERN.test(trimmed)) return "Interviewer name can only contain letters, spaces, and dashes";
+  if (trimmed.length < 2) return "Agent name must be at least 2 characters";
+  if (trimmed.length > 20) return "Agent name must be shorter than 20 characters";
+  if (!AGENT_NAME_PATTERN.test(trimmed)) return "Agent name can only contain letters, spaces, and dashes";
   return "";
 };
 
@@ -175,12 +177,14 @@ const FieldError = ({ error }: { error?: string }) => {
 };
 
 export default function CreateInterviewerManual() {
+  const { selectedProjectId: sidebarProjectId, projects, refreshProjects } = useProjectContext();
+  
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [form, setForm] = useState<CreateInterviewerForm>({
-    projectTitle: "",
-    projectDescription: "",
-    engagementType: "internal-work",
+    selectedProjectId: sidebarProjectId,
+    title: "",
+    description: "",
     name: "",
     archetype: null,
     language: "en",
@@ -203,8 +207,18 @@ export default function CreateInterviewerManual() {
   const [isCreating, setIsCreating] = useState(false);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
+  const [showCreateProjectDialog, setShowCreateProjectDialog] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Pre-select project from sidebar if not already selected
+  useEffect(() => {
+    if (sidebarProjectId && !form.selectedProjectId) {
+      setForm(prev => ({ ...prev, selectedProjectId: sidebarProjectId }));
+    }
+  }, [sidebarProjectId]);
+
+  const selectedProject = projects.find(p => p.id === form.selectedProjectId);
 
   const updateForm = (updates: Partial<CreateInterviewerForm>) => {
     setForm((prev) => ({ ...prev, ...updates }));
@@ -213,11 +227,11 @@ export default function CreateInterviewerManual() {
   const validateField = useCallback((field: string, value: string) => {
     let error = "";
     switch (field) {
-      case "projectTitle":
-        error = validateProjectTitle(value);
+      case "title":
+        error = validateTitle(value);
         break;
-      case "projectDescription":
-        error = validateProjectDescription(value);
+      case "description":
+        error = validateDescription(value);
         break;
       case "name":
         error = validateAgentName(value);
@@ -259,9 +273,9 @@ export default function CreateInterviewerManual() {
   const validateStep = (step: number): boolean => {
     switch (step) {
       case 0:
-        return !validateProjectTitle(form.projectTitle) && !validateProjectDescription(form.projectDescription);
+        return form.selectedProjectId !== null;
       case 1:
-        return form.archetype !== null && !validateAgentName(form.name);
+        return !validateTitle(form.title) && !validateDescription(form.description) && form.archetype !== null && !validateAgentName(form.name);
       case 2: {
         const durationValid = !validateTargetDuration(form.targetDuration);
         const interviewContextValid = !validateInterviewContext(form.interviewContext);
@@ -298,13 +312,14 @@ export default function CreateInterviewerManual() {
 
     switch (step) {
       case 0: {
-        const titleError = validateProjectTitle(form.projectTitle);
-        const descError = validateProjectDescription(form.projectDescription);
-        if (titleError) missingFields.push(titleError);
-        if (descError) missingFields.push(descError);
+        if (!form.selectedProjectId) missingFields.push("Please select a project");
         break;
       }
       case 1: {
+        const titleError = validateTitle(form.title);
+        const descError = validateDescription(form.description);
+        if (titleError) missingFields.push(titleError);
+        if (descError) missingFields.push(descError);
         if (!form.archetype) missingFields.push("Archetype selection is required");
         const nameError = validateAgentName(form.name);
         if (nameError) missingFields.push(nameError);
@@ -363,7 +378,7 @@ export default function CreateInterviewerManual() {
     if (!validateStep(0)) {
       toast({
         title: "Cannot save draft",
-        description: "Please complete the project details first.",
+        description: "Please select a project first.",
         variant: "destructive",
       });
       return;
@@ -393,12 +408,18 @@ export default function CreateInterviewerManual() {
     updateForm({ knowledgeFiles: form.knowledgeFiles.filter((_, i) => i !== index) });
   };
 
+  const handleProjectCreated = async (projectId: string) => {
+    await refreshProjects();
+    updateForm({ selectedProjectId: projectId });
+  };
+
   const createInterviewer = async () => {
-    if (!form.archetype) return;
+    if (!form.archetype || !form.selectedProjectId) return;
     setIsCreating(true);
     try {
+      // TODO: Update service to accept projectId, title, description when backend supports it
       const agent = await agentsService.createAgent({
-        name: form.name,
+        name: form.name || form.title, // Use title as fallback for name
         archetype: form.archetype,
         language: form.language,
         voiceId: form.voiceId,
@@ -420,61 +441,24 @@ export default function CreateInterviewerManual() {
         return (
           <div className="space-y-6 max-w-2xl mx-auto">
             <div>
-              <h2 className="text-2xl font-bold mb-2">Project Details</h2>
-              <p className="text-muted-foreground">Provide basic information about your interview project.</p>
+              <h2 className="text-2xl font-bold mb-2">Select Project</h2>
+              <p className="text-muted-foreground">
+                Choose which project this interviewer belongs to, or create a new project.
+              </p>
             </div>
-            <Card>
-              <CardContent className="space-y-4 pt-6">
-                <div>
-                  <Label htmlFor="projectTitle">Project Title *</Label>
-                  <Input
-                    id="projectTitle"
-                    value={form.projectTitle}
-                    onChange={(e) => handleFieldChange("projectTitle", e.target.value)}
-                    placeholder="e.g., EU Battery Market Research 2024"
-                    className={`mt-1 ${fieldErrors.projectTitle ? "border-destructive" : ""}`}
-                    maxLength={80}
-                  />
-                  <CharacterCounter current={form.projectTitle.length} max={80} error={fieldErrors.projectTitle} />
-                </div>
-                <div>
-                  <Label htmlFor="projectDescription">Project Description</Label>
-                  <Textarea
-                    id="projectDescription"
-                    value={form.projectDescription}
-                    onChange={(e) => handleFieldChange("projectDescription", e.target.value)}
-                    placeholder="Describe the purpose and scope of this project..."
-                    className={`mt-1 min-h-[100px] ${fieldErrors.projectDescription ? "border-destructive" : ""}`}
-                    maxLength={2000}
-                  />
-                  <CharacterCounter
-                    current={form.projectDescription.length}
-                    max={2000}
-                    error={fieldErrors.projectDescription}
-                  />
-                </div>
-                <div>
-                  <Label>Engagement Type *</Label>
-                  <ToggleGroup
-                    type="single"
-                    value={form.engagementType}
-                    onValueChange={(value) => value && updateForm({ engagementType: value })}
-                    className="mt-2 justify-start w-full"
-                  >
-                    {engagementTypes.map((type) => (
-                      <ToggleGroupItem
-                        key={type.value}
-                        value={type.value}
-                        variant="outline"
-                        className="flex-1 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-                      >
-                        {type.label}
-                      </ToggleGroupItem>
-                    ))}
-                  </ToggleGroup>
-                </div>
-              </CardContent>
-            </Card>
+            
+            <ProjectSelector
+              projects={projects}
+              selectedProjectId={form.selectedProjectId}
+              onProjectSelect={(id) => updateForm({ selectedProjectId: id })}
+              onCreateProject={() => setShowCreateProjectDialog(true)}
+            />
+
+            <CreateProjectDialog
+              open={showCreateProjectDialog}
+              onOpenChange={setShowCreateProjectDialog}
+              onProjectCreated={handleProjectCreated}
+            />
           </div>
         );
 
@@ -484,9 +468,47 @@ export default function CreateInterviewerManual() {
             <div>
               <h2 className="text-2xl font-bold mb-2">Configure Interviewer</h2>
               <p className="text-muted-foreground">
-                Select the interview archetype and configure the agent's voice and language.
+                Define your interviewer's identity and select an archetype.
               </p>
             </div>
+
+            {/* Interviewer Identity */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Interviewer Identity</CardTitle>
+                <CardDescription>
+                  Give your interviewer a clear title and description to help identify its purpose.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="title">Interviewer Title *</Label>
+                  <Input
+                    id="title"
+                    value={form.title}
+                    onChange={(e) => handleFieldChange("title", e.target.value)}
+                    placeholder="e.g., EU Battery Market Expert Interview"
+                    className={`mt-1 ${fieldErrors.title ? "border-destructive" : ""}`}
+                    maxLength={80}
+                  />
+                  <CharacterCounter current={form.title.length} max={80} error={fieldErrors.title} />
+                </div>
+                <div>
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={form.description}
+                    onChange={(e) => handleFieldChange("description", e.target.value)}
+                    placeholder="Describe what this interviewer is designed to accomplish..."
+                    className={`mt-1 min-h-[100px] ${fieldErrors.description ? "border-destructive" : ""}`}
+                    maxLength={500}
+                  />
+                  <CharacterCounter current={form.description.length} max={500} error={fieldErrors.description} />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Archetype Selection */}
             <div>
               <h3 className="text-lg font-semibold mb-3">Choose Archetype *</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -500,9 +522,11 @@ export default function CreateInterviewerManual() {
                 ))}
               </div>
             </div>
+
+            {/* Agent Persona */}
             <Card>
               <CardHeader>
-                <CardTitle>Agent Configuration</CardTitle>
+                <CardTitle>Agent Persona</CardTitle>
                 <CardDescription>Configure the agent's name, language, and voice</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -823,30 +847,37 @@ Key Research Goals:
               <h2 className="text-2xl font-bold mb-2">Review Configuration</h2>
               <p className="text-muted-foreground">Review all details before testing.</p>
             </div>
+
+            {/* Project Card */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                <CardTitle>Project Details</CardTitle>
+                <CardTitle>Project</CardTitle>
                 <Button variant="ghost" size="sm" onClick={() => goToStep(0)} className="gap-2">
                   <Edit className="h-4 w-4" />
                   Edit
                 </Button>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label className="text-muted-foreground">Project Title</Label>
-                  <p className="font-medium">{form.projectTitle}</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Project Description</Label>
-                  <p className="font-medium">{form.projectDescription || "Not provided"}</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Engagement Type</Label>
-                  <p className="font-medium">{engagementTypes.find((t) => t.value === form.engagementType)?.label}</p>
-                </div>
+              <CardContent>
+                {selectedProject && (
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-muted">
+                      <FolderOpen className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <p className="font-medium">{selectedProject.name}</p>
+                      <Badge variant="secondary" className="mt-1">
+                        {PROJECT_TYPE_LABELS[selectedProject.projectType]}
+                      </Badge>
+                      {selectedProject.caseCode && (
+                        <p className="text-xs text-muted-foreground mt-1">{selectedProject.caseCode}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
+            {/* Interviewer Configuration Card */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                 <CardTitle>Interviewer Configuration</CardTitle>
@@ -856,6 +887,14 @@ Key Research Goals:
                 </Button>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div>
+                  <Label className="text-muted-foreground">Title</Label>
+                  <p className="font-medium">{form.title}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Description</Label>
+                  <p className="font-medium">{form.description || "Not provided"}</p>
+                </div>
                 <div>
                   <Label className="text-muted-foreground">Archetype</Label>
                   <p className="font-medium">{archetype?.title}</p>
@@ -1030,7 +1069,7 @@ Key Research Goals:
     <div className="min-h-screen bg-background">
       <div className="border-b bg-card">
         <div className="container mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold">Create New Agent</h1>
+          <h1 className="text-3xl font-bold">Create New Interviewer</h1>
           <p className="text-muted-foreground mt-1">Follow the steps to configure and deploy your interview agent</p>
         </div>
       </div>
