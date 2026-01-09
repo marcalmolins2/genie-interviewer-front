@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { InterviewerStatusBadge } from '@/components/InterviewerStatusBadge';
-import { Plus, Search, MoreHorizontal, Edit, Phone, Globe, Users, Archive as ArchiveIcon, Trash2, Filter } from 'lucide-react';
+import { Plus, Search, MoreHorizontal, Edit, Phone, Globe, Users, Archive as ArchiveIcon, Trash2, Filter, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, Check } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -20,6 +20,16 @@ import { useToast } from '@/hooks/use-toast';
 import { useProjectContext } from './InterviewersLayout';
 import { cn } from '@/lib/utils';
 
+type SortField = 'name' | 'createdAt' | 'lastInterview' | 'lastModified';
+type SortDirection = 'asc' | 'desc';
+
+interface SortOption {
+  field: SortField;
+  direction: SortDirection;
+  label: string;
+  icon: typeof ArrowUp;
+}
+
 const channelIcons: Record<Channel, typeof Phone> = {
   inbound_call: Phone,
   web_link: Globe
@@ -27,7 +37,28 @@ const channelIcons: Record<Channel, typeof Phone> = {
 
 interface InterviewerWithProject extends Agent {
   project?: Project;
+  lastInterviewDate?: string | null;
 }
+
+const SORT_OPTIONS: SortOption[] = [
+  { field: 'name', direction: 'asc', label: 'Name (A → Z)', icon: ArrowUp },
+  { field: 'name', direction: 'desc', label: 'Name (Z → A)', icon: ArrowDown },
+  { field: 'createdAt', direction: 'desc', label: 'Created (Newest)', icon: ArrowDown },
+  { field: 'createdAt', direction: 'asc', label: 'Created (Oldest)', icon: ArrowUp },
+  { field: 'lastInterview', direction: 'desc', label: 'Last Interview (Recent)', icon: ArrowDown },
+  { field: 'lastInterview', direction: 'asc', label: 'Last Interview (Oldest)', icon: ArrowUp },
+  { field: 'lastModified', direction: 'desc', label: 'Modified (Recent)', icon: ArrowDown },
+  { field: 'lastModified', direction: 'asc', label: 'Modified (Oldest)', icon: ArrowUp },
+];
+
+const getSortLabel = (field: SortField): string => {
+  switch (field) {
+    case 'name': return 'Name';
+    case 'createdAt': return 'Created';
+    case 'lastInterview': return 'Last Interview';
+    case 'lastModified': return 'Modified';
+  }
+};
 
 export default function InterviewersList() {
   const [interviewers, setInterviewers] = useState<InterviewerWithProject[]>([]);
@@ -39,6 +70,8 @@ export default function InterviewersList() {
   const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
   const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
   const [selectedInterviewerId, setSelectedInterviewerId] = useState<string | null>(null);
+  const [sortField, setSortField] = useState<SortField>('createdAt');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const navigate = useNavigate();
   const { toast } = useToast();
   const { selectedProjectId, projects } = useProjectContext();
@@ -50,16 +83,26 @@ export default function InterviewersList() {
   const loadInterviewers = async () => {
     try {
       const data = await agentsService.getAgents();
-      // Attach project info to interviewers based on mock data mapping
-      const interviewersWithProjects = data.map(interviewer => ({
-        ...interviewer,
-        project: projects.find(p => {
-          // Map mock agents to mock projects for demo
-          if (['agent-genai-strategy', 'agent-1'].includes(interviewer.id)) return p.id === 'project-1';
-          if (['agent-2', 'agent-3'].includes(interviewer.id)) return p.id === 'project-2';
-          if (['agent-4', 'agent-web-link'].includes(interviewer.id)) return p.id === 'project-3';
-          return false;
-        })
+      // Attach project info and last interview date to interviewers
+      const interviewersWithProjects = await Promise.all(data.map(async (interviewer) => {
+        // Get sessions for this interviewer to find last interview date
+        const interviews = await agentsService.getAgentInterviews(interviewer.id);
+        const liveInterviews = interviews.filter(i => i.completed);
+        const lastInterview = liveInterviews.sort((a, b) => 
+          new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime()
+        )[0];
+        
+        return {
+          ...interviewer,
+          project: projects.find(p => {
+            // Map mock agents to mock projects for demo
+            if (['agent-genai-strategy', 'agent-1'].includes(interviewer.id)) return p.id === 'project-1';
+            if (['agent-2', 'agent-3'].includes(interviewer.id)) return p.id === 'project-2';
+            if (['agent-4', 'agent-web-link'].includes(interviewer.id)) return p.id === 'project-3';
+            return false;
+          }),
+          lastInterviewDate: lastInterview?.startedAt || null
+        };
       }));
       setInterviewers(interviewersWithProjects);
     } catch (error) {
@@ -129,8 +172,39 @@ export default function InterviewersList() {
       );
     }
 
+    // Apply sorting
+    filtered.sort((a, b) => {
+      let comparison = 0;
+      
+      switch (sortField) {
+        case 'name':
+          comparison = a.name.localeCompare(b.name);
+          break;
+        case 'createdAt':
+          comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          break;
+        case 'lastInterview': {
+          const aDate = a.lastInterviewDate ? new Date(a.lastInterviewDate).getTime() : 0;
+          const bDate = b.lastInterviewDate ? new Date(b.lastInterviewDate).getTime() : 0;
+          // Push items without interviews to the end when sorting descending
+          if (!a.lastInterviewDate && b.lastInterviewDate) return sortDirection === 'desc' ? 1 : -1;
+          if (a.lastInterviewDate && !b.lastInterviewDate) return sortDirection === 'desc' ? -1 : 1;
+          comparison = aDate - bDate;
+          break;
+        }
+        case 'lastModified': {
+          const aModified = a.updatedAt ? new Date(a.updatedAt).getTime() : new Date(a.createdAt).getTime();
+          const bModified = b.updatedAt ? new Date(b.updatedAt).getTime() : new Date(b.createdAt).getTime();
+          comparison = aModified - bModified;
+          break;
+        }
+      }
+      
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+
     return filtered;
-  }, [interviewers, searchQuery, selectedStatuses, selectedChannels, selectedArchetypes, selectedProjectId, selectedProjects]);
+  }, [interviewers, searchQuery, selectedStatuses, selectedChannels, selectedArchetypes, selectedProjectId, selectedProjects, sortField, sortDirection]);
 
 
   const handleActivate = async (interviewer: Agent) => {
@@ -338,6 +412,42 @@ export default function InterviewersList() {
         </div>
         
         <div className="flex gap-2">
+          {/* Sort dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                {sortDirection === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
+                <span className="hidden sm:inline">Sort:</span> {getSortLabel(sortField)}
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-52">
+              {SORT_OPTIONS.map((option, index) => {
+                const isSelected = sortField === option.field && sortDirection === option.direction;
+                const Icon = option.icon;
+                const showSeparator = index === 1 || index === 3 || index === 5;
+                return (
+                  <React.Fragment key={`${option.field}-${option.direction}`}>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setSortField(option.field);
+                        setSortDirection(option.direction);
+                      }}
+                      className="flex items-center justify-between"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Icon className="h-4 w-4" />
+                        {option.label}
+                      </span>
+                      {isSelected && <Check className="h-4 w-4" />}
+                    </DropdownMenuItem>
+                    {showSeparator && <DropdownMenuSeparator />}
+                  </React.Fragment>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" size="icon" className="relative">
