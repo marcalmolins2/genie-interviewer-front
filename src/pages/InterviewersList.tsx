@@ -88,6 +88,14 @@ export default function InterviewersList() {
     }
   }, [projects]);
 
+  // Base interviewers count (before search/filters, respects project selection)
+  const baseInterviewers = useMemo(() => {
+    if (selectedProjectId) {
+      return interviewers.filter(i => i.project?.id === selectedProjectId);
+    }
+    return interviewers;
+  }, [interviewers, selectedProjectId]);
+
   const filteredInterviewers = useMemo(() => {
     let filtered = interviewers.filter(interviewer => 
       interviewer.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -515,6 +523,15 @@ export default function InterviewersList() {
             </PopoverContent>
           </Popover>
         </div>
+      </div>
+
+      {/* Results count */}
+      <div className="text-sm text-muted-foreground">
+        {filteredInterviewers.length === baseInterviewers.length ? (
+          <span>{baseInterviewers.length} interviewer{baseInterviewers.length !== 1 ? 's' : ''}</span>
+        ) : (
+          <span>Showing {filteredInterviewers.length} of {baseInterviewers.length} interviewer{baseInterviewers.length !== 1 ? 's' : ''}</span>
+        )}
       </div>
 
       {/* Interviewers */}
