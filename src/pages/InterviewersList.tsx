@@ -87,7 +87,7 @@ export default function InterviewersList() {
       const interviewersWithProjects = await Promise.all(data.map(async (interviewer) => {
         // Get sessions for this interviewer to find last interview date
         const interviews = await agentsService.getAgentInterviews(interviewer.id);
-        const liveInterviews = interviews.filter(i => i.completed);
+        const liveInterviews = interviews.filter(i => i.completed && i.conversationType === 'live');
         const lastInterview = liveInterviews.sort((a, b) => 
           new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime()
         )[0];

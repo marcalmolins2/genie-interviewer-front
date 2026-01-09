@@ -625,6 +625,7 @@ const mockInterviews: InterviewSummary[] = [
     durationSec: 2834,
     channel: 'inbound_call',
     completed: true,
+    conversationType: 'live',
     respondentId: 'resp-genai-1'
   },
   {
@@ -634,6 +635,7 @@ const mockInterviews: InterviewSummary[] = [
     durationSec: 3156,
     channel: 'inbound_call',
     completed: true,
+    conversationType: 'live',
     respondentId: 'resp-genai-2'
   },
   {
@@ -643,6 +645,7 @@ const mockInterviews: InterviewSummary[] = [
     durationSec: 2945,
     channel: 'inbound_call',
     completed: false,
+    conversationType: 'live',
     respondentId: 'resp-genai-3'
   },
   {
@@ -652,6 +655,7 @@ const mockInterviews: InterviewSummary[] = [
     durationSec: 1847,
     channel: 'inbound_call',
     completed: true,
+    conversationType: 'live',
     respondentId: 'resp-1'
   },
   {
@@ -661,6 +665,7 @@ const mockInterviews: InterviewSummary[] = [
     durationSec: 325,
     channel: 'inbound_call',
     completed: true,
+    conversationType: 'live',
     respondentId: 'resp-2'
   }
 ];
