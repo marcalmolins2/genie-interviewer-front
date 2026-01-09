@@ -384,6 +384,7 @@ export interface Agent {
   name: string;
   archetype: Archetype;
   createdAt: string;
+  updatedAt?: string;
   status: AgentStatus;
   language: string;
   voiceId?: string;
