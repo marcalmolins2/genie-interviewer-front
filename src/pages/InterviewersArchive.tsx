@@ -16,6 +16,8 @@ import { agentsService } from "@/services/interviewers";
 import { toast } from "@/hooks/use-toast";
 import { InterviewerStatusBadge } from "@/components/InterviewerStatusBadge";
 import { useProjectContext } from "./InterviewersLayout";
+import { useInterviewerSort } from "@/hooks/useInterviewerSort";
+import { InterviewerSortDropdown } from "@/components/InterviewerSortDropdown";
 
 interface ArchivedInterviewerWithLastDate extends Agent {
   lastInterviewDate?: string | null;
@@ -40,6 +42,9 @@ const InterviewersArchive = () => {
   const [selectedChannels, setSelectedChannels] = useState<Channel[]>([]);
   const [selectedArchetypes, setSelectedArchetypes] = useState<string[]>([]);
   const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
+
+  // Sorting
+  const { sortField, sortDirection, setSortField, setSortDirection, sortOptions, sortItems, getSortLabel } = useInterviewerSort('archive');
 
   const loadArchivedInterviewers = async () => {
     try {
@@ -106,8 +111,9 @@ const InterviewersArchive = () => {
       filtered = filtered.filter(i => i.project?.id && selectedProjects.includes(i.project.id));
     }
 
-    return filtered;
-  }, [interviewers, searchQuery, selectedChannels, selectedArchetypes, selectedProjects]);
+    // Apply sorting
+    return sortItems(filtered);
+  }, [interviewers, searchQuery, selectedChannels, selectedArchetypes, selectedProjects, sortField, sortDirection, sortItems]);
 
   const activeFilterCount = selectedChannels.length + selectedArchetypes.length + selectedProjects.length;
 
@@ -174,7 +180,19 @@ const InterviewersArchive = () => {
           />
         </div>
 
-        <Popover>
+        <div className="flex gap-2">
+          <InterviewerSortDropdown
+            sortField={sortField}
+            sortDirection={sortDirection}
+            sortOptions={sortOptions}
+            onSortChange={(field, direction) => {
+              setSortField(field);
+              setSortDirection(direction);
+            }}
+            getSortLabel={getSortLabel}
+          />
+
+          <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" size="icon" className="relative">
               <Filter className="h-4 w-4" />
@@ -318,6 +336,7 @@ const InterviewersArchive = () => {
             </div>
           </PopoverContent>
         </Popover>
+        </div>
       </div>
 
       {interviewers.length === 0 ? (
