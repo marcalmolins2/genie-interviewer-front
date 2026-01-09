@@ -36,6 +36,7 @@ export default function InterviewersList() {
   const [selectedStatuses, setSelectedStatuses] = useState<AgentStatus[]>([]);
   const [selectedChannels, setSelectedChannels] = useState<Channel[]>([]);
   const [selectedArchetypes, setSelectedArchetypes] = useState<string[]>([]);
+  const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
   const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
   const [selectedInterviewerId, setSelectedInterviewerId] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -113,8 +114,15 @@ export default function InterviewersList() {
       filtered = filtered.filter(interviewer => selectedArchetypes.includes(interviewer.archetype));
     }
 
+    // Apply project filter (only when viewing all interviewers, not when a specific project is selected)
+    if (!selectedProjectId && selectedProjects.length > 0) {
+      filtered = filtered.filter(interviewer => 
+        interviewer.project?.id && selectedProjects.includes(interviewer.project.id)
+      );
+    }
+
     return filtered;
-  }, [interviewers, searchQuery, selectedStatuses, selectedChannels, selectedArchetypes, selectedProjectId]);
+  }, [interviewers, searchQuery, selectedStatuses, selectedChannels, selectedArchetypes, selectedProjectId, selectedProjects]);
 
 
   const handleActivate = async (interviewer: Agent) => {
@@ -326,9 +334,9 @@ export default function InterviewersList() {
             <PopoverTrigger asChild>
               <Button variant="outline" size="icon" className="relative">
                 <Filter className="h-4 w-4" />
-                {(selectedStatuses.length > 0 || selectedChannels.length > 0 || selectedArchetypes.length > 0) && (
+                {(selectedStatuses.length > 0 || selectedChannels.length > 0 || selectedArchetypes.length > 0 || selectedProjects.length > 0) && (
                   <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-[10px] font-medium text-primary-foreground flex items-center justify-center">
-                    {selectedStatuses.length + selectedChannels.length + selectedArchetypes.length}
+                    {selectedStatuses.length + selectedChannels.length + selectedArchetypes.length + selectedProjects.length}
                   </span>
                 )}
               </Button>
@@ -337,7 +345,7 @@ export default function InterviewersList() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <h4 className="font-medium text-sm">Filters</h4>
-                  {(selectedStatuses.length > 0 || selectedChannels.length > 0 || selectedArchetypes.length > 0) && (
+                  {(selectedStatuses.length > 0 || selectedChannels.length > 0 || selectedArchetypes.length > 0 || selectedProjects.length > 0) && (
                     <Button
                       variant="ghost"
                       size="sm"
@@ -346,6 +354,7 @@ export default function InterviewersList() {
                         setSelectedStatuses([]);
                         setSelectedChannels([]);
                         setSelectedArchetypes([]);
+                        setSelectedProjects([]);
                       }}
                     >
                       Clear all
@@ -463,6 +472,44 @@ export default function InterviewersList() {
                       </div>
                     </AccordionContent>
                   </AccordionItem>
+
+                  {/* Project Filter - only show when viewing all interviewers */}
+                  {!selectedProjectId && (
+                    <AccordionItem value="project" className="border-0">
+                      <AccordionTrigger className="py-2 hover:no-underline">
+                        <div className="flex items-center justify-between w-full pr-2">
+                          <span className="text-sm font-medium">Project</span>
+                          {selectedProjects.length > 0 && (
+                            <Badge variant="secondary" className="ml-2 px-1.5 min-w-5 h-5 text-xs">
+                              {selectedProjects.length}
+                            </Badge>
+                          )}
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="pb-3">
+                        <div className="space-y-2 pt-2 max-h-48 overflow-y-auto">
+                          {projects.map((project) => (
+                            <div key={project.id} className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`project-${project.id}`}
+                                checked={selectedProjects.includes(project.id)}
+                                onCheckedChange={(checked) => {
+                                  setSelectedProjects(
+                                    checked
+                                      ? [...selectedProjects, project.id]
+                                      : selectedProjects.filter((p) => p !== project.id)
+                                  );
+                                }}
+                              />
+                              <Label htmlFor={`project-${project.id}`} className="text-sm font-normal cursor-pointer">
+                                {project.name}
+                              </Label>
+                            </div>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  )}
                 </Accordion>
               </div>
             </PopoverContent>
