@@ -8,13 +8,12 @@ import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { InterviewerStatusBadge } from '@/components/InterviewerStatusBadge';
-import { Plus, Search, MoreHorizontal, Edit, Phone, Globe, Users, Archive as ArchiveIcon, Trash2, Filter, ChevronDown, ChevronRight, FolderOpen } from 'lucide-react';
+import { Plus, Search, MoreHorizontal, Edit, Phone, Globe, Users, Archive as ArchiveIcon, Trash2, Filter } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Agent, Channel, AgentStatus, Project, PROJECT_TYPE_LABELS } from '@/types';
 import { interviewersService, agentsService } from '@/services/interviewers';
 import { useToast } from '@/hooks/use-toast';
@@ -39,7 +38,6 @@ export default function InterviewersList() {
   const [selectedArchetypes, setSelectedArchetypes] = useState<string[]>([]);
   const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
   const [selectedInterviewerId, setSelectedInterviewerId] = useState<string | null>(null);
-  const [collapsedProjects, setCollapsedProjects] = useState<Set<string>>(new Set());
   const navigate = useNavigate();
   const { toast } = useToast();
   const { selectedProjectId, projects } = useProjectContext();
@@ -118,41 +116,6 @@ export default function InterviewersList() {
     return filtered;
   }, [interviewers, searchQuery, selectedStatuses, selectedChannels, selectedArchetypes, selectedProjectId]);
 
-  // Group interviewers by project (only when showing all)
-  const groupedInterviewers = useMemo(() => {
-    if (selectedProjectId) {
-      return null; // Don't group when a specific project is selected
-    }
-
-    const groups: { project: Project | null; interviewers: InterviewerWithProject[] }[] = [];
-    const projectMap = new Map<string | null, InterviewerWithProject[]>();
-
-    filteredInterviewers.forEach(interviewer => {
-      const key = interviewer.project?.id || null;
-      if (!projectMap.has(key)) {
-        projectMap.set(key, []);
-      }
-      projectMap.get(key)!.push(interviewer);
-    });
-
-    // Sort by project name, unassigned last
-    const sortedKeys = Array.from(projectMap.keys()).sort((a, b) => {
-      if (a === null) return 1;
-      if (b === null) return -1;
-      const projectA = projects.find(p => p.id === a);
-      const projectB = projects.find(p => p.id === b);
-      return (projectA?.name || '').localeCompare(projectB?.name || '');
-    });
-
-    sortedKeys.forEach(key => {
-      groups.push({
-        project: key ? projects.find(p => p.id === key) || null : null,
-        interviewers: projectMap.get(key)!
-      });
-    });
-
-    return groups;
-  }, [filteredInterviewers, selectedProjectId, projects]);
 
   const handleActivate = async (interviewer: Agent) => {
     try {
@@ -226,19 +189,6 @@ export default function InterviewersList() {
       year: 'numeric'
     });
   };
-
-  const toggleProjectCollapse = (projectId: string) => {
-    setCollapsedProjects(prev => {
-      const next = new Set(prev);
-      if (next.has(projectId)) {
-        next.delete(projectId);
-      } else {
-        next.add(projectId);
-      }
-      return next;
-    });
-  };
-
   const selectedProject = selectedProjectId ? projects.find(p => p.id === selectedProjectId) : null;
 
   const renderInterviewerCard = (interviewer: InterviewerWithProject) => {
@@ -545,58 +495,9 @@ export default function InterviewersList() {
             </Link>
           )}
         </Card>
-      ) : selectedProjectId || !groupedInterviewers ? (
-        // Flat grid when specific project is selected
+      ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredInterviewers.map(renderInterviewerCard)}
-        </div>
-      ) : (
-        // Grouped by project when showing all
-        <div className="space-y-8">
-          {groupedInterviewers.map(({ project, interviewers: groupInterviewers }) => (
-            <Collapsible 
-              key={project?.id || 'unassigned'} 
-              open={!collapsedProjects.has(project?.id || 'unassigned')}
-              onOpenChange={() => toggleProjectCollapse(project?.id || 'unassigned')}
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <CollapsibleTrigger asChild>
-                  <Button variant="ghost" size="sm" className="p-0 h-auto hover:bg-transparent">
-                    {collapsedProjects.has(project?.id || 'unassigned') ? (
-                      <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                    ) : (
-                      <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                    )}
-                  </Button>
-                </CollapsibleTrigger>
-                <div className="flex items-center gap-2">
-                  <FolderOpen className="h-5 w-5 text-muted-foreground" />
-                  <h2 className="text-lg font-semibold">
-                    {project?.name || 'Unassigned'}
-                  </h2>
-                  {project && (
-                    <>
-                      <Badge variant="secondary" className="text-xs">
-                        {project.caseCode}
-                      </Badge>
-                      <Badge variant="outline" className="text-xs">
-                        {PROJECT_TYPE_LABELS[project.projectType]}
-                      </Badge>
-                    </>
-                  )}
-                  <span className="text-sm text-muted-foreground ml-2">
-                    {groupInterviewers.length} interviewer{groupInterviewers.length !== 1 ? 's' : ''}
-                  </span>
-                </div>
-              </div>
-              
-              <CollapsibleContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pl-8">
-                  {groupInterviewers.map(renderInterviewerCard)}
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
-          ))}
         </div>
       )}
 
