@@ -101,6 +101,8 @@ export const mockInterviewers: Interviewer[] = [
   {
     id: 'interviewer-1',
     projectId: 'project-1',
+    title: 'Retail Customer Experience Study',
+    description: 'Understanding customer pain points and satisfaction levels across retail touchpoints',
     name: 'Customer Experience Bot',
     archetype: 'customer_user',
     status: 'published',
@@ -116,6 +118,8 @@ export const mockInterviewers: Interviewer[] = [
   {
     id: 'interviewer-2',
     projectId: 'project-1',
+    title: 'Store Manager Leadership Insights',
+    description: 'Gathering perspectives from store managers on operational challenges and team dynamics',
     name: 'Store Manager Insights',
     archetype: 'client_stakeholder',
     status: 'published',
@@ -132,6 +136,8 @@ export const mockInterviewers: Interviewer[] = [
   {
     id: 'interviewer-3',
     projectId: 'project-2',
+    title: 'Medical Device Technology Deep Dive',
+    description: 'Technical validation interviews with medical device engineers and specialists',
     name: 'Medical Device Expert',
     archetype: 'expert_deep_dive',
     status: 'published',
@@ -147,6 +153,8 @@ export const mockInterviewers: Interviewer[] = [
   {
     id: 'interviewer-4',
     projectId: 'project-2',
+    title: 'Patient Experience Feedback',
+    description: 'Collecting patient feedback on healthcare service quality and outcomes',
     name: 'Patient Feedback',
     archetype: 'customer_user',
     status: 'draft',
@@ -163,6 +171,8 @@ export const mockInterviewers: Interviewer[] = [
   {
     id: 'interviewer-5',
     projectId: 'project-3',
+    title: 'Fintech Due Diligence Research',
+    description: 'Investigative interviews for fintech market analysis and competitive positioning',
     name: 'Fintech DD Expert',
     archetype: 'investigative',
     status: 'published',
@@ -178,6 +188,8 @@ export const mockInterviewers: Interviewer[] = [
   {
     id: 'interviewer-6',
     projectId: 'project-3',
+    title: 'Quick Market Sentiment Survey',
+    description: 'Rapid pulse check on market trends and investor sentiment',
     name: 'Market Analysis',
     archetype: 'rapid_survey',
     status: 'archived',
