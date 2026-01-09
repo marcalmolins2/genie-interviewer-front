@@ -7,7 +7,7 @@ const CURRENT_USER_ID = 'user-1';
 
 export interface CreateProjectInput {
   name: string;
-  caseCode: string;
+  caseCode?: string;
   projectType: ProjectType;
   description?: string;
 }

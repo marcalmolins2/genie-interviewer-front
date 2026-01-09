@@ -51,12 +51,15 @@ const formSchema = z.object({
   name: z.string().min(1, 'Project name is required').max(100),
   caseCode: z
     .string()
-    .min(1, 'Case code is required')
     .max(20)
-    .regex(/^[A-Za-z0-9-]+$/, 'Only letters, numbers, and hyphens allowed'),
+    .regex(/^[A-Za-z0-9-]*$/, 'Only letters, numbers, and hyphens allowed')
+    .optional(),
   projectType: z.enum(['internal_work', 'commercial_proposal', 'client_investment', 'client_work'] as const),
   description: z.string().max(500).optional(),
-});
+}).refine(
+  (data) => data.projectType !== 'client_work' || (data.caseCode && data.caseCode.length > 0),
+  { message: 'Case code is required for client work', path: ['caseCode'] }
+);
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -91,16 +94,26 @@ export function ProjectSettingsDialog({
     },
   });
 
+  const projectType = form.watch('projectType');
+  const isClientWork = projectType === 'client_work';
+
   useEffect(() => {
     if (project) {
       form.reset({
         name: project.name,
-        caseCode: project.caseCode,
+        caseCode: project.caseCode || '',
         projectType: project.projectType,
         description: project.description || '',
       });
     }
   }, [project, form]);
+
+  // Clear caseCode when switching away from client_work
+  useEffect(() => {
+    if (!isClientWork) {
+      form.setValue('caseCode', '');
+    }
+  }, [isClientWork, form]);
 
   const onSubmit = async (values: FormValues) => {
     if (!project) return;
@@ -184,20 +197,22 @@ export function ProjectSettingsDialog({
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="caseCode"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Case Code</FormLabel>
-                        <FormControl>
-                          <Input {...field} disabled={!canEdit} />
-                        </FormControl>
-                        <FormDescription>A unique identifier for this project</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  {isClientWork && (
+                    <FormField
+                      control={form.control}
+                      name="caseCode"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Case Code</FormLabel>
+                          <FormControl>
+                            <Input {...field} disabled={!canEdit} />
+                          </FormControl>
+                          <FormDescription>A unique identifier for this project</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
 
                   <FormField
                     control={form.control}
