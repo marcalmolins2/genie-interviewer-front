@@ -1,31 +1,37 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { InterviewerStatusBadge } from '@/components/InterviewerStatusBadge';
-import { Plus, Search, MoreHorizontal, Edit, Phone, Globe, Users, Archive as ArchiveIcon, Trash2, ChevronRight, Filter, X } from 'lucide-react';
+import { Plus, Search, MoreHorizontal, Edit, Phone, Globe, Users, Archive as ArchiveIcon, Trash2, Filter, ChevronDown, ChevronRight, FolderOpen } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Agent, Channel, AgentStatus } from '@/types';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Agent, Channel, AgentStatus, Project, PROJECT_TYPE_LABELS } from '@/types';
 import { interviewersService, agentsService } from '@/services/interviewers';
 import { useToast } from '@/hooks/use-toast';
+import { useProjectContext } from './InterviewersLayout';
+import { cn } from '@/lib/utils';
 
 const channelIcons: Record<Channel, typeof Phone> = {
   inbound_call: Phone,
   web_link: Globe
 };
 
+interface InterviewerWithProject extends Agent {
+  project?: Project;
+}
+
 export default function InterviewersList() {
-  const [interviewers, setInterviewers] = useState<Agent[]>([]);
-  const [filteredInterviewers, setFilteredInterviewers] = useState<Agent[]>([]);
+  const [interviewers, setInterviewers] = useState<InterviewerWithProject[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatuses, setSelectedStatuses] = useState<AgentStatus[]>([]);
@@ -33,19 +39,66 @@ export default function InterviewersList() {
   const [selectedArchetypes, setSelectedArchetypes] = useState<string[]>([]);
   const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
   const [selectedInterviewerId, setSelectedInterviewerId] = useState<string | null>(null);
+  const [collapsedProjects, setCollapsedProjects] = useState<Set<string>>(new Set());
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { selectedProjectId, projects } = useProjectContext();
 
   useEffect(() => {
     loadInterviewers();
   }, []);
 
+  const loadInterviewers = async () => {
+    try {
+      const data = await agentsService.getAgents();
+      // Attach project info to interviewers based on mock data mapping
+      const interviewersWithProjects = data.map(interviewer => ({
+        ...interviewer,
+        project: projects.find(p => {
+          // Map mock agents to mock projects for demo
+          if (['agent-genai-strategy', 'agent-1'].includes(interviewer.id)) return p.id === 'project-1';
+          if (['agent-2', 'agent-3'].includes(interviewer.id)) return p.id === 'project-2';
+          if (['agent-4', 'agent-web-link'].includes(interviewer.id)) return p.id === 'project-3';
+          return false;
+        })
+      }));
+      setInterviewers(interviewersWithProjects);
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to load interviewers. Please try again.',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Re-attach projects when projects change
   useEffect(() => {
-    // Filter interviewers based on search query and filters
+    if (projects.length > 0 && interviewers.length > 0) {
+      setInterviewers(prev => prev.map(interviewer => ({
+        ...interviewer,
+        project: projects.find(p => {
+          if (['agent-genai-strategy', 'agent-1'].includes(interviewer.id)) return p.id === 'project-1';
+          if (['agent-2', 'agent-3'].includes(interviewer.id)) return p.id === 'project-2';
+          if (['agent-4', 'agent-web-link'].includes(interviewer.id)) return p.id === 'project-3';
+          return false;
+        })
+      })));
+    }
+  }, [projects]);
+
+  const filteredInterviewers = useMemo(() => {
     let filtered = interviewers.filter(interviewer => 
       interviewer.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
       interviewer.archetype.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    // Filter by selected project
+    if (selectedProjectId) {
+      filtered = filtered.filter(i => i.project?.id === selectedProjectId);
+    }
 
     // Apply status filter
     if (selectedStatuses.length > 0) {
@@ -62,28 +115,49 @@ export default function InterviewersList() {
       filtered = filtered.filter(interviewer => selectedArchetypes.includes(interviewer.archetype));
     }
 
-    setFilteredInterviewers(filtered);
-  }, [interviewers, searchQuery, selectedStatuses, selectedChannels, selectedArchetypes]);
+    return filtered;
+  }, [interviewers, searchQuery, selectedStatuses, selectedChannels, selectedArchetypes, selectedProjectId]);
 
-  const loadInterviewers = async () => {
-    try {
-      const data = await agentsService.getAgents();
-      setInterviewers(data);
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to load interviewers. Please try again.',
-        variant: 'destructive'
-      });
-    } finally {
-      setLoading(false);
+  // Group interviewers by project (only when showing all)
+  const groupedInterviewers = useMemo(() => {
+    if (selectedProjectId) {
+      return null; // Don't group when a specific project is selected
     }
-  };
+
+    const groups: { project: Project | null; interviewers: InterviewerWithProject[] }[] = [];
+    const projectMap = new Map<string | null, InterviewerWithProject[]>();
+
+    filteredInterviewers.forEach(interviewer => {
+      const key = interviewer.project?.id || null;
+      if (!projectMap.has(key)) {
+        projectMap.set(key, []);
+      }
+      projectMap.get(key)!.push(interviewer);
+    });
+
+    // Sort by project name, unassigned last
+    const sortedKeys = Array.from(projectMap.keys()).sort((a, b) => {
+      if (a === null) return 1;
+      if (b === null) return -1;
+      const projectA = projects.find(p => p.id === a);
+      const projectB = projects.find(p => p.id === b);
+      return (projectA?.name || '').localeCompare(projectB?.name || '');
+    });
+
+    sortedKeys.forEach(key => {
+      groups.push({
+        project: key ? projects.find(p => p.id === key) || null : null,
+        interviewers: projectMap.get(key)!
+      });
+    });
+
+    return groups;
+  }, [filteredInterviewers, selectedProjectId, projects]);
 
   const handleActivate = async (interviewer: Agent) => {
     try {
       const updatedInterviewer = await agentsService.activateAgent(interviewer.id);
-      setInterviewers(prev => prev.map(i => i.id === interviewer.id ? updatedInterviewer : i));
+      setInterviewers(prev => prev.map(i => i.id === interviewer.id ? { ...i, ...updatedInterviewer } : i));
       toast({
         title: 'Success',
         description: 'Interviewer activated successfully.'
@@ -109,7 +183,7 @@ export default function InterviewersList() {
       if (error instanceof Error && error.message === 'ACTIVE_CALL_IN_PROGRESS') {
         toast({
           title: 'Cannot move to trash',
-          description: 'This interviewer has an active call in progress. Please wait until the call ends before moving to trash.',
+          description: 'This interviewer has an active call in progress.',
           variant: 'destructive'
         });
       } else {
@@ -127,9 +201,7 @@ export default function InterviewersList() {
     
     try {
       await agentsService.archiveAgent(selectedInterviewerId);
-      toast({
-        description: 'Archived'
-      });
+      toast({ description: 'Archived' });
       setArchiveDialogOpen(false);
       setSelectedInterviewerId(null);
       loadInterviewers();
@@ -155,19 +227,125 @@ export default function InterviewersList() {
     });
   };
 
+  const toggleProjectCollapse = (projectId: string) => {
+    setCollapsedProjects(prev => {
+      const next = new Set(prev);
+      if (next.has(projectId)) {
+        next.delete(projectId);
+      } else {
+        next.add(projectId);
+      }
+      return next;
+    });
+  };
+
+  const selectedProject = selectedProjectId ? projects.find(p => p.id === selectedProjectId) : null;
+
+  const renderInterviewerCard = (interviewer: InterviewerWithProject) => {
+    const ChannelIcon = channelIcons[interviewer.channel as Channel];
+    return (
+      <Card 
+        key={interviewer.id} 
+        className="hover:shadow-lg hover:border-primary/30 hover:bg-accent/5 transition-all duration-200 border-border/20 bg-card cursor-pointer group" 
+        onClick={() => navigate(`/app/interviewers/${interviewer.id}`)}
+      >
+        <CardHeader className="space-y-4 pb-6">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
+                  {interviewer.name}
+                </h3>
+              </div>
+              <InterviewerStatusBadge status={interviewer.status} />
+            </div>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild onClick={e => e.stopPropagation()}>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-accent">
+                  <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" onClick={e => e.stopPropagation()}>
+                <DropdownMenuItem onClick={e => {
+                  e.stopPropagation();
+                  navigate(`/app/interviewers/${interviewer.id}/edit`);
+                }}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={e => {
+                  e.stopPropagation();
+                  openArchiveDialog(interviewer.id);
+                }}>
+                  <ArchiveIcon className="h-4 w-4 mr-2" />
+                  Archive
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  className="text-destructive focus:text-destructive" 
+                  onClick={e => {
+                    e.stopPropagation();
+                    handleMoveToTrash(interviewer.id);
+                  }}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Move to Trash
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          
+          <div className="flex items-center gap-2 flex-wrap">
+            <Badge variant="outline" className="text-xs">
+              {interviewer.archetype.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+            </Badge>
+            <Badge variant="outline" className="text-xs flex items-center gap-1">
+              <ChannelIcon className="h-3 w-3" />
+              {interviewer.channel.replace('_', ' ')}
+            </Badge>
+          </div>
+        </CardHeader>
+        
+        <CardContent className="pt-0">
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
+            <span>{interviewer.interviewsCount || 0} sessions</span>
+            <span>Created {formatDate(interviewer.createdAt)}</span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
   if (loading) {
-    return <div className="flex items-center justify-center min-h-[400px]">
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>;
+      </div>
+    );
   }
 
-  return <div className="space-y-6">
+  return (
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Overview</h1>
+          <h1 className="text-3xl font-bold">
+            {selectedProject ? selectedProject.name : 'Overview'}
+          </h1>
           <p className="text-muted-foreground">
-            Manage your interviewers and view performance
+            {selectedProject ? (
+              <span className="flex items-center gap-2">
+                <Badge variant="secondary" className="text-xs">
+                  {selectedProject.caseCode}
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  {PROJECT_TYPE_LABELS[selectedProject.projectType]}
+                </Badge>
+              </span>
+            ) : (
+              'Manage your interviewers and view performance'
+            )}
           </p>
         </div>
         
@@ -185,11 +363,15 @@ export default function InterviewersList() {
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search interviewers..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-10" />
+          <Input 
+            placeholder="Search interviewers..." 
+            value={searchQuery} 
+            onChange={e => setSearchQuery(e.target.value)} 
+            className="pl-10" 
+          />
         </div>
         
         <div className="flex gap-2">
-          {/* Single Filter Button */}
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" size="icon" className="relative">
@@ -250,10 +432,7 @@ export default function InterviewersList() {
                                 );
                               }}
                             />
-                            <Label
-                              htmlFor={`status-${status}`}
-                              className="text-sm font-normal cursor-pointer"
-                            >
+                            <Label htmlFor={`status-${status}`} className="text-sm font-normal cursor-pointer">
                               {status.replace('_', ' ').charAt(0).toUpperCase() + status.replace('_', ' ').slice(1)}
                             </Label>
                           </div>
@@ -289,10 +468,7 @@ export default function InterviewersList() {
                                 );
                               }}
                             />
-                            <Label
-                              htmlFor={`channel-${channel}`}
-                              className="text-sm font-normal cursor-pointer flex items-center gap-2"
-                            >
+                            <Label htmlFor={`channel-${channel}`} className="text-sm font-normal cursor-pointer flex items-center gap-2">
                               {React.createElement(channelIcons[channel], { className: "h-4 w-4" })}
                               {channel.replace('_', ' ').charAt(0).toUpperCase() + channel.replace('_', ' ').slice(1)}
                             </Label>
@@ -329,10 +505,7 @@ export default function InterviewersList() {
                                 );
                               }}
                             />
-                            <Label
-                              htmlFor={`archetype-${archetype}`}
-                              className="text-sm font-normal cursor-pointer"
-                            >
+                            <Label htmlFor={`archetype-${archetype}`} className="text-sm font-normal cursor-pointer">
                               {archetype.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                             </Label>
                           </div>
@@ -347,8 +520,9 @@ export default function InterviewersList() {
         </div>
       </div>
 
-      {/* Interviewers Grid */}
-      {filteredInterviewers.length === 0 ? <Card className="p-12 text-center">
+      {/* Interviewers */}
+      {filteredInterviewers.length === 0 ? (
+        <Card className="p-12 text-center">
           <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-4">
             <Users className="h-12 w-12 text-muted-foreground" />
           </div>
@@ -356,83 +530,75 @@ export default function InterviewersList() {
             {searchQuery ? 'No interviewers found' : 'No interviewers yet'}
           </CardTitle>
           <CardDescription className="mb-6">
-            {searchQuery ? 'Try adjusting your search terms' : 'Create your first interviewer to get started'}
+            {searchQuery 
+              ? 'Try adjusting your search terms' 
+              : selectedProject 
+                ? `Create your first interviewer in ${selectedProject.name}` 
+                : 'Create your first interviewer to get started'}
           </CardDescription>
-          {!searchQuery && <Link to="/app/interviewers/new/assisted">
+          {!searchQuery && (
+            <Link to="/app/interviewers/new/assisted">
               <Button className="gap-2">
                 <Plus className="h-4 w-4" />
                 Create Your First Interviewer
               </Button>
-            </Link>}
-        </Card> : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredInterviewers.map(interviewer => {
-        const ChannelIcon = channelIcons[interviewer.channel as Channel];
-        return <Card key={interviewer.id} className="hover:shadow-lg hover:border-primary/30 hover:bg-accent/5 transition-all duration-200 border-border/20 bg-card cursor-pointer group" onClick={() => navigate(`/app/interviewers/${interviewer.id}`)}>
-                <CardHeader className="space-y-4 pb-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
-                          {interviewer.name}
-                        </h3>
-                        
-                      </div>
-                      <InterviewerStatusBadge status={interviewer.status} />
-                    </div>
-                    
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild onClick={e => e.stopPropagation()}>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-accent">
-                          <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" onClick={e => e.stopPropagation()}>
-                        <DropdownMenuItem onClick={e => {
-                    e.stopPropagation();
-                    navigate(`/app/interviewers/${interviewer.id}/edit`);
-                  }}>
-                          <Edit className="h-4 w-4 mr-2" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={e => {
-                    e.stopPropagation();
-                    openArchiveDialog(interviewer.id);
-                  }}>
-                          <ArchiveIcon className="h-4 w-4 mr-2" />
-                          Archive
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={e => {
-                    e.stopPropagation();
-                    handleMoveToTrash(interviewer.id);
-                  }}>
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Move to Trash
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Badge variant="outline" className="text-xs">
-                      {interviewer.archetype.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                    </Badge>
-                    <Badge variant="outline" className="text-xs flex items-center gap-1">
-                      <ChannelIcon className="h-3 w-3" />
-                      {interviewer.channel.replace('_', ' ')}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                
-                <CardContent className="pt-0">
-                  <div className="flex items-center justify-between text-sm text-muted-foreground">
-                    <span>{interviewer.interviewsCount || 0} sessions</span>
-                    <span>Created {formatDate(interviewer.createdAt)}</span>
-                  </div>
-                </CardContent>
-              </Card>;
-      })}
-        </div>}
+            </Link>
+          )}
+        </Card>
+      ) : selectedProjectId || !groupedInterviewers ? (
+        // Flat grid when specific project is selected
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredInterviewers.map(renderInterviewerCard)}
+        </div>
+      ) : (
+        // Grouped by project when showing all
+        <div className="space-y-8">
+          {groupedInterviewers.map(({ project, interviewers: groupInterviewers }) => (
+            <Collapsible 
+              key={project?.id || 'unassigned'} 
+              open={!collapsedProjects.has(project?.id || 'unassigned')}
+              onOpenChange={() => toggleProjectCollapse(project?.id || 'unassigned')}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" size="sm" className="p-0 h-auto hover:bg-transparent">
+                    {collapsedProjects.has(project?.id || 'unassigned') ? (
+                      <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                    )}
+                  </Button>
+                </CollapsibleTrigger>
+                <div className="flex items-center gap-2">
+                  <FolderOpen className="h-5 w-5 text-muted-foreground" />
+                  <h2 className="text-lg font-semibold">
+                    {project?.name || 'Unassigned'}
+                  </h2>
+                  {project && (
+                    <>
+                      <Badge variant="secondary" className="text-xs">
+                        {project.caseCode}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs">
+                        {PROJECT_TYPE_LABELS[project.projectType]}
+                      </Badge>
+                    </>
+                  )}
+                  <span className="text-sm text-muted-foreground ml-2">
+                    {groupInterviewers.length} interviewer{groupInterviewers.length !== 1 ? 's' : ''}
+                  </span>
+                </div>
+              </div>
+              
+              <CollapsibleContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pl-8">
+                  {groupInterviewers.map(renderInterviewerCard)}
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+          ))}
+        </div>
+      )}
 
       {/* Archive Confirmation Dialog */}
       <AlertDialog open={archiveDialogOpen} onOpenChange={setArchiveDialogOpen}>
@@ -449,5 +615,6 @@ export default function InterviewersList() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>;
+    </div>
+  );
 }
