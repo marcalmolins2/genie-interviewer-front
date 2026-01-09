@@ -444,6 +444,7 @@ export interface InterviewSummary {
   durationSec: number;
   channel: Channel;
   completed: boolean;
+  conversationType: ConversationType;
   respondentId?: string;
   feedback?: SessionFeedback;
 }

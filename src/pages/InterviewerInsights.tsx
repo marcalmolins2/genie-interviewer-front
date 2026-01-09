@@ -281,6 +281,7 @@ export default function InterviewerInsights() {
             startedAt: '2024-12-01T14:30:00Z',
             durationSec: 1280,
             completed: true,
+            conversationType: 'live',
             respondentId: 'sarah.chen@company.com',
             channel: interviewerData.channel,
             feedback: { sessionId: 'int-20241201-001', rating: 'positive', submittedAt: '2024-12-01T15:00:00Z' }
@@ -291,6 +292,7 @@ export default function InterviewerInsights() {
             startedAt: '2024-12-01T09:15:00Z',
             durationSec: 952,
             completed: true,
+            conversationType: 'live',
             respondentId: 'mike.rodriguez@company.com',
             channel: interviewerData.channel,
             feedback: { sessionId: 'int-20241201-002', rating: 'negative', negativeReason: 'Audio quality was poor', submittedAt: '2024-12-01T09:45:00Z' }
@@ -301,6 +303,7 @@ export default function InterviewerInsights() {
             startedAt: '2024-11-30T16:45:00Z', 
             durationSec: 445,
             completed: false,
+            conversationType: 'live',
             respondentId: 'emma.johnson@company.com',
             channel: interviewerData.channel
           },
@@ -310,6 +313,7 @@ export default function InterviewerInsights() {
             startedAt: '2024-11-30T11:20:00Z',
             durationSec: 1560,
             completed: true,
+            conversationType: 'live',
             respondentId: 'david.kim@company.com',
             channel: interviewerData.channel
             // No feedback yet
@@ -320,6 +324,7 @@ export default function InterviewerInsights() {
             startedAt: '2024-11-29T13:00:00Z',
             durationSec: 720,
             completed: false,
+            conversationType: 'live',
             respondentId: 'lisa.wang@company.com',
             channel: interviewerData.channel
           }
