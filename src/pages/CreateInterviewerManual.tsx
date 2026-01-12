@@ -20,6 +20,16 @@ import { ProjectSelector } from "@/components/ProjectSelector";
 import { CreateProjectDialog } from "@/components/CreateProjectDialog";
 import { useProjectContext } from "@/pages/InterviewersLayout";
 import { useSidebar } from "@/components/ui/sidebar";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface CreateInterviewerForm {
   // Step 0: Project Selection
@@ -215,8 +225,40 @@ export default function CreateInterviewerManual() {
   const [previewingVoice, setPreviewingVoice] = useState<string | null>(null);
   const [showValidation, setShowValidation] = useState(false);
   const [showCreateProjectDialog, setShowCreateProjectDialog] = useState(false);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Check if user has made any changes
+  const hasUnsavedChanges = useCallback(() => {
+    return (
+      form.title.trim() !== '' ||
+      form.description.trim() !== '' ||
+      form.name.trim() !== '' ||
+      form.archetype !== null ||
+      form.interviewContext.trim() !== '' ||
+      form.introContext.trim() !== '' ||
+      form.screenerQuestions.trim() !== '' ||
+      form.introductionQuestions.trim() !== '' ||
+      form.interviewGuide.trim() !== '' ||
+      form.closeContext.trim() !== '' ||
+      form.knowledgeText.trim() !== '' ||
+      form.knowledgeFiles.length > 0
+    );
+  }, [form]);
+
+  const handleCancel = () => {
+    if (hasUnsavedChanges()) {
+      setShowCancelDialog(true);
+    } else {
+      navigate('/app/interviewers');
+    }
+  };
+
+  const confirmCancel = () => {
+    setShowCancelDialog(false);
+    navigate('/app/interviewers');
+  };
 
   // Pre-select project from sidebar if not already selected
   useEffect(() => {
@@ -1151,6 +1193,10 @@ Key Research Goals:
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center">
             <div className="flex gap-2">
+              <Button variant="ghost" onClick={handleCancel}>
+                <X className="h-4 w-4 mr-2" />
+                Cancel
+              </Button>
               <Button variant="outline" onClick={prevStep} disabled={currentStep === 0}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Previous
@@ -1208,6 +1254,26 @@ Key Research Goals:
           </div>
         </div>
       </div>
+
+      <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Discard changes?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have unsaved progress. Are you sure you want to leave? Your changes will be lost.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Continue editing</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmCancel} 
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Discard
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
