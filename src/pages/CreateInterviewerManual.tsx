@@ -19,6 +19,7 @@ import { RichTextEditor } from "@/components/RichTextEditor";
 import { ProjectSelector } from "@/components/ProjectSelector";
 import { CreateProjectDialog } from "@/components/CreateProjectDialog";
 import { useProjectContext } from "@/pages/InterviewersLayout";
+import { useSidebar } from "@/components/ui/sidebar";
 
 interface CreateInterviewerForm {
   // Step 0: Project Selection
@@ -182,6 +183,7 @@ const FieldError = ({ error }: { error?: string }) => {
 
 export default function CreateInterviewerManual() {
   const { selectedProjectId: sidebarProjectId, projects, refreshProjects, isLoadingProjects } = useProjectContext();
+  const { open: sidebarOpen } = useSidebar();
 
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
@@ -1142,7 +1144,10 @@ Key Research Goals:
         <Stepper steps={steps} currentStep={currentStep} completedSteps={completedSteps} onStepClick={goToStep} />
       </div>
       <div className="container mx-auto px-4 pb-32">{renderStepContent()}</div>
-      <div className="fixed bottom-0 right-0 bg-card border-t p-4" style={{ left: 'var(--sidebar-width, 0px)' }}>
+      <div 
+        className="fixed bottom-0 right-0 bg-card border-t p-4 transition-[left] duration-200 ease-linear z-10" 
+        style={{ left: sidebarOpen ? '16rem' : '3rem' }}
+      >
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex justify-between items-center">
             <div className="flex gap-2">
