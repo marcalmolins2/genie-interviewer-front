@@ -1105,7 +1105,7 @@ Key Research Goals:
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             <Button 
-              variant="ghost" 
+              variant="outline" 
               size="icon"
               onClick={handleCancel}
               className="shrink-0"
