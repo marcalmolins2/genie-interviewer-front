@@ -508,7 +508,7 @@ export default function CreateInterviewerManual() {
             {/* Interviewer Identity */}
             <Card>
               <CardHeader>
-                <CardTitle>Interviewer Identity</CardTitle>
+                <CardTitle>Interviewer Details</CardTitle>
                 <CardDescription>
                   Give your interviewer a clear title and description to help identify its purpose.
                 </CardDescription>
