@@ -183,7 +183,7 @@ const FieldError = ({ error }: { error?: string }) => {
 
 export default function CreateInterviewerManual() {
   const { selectedProjectId: sidebarProjectId, projects, refreshProjects, isLoadingProjects } = useProjectContext();
-  const { open: sidebarOpen } = useSidebar();
+  const { state: sidebarState, isMobile } = useSidebar();
 
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
@@ -1146,9 +1146,9 @@ Key Research Goals:
       <div className="container mx-auto px-4 pb-32">{renderStepContent()}</div>
       <div 
         className="fixed bottom-0 right-0 bg-card border-t p-4 transition-[left] duration-200 ease-linear z-10" 
-        style={{ left: sidebarOpen ? '16rem' : '3rem' }}
+        style={{ left: isMobile ? "0px" : sidebarState === "expanded" ? "var(--sidebar-width)" : "var(--sidebar-width-icon)" }}
       >
-        <div className="max-w-6xl mx-auto px-4">
+        <div className="container mx-auto px-4">
           <div className="flex justify-between items-center">
             <div className="flex gap-2">
               <Button variant="outline" onClick={prevStep} disabled={currentStep === 0}>
