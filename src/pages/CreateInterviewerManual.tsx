@@ -440,11 +440,15 @@ export default function CreateInterviewerManual() {
       }
       setCurrentStep(currentStep + 1);
       setShowValidation(false);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   const prevStep = () => {
-    if (currentStep > 0) setCurrentStep(currentStep - 1);
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   const goToStep = (stepIndex: number) => {
@@ -454,6 +458,7 @@ export default function CreateInterviewerManual() {
     if ((completedSteps.includes(stepIndex) || allPreviousStepsCompleted) && stepIndex < steps.length) {
       setCurrentStep(stepIndex);
       setShowValidation(false);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
