@@ -1,5 +1,10 @@
-import ReactQuill from 'react-quill';
+import ReactQuill, { Quill } from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+// @ts-ignore - no types available for this package
+import MarkdownShortcuts from 'quill-markdown-shortcuts';
+
+// Register the markdown shortcuts module
+Quill.register('modules/markdownShortcuts', MarkdownShortcuts);
 
 interface RichTextEditorProps {
   value: string;
@@ -15,6 +20,7 @@ const modules = {
     [{ 'list': 'ordered'}, { 'list': 'bullet' }],
     ['clean']
   ],
+  markdownShortcuts: {}
 };
 
 const formats = [
