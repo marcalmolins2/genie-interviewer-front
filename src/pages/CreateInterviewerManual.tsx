@@ -537,7 +537,7 @@ export default function CreateInterviewerManual() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="name">Agent Name</Label>
+                  <Label htmlFor="name">Interviewer Persona</Label>
                   <Input id="name" value={form.name} onChange={e => handleFieldChange("name", e.target.value)} placeholder="e.g., Sam" className={`mt-1 ${fieldErrors.name ? "border-destructive" : ""}`} maxLength={20} />
                   <CharacterCounter current={form.name.length} max={20} error={fieldErrors.name} />
                 </div>
