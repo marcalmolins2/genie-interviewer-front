@@ -10,7 +10,7 @@ import { Stepper } from "@/components/Stepper";
 import { ArchetypeCard } from "@/components/ArchetypeCard";
 import { ChannelSelector } from "@/components/ChannelSelector";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, ArrowRight, Upload, FileText, X, AlertCircle, Edit, FolderOpen } from "lucide-react";
+import { ArrowLeft, ArrowRight, Upload, FileText, X, AlertCircle, Edit, FolderOpen, Play, Square } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { ARCHETYPES, Channel, Archetype, PRICE_BY_CHANNEL, GuideSchema, PROJECT_TYPE_LABELS, Project } from "@/types";
 import { interviewersService, agentsService } from "@/services/interviewers";
@@ -60,10 +60,14 @@ const languages = [
 ];
 
 const voices = [
-  { value: "voice-1", label: "Sarah (Professional)" },
-  { value: "voice-2", label: "David (Conversational)" },
-  { value: "voice-3", label: "Emma (Friendly)" },
-  { value: "voice-4", label: "James (Authoritative)" },
+  { value: "alloy", label: "Alloy", description: "Neutral, balanced" },
+  { value: "ash", label: "Ash", description: "Soft, gentle" },
+  { value: "ballad", label: "Ballad", description: "Warm, expressive" },
+  { value: "coral", label: "Coral", description: "Clear, articulate" },
+  { value: "echo", label: "Echo", description: "Smooth, calm" },
+  { value: "sage", label: "Sage", description: "Wise, measured" },
+  { value: "shimmer", label: "Shimmer", description: "Bright, energetic" },
+  { value: "verse", label: "Verse", description: "Dynamic, engaging" },
 ];
 
 const steps = [
@@ -188,7 +192,7 @@ export default function CreateInterviewerManual() {
     name: "",
     archetype: null,
     language: "en",
-    voiceId: "voice-1",
+    voiceId: "alloy",
     channel: "inbound_call",
     targetDuration: "20",
     interviewContext: "",
@@ -206,6 +210,7 @@ export default function CreateInterviewerManual() {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [isCreating, setIsCreating] = useState(false);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [previewingVoice, setPreviewingVoice] = useState<string | null>(null);
   const [showValidation, setShowValidation] = useState(false);
   const [showCreateProjectDialog, setShowCreateProjectDialog] = useState(false);
   const navigate = useNavigate();
@@ -268,6 +273,35 @@ export default function CreateInterviewerManual() {
   const handleFieldChange = (field: string, value: string) => {
     updateForm({ [field]: value } as Partial<CreateInterviewerForm>);
     validateField(field, value);
+  };
+
+  const previewVoice = (voiceId: string) => {
+    window.speechSynthesis.cancel();
+    
+    const voice = voices.find(v => v.value === voiceId);
+    const voiceName = voice?.label || voiceId;
+    
+    const utterance = new SpeechSynthesisUtterance(
+      `Hi, I'm ${voiceName}. I'll be conducting your interview today.`
+    );
+    
+    const availableVoices = window.speechSynthesis.getVoices();
+    if (availableVoices.length > 0) {
+      const englishVoice = availableVoices.find(v => v.lang.startsWith('en'));
+      if (englishVoice) utterance.voice = englishVoice;
+    }
+    
+    setPreviewingVoice(voiceId);
+    
+    utterance.onend = () => setPreviewingVoice(null);
+    utterance.onerror = () => setPreviewingVoice(null);
+    
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const stopPreview = () => {
+    window.speechSynthesis.cancel();
+    setPreviewingVoice(null);
   };
 
   const validateStep = (step: number): boolean => {
@@ -563,18 +597,45 @@ export default function CreateInterviewerManual() {
                 </div>
                 <div>
                   <Label htmlFor="voice">Voice (for calls)</Label>
-                  <Select value={form.voiceId} onValueChange={(value) => updateForm({ voiceId: value })}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {voices.map((voice) => (
-                        <SelectItem key={voice.value} value={voice.value}>
-                          {voice.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="flex gap-2 mt-1">
+                    <Select value={form.voiceId} onValueChange={(value) => updateForm({ voiceId: value })}>
+                      <SelectTrigger className="flex-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {voices.map((voice) => (
+                          <SelectItem key={voice.value} value={voice.value}>
+                            <span>{voice.label}</span>
+                            <span className="text-muted-foreground ml-2 text-xs">
+                              {voice.description}
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        if (previewingVoice === form.voiceId) {
+                          stopPreview();
+                        } else {
+                          previewVoice(form.voiceId);
+                        }
+                      }}
+                      title={previewingVoice === form.voiceId ? "Stop preview" : "Preview voice"}
+                    >
+                      {previewingVoice === form.voiceId ? (
+                        <Square className="h-4 w-4" />
+                      ) : (
+                        <Play className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Preview uses browser TTS. Actual interviews use OpenAI voices.
+                  </p>
                 </div>
               </CardContent>
             </Card>
