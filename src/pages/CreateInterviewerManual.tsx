@@ -1145,7 +1145,7 @@ Key Research Goals:
       </div>
       <div className="container mx-auto px-4 pb-32">{renderStepContent()}</div>
       <div 
-        className="fixed bottom-0 right-0 bg-card border-t p-4 transition-[left] duration-200 ease-linear z-10" 
+        className="fixed bottom-0 right-0 bg-card border-t p-4 transition-[left] duration-200 ease-in-out z-10" 
         style={{ left: isMobile ? "0px" : sidebarState === "expanded" ? "var(--sidebar-width)" : "var(--sidebar-width-icon)" }}
       >
         <div className="container mx-auto px-4">
