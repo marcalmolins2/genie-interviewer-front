@@ -16,7 +16,7 @@ import { ARCHETYPES, Channel, Archetype, PRICE_BY_CHANNEL, GuideSchema, PROJECT_
 import { interviewersService, agentsService } from "@/services/interviewers";
 import { useToast } from "@/hooks/use-toast";
 import { RichTextEditor } from "@/components/RichTextEditor";
-import { ProjectSelector } from "@/components/ProjectSelector";
+import { ProjectCombobox } from "@/components/ProjectCombobox";
 import { CreateProjectDialog } from "@/components/CreateProjectDialog";
 import { useProjectContext } from "@/pages/InterviewersLayout";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -530,7 +530,7 @@ export default function CreateInterviewerManual() {
               </p>
             </div>
 
-            <ProjectSelector
+            <ProjectCombobox
               projects={projects}
               selectedProjectId={form.selectedProjectId}
               onProjectSelect={(id) => updateForm({ selectedProjectId: id })}
