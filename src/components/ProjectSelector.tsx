@@ -19,7 +19,8 @@ export function ProjectSelector({
   onCreateProject,
   loading = false,
 }: ProjectSelectorProps) {
-  if (loading) {
+  // Only show loading if we're loading AND have no projects yet
+  if (loading && projects.length === 0) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
