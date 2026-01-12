@@ -25,6 +25,7 @@ import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminFeatureFlags from "./pages/admin/AdminFeatureFlags";
 import PublicInterview from "./pages/PublicInterview";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import { FeatureFlagRoute } from "./components/FeatureFlagRoute";
 import {
   LegacyAgentRedirect,
   LegacyAgentEditRedirect,
@@ -53,8 +54,16 @@ const App = () => (
               <Route path="trash" element={<InterviewersTrash />} />
               <Route path="archive" element={<InterviewersArchive />} />
               <Route path="new" element={<InterviewerCreationSelector />} />
-              <Route path="new/manual" element={<CreateInterviewerManual />} />
-              <Route path="new/assisted" element={<CreateInterviewerAssisted />} />
+              <Route path="new/manual" element={
+                <FeatureFlagRoute flag="MANUAL_CONFIGURATION" redirectTo="/app/interviewers/new">
+                  <CreateInterviewerManual />
+                </FeatureFlagRoute>
+              } />
+              <Route path="new/assisted" element={
+                <FeatureFlagRoute flag="ASSISTED_CONFIGURATION" redirectTo="/app/interviewers/new">
+                  <CreateInterviewerAssisted />
+                </FeatureFlagRoute>
+              } />
             </Route>
             <Route path="interviewers/:interviewerId" element={<InterviewerOverview />} />
             <Route path="interviewers/:interviewerId/edit" element={<EditInterviewer />} />
