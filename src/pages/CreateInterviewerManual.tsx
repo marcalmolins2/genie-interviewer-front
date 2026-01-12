@@ -627,59 +627,61 @@ export default function CreateInterviewerManual() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label htmlFor="voice">Voice (for calls)</Label>
-                  <div className="flex gap-2 mt-1">
-                    <Select value={form.voiceId} onValueChange={(value) => updateForm({ voiceId: value })}>
-                      <SelectTrigger className="flex-1">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {voices.map((voice) => (
-                          <SelectItem key={voice.value} value={voice.value}>
-                            <span>{voice.label}</span>
-                            <span className="text-muted-foreground ml-2 text-xs">
-                              {voice.description}
-                            </span>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => {
-                        if (previewingVoice === form.voiceId) {
-                          stopPreview();
-                        } else {
-                          previewVoice(form.voiceId);
-                        }
-                      }}
-                      title={previewingVoice === form.voiceId ? "Stop preview" : "Preview voice"}
-                    >
-                      {previewingVoice === form.voiceId ? (
-                        <Square className="h-4 w-4" />
-                      ) : (
-                        <Play className="h-4 w-4" />
-                      )}
-                    </Button>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="voice">Voice (for calls)</Label>
+                    <div className="flex gap-2 mt-1">
+                      <Select value={form.voiceId} onValueChange={(value) => updateForm({ voiceId: value })}>
+                        <SelectTrigger className="flex-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {voices.map((voice) => (
+                            <SelectItem key={voice.value} value={voice.value}>
+                              <span>{voice.label}</span>
+                              <span className="text-muted-foreground ml-2 text-xs">
+                                {voice.description}
+                              </span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => {
+                          if (previewingVoice === form.voiceId) {
+                            stopPreview();
+                          } else {
+                            previewVoice(form.voiceId);
+                          }
+                        }}
+                        title={previewingVoice === form.voiceId ? "Stop preview" : "Preview voice"}
+                      >
+                        {previewingVoice === form.voiceId ? (
+                          <Square className="h-4 w-4" />
+                        ) : (
+                          <Play className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Preview uses browser TTS. Actual interviews use OpenAI voices.
+                    </p>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Preview uses browser TTS. Actual interviews use OpenAI voices.
-                  </p>
-                </div>
-                <div>
-                  <Label htmlFor="name">Interviewer Name</Label>
-                  <Input
-                    id="name"
-                    value={form.name}
-                    onChange={(e) => handleFieldChange("name", e.target.value)}
-                    placeholder="e.g., Sam"
-                    className={`mt-1 ${fieldErrors.name ? "border-destructive" : ""}`}
-                    maxLength={20}
-                  />
-                  <CharacterCounter current={form.name.length} max={20} error={fieldErrors.name} />
+                  <div>
+                    <Label htmlFor="name">Interviewer Name</Label>
+                    <Input
+                      id="name"
+                      value={form.name}
+                      onChange={(e) => handleFieldChange("name", e.target.value)}
+                      placeholder="e.g., Sam"
+                      className={`mt-1 ${fieldErrors.name ? "border-destructive" : ""}`}
+                      maxLength={20}
+                    />
+                    <CharacterCounter current={form.name.length} max={20} error={fieldErrors.name} />
+                  </div>
                 </div>
               </CardContent>
             </Card>
