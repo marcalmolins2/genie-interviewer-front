@@ -120,7 +120,13 @@ export function ProjectCombobox({
               <span>Select a project...</span>
             </div>
           )}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          {selectedProject ? (
+            <span className="ml-2 text-sm text-primary hover:underline shrink-0">
+              Change
+            </span>
+          ) : (
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          )}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
