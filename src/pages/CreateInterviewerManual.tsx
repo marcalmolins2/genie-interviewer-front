@@ -1053,27 +1053,27 @@ Key Research Goals:
                 {form.enableScreener && (
                   <div>
                     <Label className="text-muted-foreground">Screener Questions</Label>
-                    <p className="font-medium">
-                      {form.screenerQuestions.substring(0, 100)}
-                      {form.screenerQuestions.length > 100 ? "..." : ""}
-                    </p>
+                    <div 
+                      className="font-medium prose prose-sm max-w-none [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_li]:my-0.5"
+                      dangerouslySetInnerHTML={{ __html: form.screenerQuestions || "Not provided" }}
+                    />
                   </div>
                 )}
                 {!form.enableScreener && form.introductionQuestions && (
                   <div>
                     <Label className="text-muted-foreground">Introduction Questions</Label>
-                    <p className="font-medium">
-                      {form.introductionQuestions.substring(0, 100)}
-                      {form.introductionQuestions.length > 100 ? "..." : ""}
-                    </p>
+                    <div 
+                      className="font-medium prose prose-sm max-w-none [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_li]:my-0.5"
+                      dangerouslySetInnerHTML={{ __html: form.introductionQuestions }}
+                    />
                   </div>
                 )}
                 <div>
                   <Label className="text-muted-foreground">Interview Guide</Label>
-                  <p className="font-medium">
-                    {form.interviewGuide.substring(0, 100)}
-                    {form.interviewGuide.length > 100 ? "..." : ""}
-                  </p>
+                  <div 
+                    className="font-medium prose prose-sm max-w-none [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_li]:my-0.5 [&_h1]:text-lg [&_h1]:font-semibold [&_h1]:mt-3 [&_h1]:mb-1 [&_h2]:text-base [&_h2]:font-semibold [&_h2]:mt-2 [&_h2]:mb-1 [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:mt-2 [&_h3]:mb-1 [&_p]:my-1"
+                    dangerouslySetInnerHTML={{ __html: form.interviewGuide || "Not provided" }}
+                  />
                 </div>
                 <div>
                   <Label className="text-muted-foreground">Close Context</Label>
