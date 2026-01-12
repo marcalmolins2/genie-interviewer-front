@@ -33,7 +33,7 @@ export function Stepper({ steps, currentStep, completedSteps = [], onStepClick, 
                   onClick={() => isClickable && onStepClick?.(index)}
                   disabled={!isClickable}
                   className={cn(
-                    'flex items-center justify-center w-8 h-8 rounded-full border-2 transition-colors',
+                    'flex items-center justify-center w-8 h-8 shrink-0 aspect-square rounded-full border-2 transition-colors',
                     isCompleted && 'bg-primary border-primary text-primary-foreground',
                     isCurrent && 'border-primary text-primary bg-background',
                     isUpcoming && 'border-muted-foreground/30 text-muted-foreground',
