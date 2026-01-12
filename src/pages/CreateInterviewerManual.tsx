@@ -19,7 +19,7 @@ import { RichTextEditor } from "@/components/RichTextEditor";
 import { ProjectCombobox } from "@/components/ProjectCombobox";
 import { CreateProjectDialog } from "@/components/CreateProjectDialog";
 import { useProjectContext } from "@/pages/InterviewersLayout";
-import { useSidebar } from "@/components/ui/sidebar";
+import { ConfigurationLayout } from "@/components/ConfigurationLayout";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -193,7 +193,6 @@ const FieldError = ({ error }: { error?: string }) => {
 
 export default function CreateInterviewerManual() {
   const { selectedProjectId: sidebarProjectId, projects, refreshProjects, isLoadingProjects } = useProjectContext();
-  const { state: sidebarState, isMobile } = useSidebar();
 
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
@@ -1181,92 +1180,93 @@ Key Research Goals:
     }
   };
 
+  const headerContent = (
+    <div className="container mx-auto px-4 py-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="sm" onClick={handleCancel}>
+            <X className="h-4 w-4 mr-2" />
+            Cancel
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold">Create New Interviewer</h1>
+            <p className="text-muted-foreground text-sm">Follow the steps to configure and deploy your interview agent</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const footerContent = (
+    <div className="container mx-auto px-4 p-4">
+      <div className="flex justify-between items-center">
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={prevStep} disabled={currentStep === 0}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Previous
+          </Button>
+          {completedSteps.includes(0) && (
+            <Button variant="secondary" onClick={saveDraft} disabled={isSavingDraft}>
+              {isSavingDraft ? "Saving..." : "Save Draft"}
+            </Button>
+          )}
+        </div>
+        <div className="text-sm text-muted-foreground">
+          Step {currentStep + 1} of {steps.length}
+        </div>
+        <div className="relative">
+          {!validateStep(currentStep) && showValidation && getValidationMessage(currentStep) && (
+            <div className="absolute bottom-full right-0 mb-2 w-64 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-md px-3 py-2 text-xs text-amber-900 dark:text-amber-200">
+              {getValidationMessage(currentStep)}
+            </div>
+          )}
+          {currentStep < steps.length - 1 ? (
+            <div
+              onClick={() => {
+                if (!validateStep(currentStep)) {
+                  setShowValidation(true);
+                }
+              }}
+            >
+              <Button
+                onClick={nextStep}
+                disabled={!validateStep(currentStep)}
+                className={!validateStep(currentStep) ? "pointer-events-none" : ""}
+              >
+                Next
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
+          ) : (
+            <div
+              onClick={() => {
+                if (!validateStep(currentStep) && !isCreating) {
+                  setShowValidation(true);
+                }
+              }}
+            >
+              <Button
+                onClick={createInterviewer}
+                disabled={!validateStep(currentStep) || isCreating}
+                className={!validateStep(currentStep) || isCreating ? "pointer-events-none" : ""}
+              >
+                {isCreating ? "Creating..." : "Publish"}
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-background">
-      <div className="sticky top-0 z-20 border-b bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="outline" size="sm" onClick={handleCancel}>
-                <X className="h-4 w-4 mr-2" />
-                Cancel
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold">Create New Interviewer</h1>
-                <p className="text-muted-foreground text-sm">Follow the steps to configure and deploy your interview agent</p>
-              </div>
-            </div>
-          </div>
+    <>
+      <ConfigurationLayout header={headerContent} footer={footerContent}>
+        <div className="container mx-auto px-4 py-8">
+          <Stepper steps={steps} currentStep={currentStep} completedSteps={completedSteps} onStepClick={goToStep} />
         </div>
-      </div>
-      <div className="container mx-auto px-4 py-8">
-        <Stepper steps={steps} currentStep={currentStep} completedSteps={completedSteps} onStepClick={goToStep} />
-      </div>
-      <div className="container mx-auto px-4 pb-32">{renderStepContent()}</div>
-      <div 
-        className="fixed bottom-0 right-0 bg-card border-t p-4 transition-[left] duration-200 ease-in-out z-10" 
-        style={{ left: isMobile ? "0px" : sidebarState === "expanded" ? "var(--sidebar-width)" : "var(--sidebar-width-icon)" }}
-      >
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center">
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={prevStep} disabled={currentStep === 0}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Previous
-              </Button>
-              {completedSteps.includes(0) && (
-                <Button variant="secondary" onClick={saveDraft} disabled={isSavingDraft}>
-                  {isSavingDraft ? "Saving..." : "Save Draft"}
-                </Button>
-              )}
-            </div>
-            <div className="text-sm text-muted-foreground">
-              Step {currentStep + 1} of {steps.length}
-            </div>
-            <div className="relative">
-              {!validateStep(currentStep) && showValidation && getValidationMessage(currentStep) && (
-                <div className="absolute bottom-full right-0 mb-2 w-64 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-md px-3 py-2 text-xs text-amber-900 dark:text-amber-200">
-                  {getValidationMessage(currentStep)}
-                </div>
-              )}
-              {currentStep < steps.length - 1 ? (
-                <div
-                  onClick={() => {
-                    if (!validateStep(currentStep)) {
-                      setShowValidation(true);
-                    }
-                  }}
-                >
-                  <Button
-                    onClick={nextStep}
-                    disabled={!validateStep(currentStep)}
-                    className={!validateStep(currentStep) ? "pointer-events-none" : ""}
-                  >
-                    Next
-                    <ArrowRight className="h-4 w-4 ml-2" />
-                  </Button>
-                </div>
-              ) : (
-                <div
-                  onClick={() => {
-                    if (!validateStep(currentStep) && !isCreating) {
-                      setShowValidation(true);
-                    }
-                  }}
-                >
-                  <Button
-                    onClick={createInterviewer}
-                    disabled={!validateStep(currentStep) || isCreating}
-                    className={!validateStep(currentStep) || isCreating ? "pointer-events-none" : ""}
-                  >
-                    {isCreating ? "Creating..." : "Publish"}
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+        <div className="container mx-auto px-4 pb-20">{renderStepContent()}</div>
+      </ConfigurationLayout>
 
       <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
         <AlertDialogContent>
@@ -1287,6 +1287,6 @@ Key Research Goals:
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </>
   );
 }
