@@ -1176,10 +1176,20 @@ Key Research Goals:
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="border-b bg-card">
-        <div className="container mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold">Create New Interviewer</h1>
-          <p className="text-muted-foreground mt-1">Follow the steps to configure and deploy your interview agent</p>
+      <div className="sticky top-0 z-20 border-b bg-card">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="sm" onClick={handleCancel}>
+                <X className="h-4 w-4 mr-2" />
+                Cancel
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold">Create New Interviewer</h1>
+                <p className="text-muted-foreground text-sm">Follow the steps to configure and deploy your interview agent</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       <div className="container mx-auto px-4 py-8">
@@ -1193,10 +1203,6 @@ Key Research Goals:
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center">
             <div className="flex gap-2">
-              <Button variant="ghost" onClick={handleCancel}>
-                <X className="h-4 w-4 mr-2" />
-                Cancel
-              </Button>
               <Button variant="outline" onClick={prevStep} disabled={currentStep === 0}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Previous
