@@ -3,6 +3,7 @@ import {
   LayoutDashboard, 
   Shapes, 
   BarChart3,
+  Flag,
   ChevronLeft
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -13,6 +14,7 @@ const navigation = [
   { name: 'Dashboard', href: '/app/admin', icon: LayoutDashboard, end: true },
   { name: 'Archetypes', href: '/app/admin/archetypes', icon: Shapes, end: false },
   { name: 'Analytics', href: '/app/admin/analytics', icon: BarChart3, end: false },
+  { name: 'Feature Flags', href: '/app/admin/flags', icon: Flag, end: false },
 ];
 
 export default function AdminLayout() {

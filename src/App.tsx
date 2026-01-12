@@ -22,6 +22,7 @@ import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminArchetypes from "./pages/admin/AdminArchetypes";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
+import AdminFeatureFlags from "./pages/admin/AdminFeatureFlags";
 import PublicInterview from "./pages/PublicInterview";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import {
@@ -79,6 +80,7 @@ const App = () => (
               <Route index element={<AdminDashboard />} />
               <Route path="archetypes" element={<AdminArchetypes />} />
               <Route path="analytics" element={<AdminAnalytics />} />
+              <Route path="flags" element={<AdminFeatureFlags />} />
             </Route>
           </Route>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
