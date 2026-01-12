@@ -1180,7 +1180,7 @@ Key Research Goals:
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm" onClick={handleCancel}>
+              <Button variant="outline" size="sm" onClick={handleCancel}>
                 <X className="h-4 w-4 mr-2" />
                 Cancel
               </Button>
