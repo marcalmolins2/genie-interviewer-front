@@ -10,12 +10,22 @@ import {
   Send, 
   Bot, 
   User, 
-  ArrowLeft,
+  X,
   Settings,
   CheckCircle,
   Clock,
   Sparkles
 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Channel, Archetype, ARCHETYPES, PRICE_BY_CHANNEL } from '@/types';
 import { interviewersService, agentsService } from '@/services/interviewers';
 import { useToast } from '@/hooks/use-toast';
@@ -80,9 +90,29 @@ export default function CreateInterviewerAssisted() {
     knowledgeText: ''
   });
   const [isCreating, setIsCreating] = useState(false);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const hasUnsavedChanges = (): boolean => {
+    return messages.length > 1 || // More than just the welcome message
+           interviewerData.name !== '' ||
+           interviewerData.researchGoals !== '';
+  };
+
+  const handleCancel = () => {
+    if (hasUnsavedChanges()) {
+      setShowCancelDialog(true);
+    } else {
+      navigate('/app/interviewers');
+    }
+  };
+
+  const confirmCancel = () => {
+    setShowCancelDialog(false);
+    navigate('/app/interviewers');
+  };
 
   useEffect(() => {
     // Send welcome message when component mounts
@@ -441,27 +471,31 @@ Your interviewer is now live and ready to conduct interviews. You can view detai
 
   return (
     <div className="container max-w-4xl py-8">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <Link to="/app/interviewers">
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Interviewers
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-10 bg-background pb-4 -mx-4 px-4 -mt-8 pt-8">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={handleCancel}
+            >
+              <X className="h-4 w-4 mr-2" />
+              Cancel
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold">Genie-Assisted Interviewer Creation</h1>
+              <p className="text-muted-foreground">Let's create your perfect interviewer together</p>
+            </div>
+          </div>
+          
+          <Link to="/app/interviewers/new/manual">
+            <Button variant="outline" size="sm">
+              <Settings className="h-4 w-4 mr-2" />
+              Switch to Manual
             </Button>
           </Link>
-          <div>
-            <h1 className="text-2xl font-bold">Genie-Assisted Interviewer Creation</h1>
-            <p className="text-muted-foreground">Let's create your perfect interviewer together</p>
-          </div>
         </div>
-        
-        <Link to="/app/interviewers/new/manual">
-          <Button variant="outline" size="sm">
-            <Settings className="h-4 w-4 mr-2" />
-            Switch to Manual
-          </Button>
-        </Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -614,6 +648,28 @@ Your interviewer is now live and ready to conduct interviews. You can view detai
           </Card>
         </div>
       </div>
+
+      {/* Cancel Confirmation Dialog */}
+      <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Discard changes?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have unsaved progress. Are you sure you want to leave? 
+              Your changes will be lost.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Continue editing</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmCancel} 
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Discard
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
