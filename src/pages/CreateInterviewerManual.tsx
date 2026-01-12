@@ -569,18 +569,6 @@ export default function CreateInterviewerManual() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="name">Interviewer Name</Label>
-                  <Input
-                    id="name"
-                    value={form.name}
-                    onChange={(e) => handleFieldChange("name", e.target.value)}
-                    placeholder="e.g., Sam"
-                    className={`mt-1 ${fieldErrors.name ? "border-destructive" : ""}`}
-                    maxLength={20}
-                  />
-                  <CharacterCounter current={form.name.length} max={20} error={fieldErrors.name} />
-                </div>
-                <div>
                   <Label htmlFor="language">Language *</Label>
                   <Select value={form.language} onValueChange={(value) => updateForm({ language: value })}>
                     <SelectTrigger>
@@ -636,6 +624,18 @@ export default function CreateInterviewerManual() {
                   <p className="text-xs text-muted-foreground mt-1">
                     Preview uses browser TTS. Actual interviews use OpenAI voices.
                   </p>
+                </div>
+                <div>
+                  <Label htmlFor="name">Interviewer Name</Label>
+                  <Input
+                    id="name"
+                    value={form.name}
+                    onChange={(e) => handleFieldChange("name", e.target.value)}
+                    placeholder="e.g., Sam"
+                    className={`mt-1 ${fieldErrors.name ? "border-destructive" : ""}`}
+                    maxLength={20}
+                  />
+                  <CharacterCounter current={form.name.length} max={20} error={fieldErrors.name} />
                 </div>
               </CardContent>
             </Card>
