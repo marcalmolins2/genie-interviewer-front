@@ -20,6 +20,7 @@ import { useProjectContext } from './InterviewersLayout';
 import { cn } from '@/lib/utils';
 import { useInterviewerSort } from '@/hooks/useInterviewerSort';
 import { InterviewerSortDropdown } from '@/components/InterviewerSortDropdown';
+import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 
 const channelIcons: Record<Channel, typeof Phone> = {
   inbound_call: Phone,
@@ -29,6 +30,37 @@ const channelIcons: Record<Channel, typeof Phone> = {
 interface InterviewerWithProject extends Agent {
   project?: Project;
   lastInterviewDate?: string | null;
+}
+
+// Smart button that routes based on feature flag availability
+function NewInterviewerButton() {
+  const assistedEnabled = useFeatureFlag('ASSISTED_CONFIGURATION');
+  const manualEnabled = useFeatureFlag('MANUAL_CONFIGURATION');
+  
+  // Determine the target route based on flags
+  const getTargetRoute = () => {
+    if (assistedEnabled && manualEnabled) {
+      // Both enabled: show selector
+      return '/app/interviewers/new';
+    } else if (assistedEnabled) {
+      // Only assisted enabled
+      return '/app/interviewers/new/assisted';
+    } else if (manualEnabled) {
+      // Only manual enabled: go directly to manual
+      return '/app/interviewers/new/manual';
+    }
+    // Fallback (shouldn't happen - at least one should be enabled)
+    return '/app/interviewers/new';
+  };
+
+  return (
+    <Link to={getTargetRoute()}>
+      <Button className="gap-2">
+        <Plus className="h-4 w-4" />
+        New Interviewer
+      </Button>
+    </Link>
+  );
 }
 
 export default function InterviewersList() {
@@ -329,14 +361,7 @@ export default function InterviewersList() {
           </p>
         </div>
         
-        <div className="flex items-center gap-2">
-          <Link to="/app/interviewers/new/assisted">
-            <Button className="gap-2">
-              <Plus className="h-4 w-4" />
-              New Interviewer
-            </Button>
-          </Link>
-        </div>
+        <NewInterviewerButton />
       </div>
 
       {/* Search and Filters */}
