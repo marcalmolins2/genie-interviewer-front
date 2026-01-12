@@ -177,7 +177,7 @@ const FieldError = ({ error }: { error?: string }) => {
 };
 
 export default function CreateInterviewerManual() {
-  const { selectedProjectId: sidebarProjectId, projects, refreshProjects } = useProjectContext();
+  const { selectedProjectId: sidebarProjectId, projects, refreshProjects, isLoadingProjects } = useProjectContext();
   
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
@@ -452,6 +452,7 @@ export default function CreateInterviewerManual() {
               selectedProjectId={form.selectedProjectId}
               onProjectSelect={(id) => updateForm({ selectedProjectId: id })}
               onCreateProject={() => setShowCreateProjectDialog(true)}
+              loading={isLoadingProjects}
             />
 
             <CreateProjectDialog

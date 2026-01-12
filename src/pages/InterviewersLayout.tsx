@@ -29,6 +29,7 @@ interface ProjectContextType {
   setSelectedProjectId: (id: string | null) => void;
   projects: Project[];
   refreshProjects: () => Promise<void>;
+  isLoadingProjects: boolean;
 }
 
 const ProjectContext = createContext<ProjectContextType>({
@@ -36,6 +37,7 @@ const ProjectContext = createContext<ProjectContextType>({
   setSelectedProjectId: () => {},
   projects: [],
   refreshProjects: async () => {},
+  isLoadingProjects: true,
 });
 
 export const useProjectContext = () => useContext(ProjectContext);
@@ -253,13 +255,17 @@ function InterviewersSidebar() {
 export default function InterviewersLayout() {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [isLoadingProjects, setIsLoadingProjects] = useState(true);
 
   const refreshProjects = async () => {
+    setIsLoadingProjects(true);
     try {
       const data = await projectsService.getProjects();
       setProjects(data);
     } catch (error) {
       console.error('Failed to load projects:', error);
+    } finally {
+      setIsLoadingProjects(false);
     }
   };
 
@@ -268,7 +274,7 @@ export default function InterviewersLayout() {
   }, []);
 
   return (
-    <ProjectContext.Provider value={{ selectedProjectId, setSelectedProjectId, projects, refreshProjects }}>
+    <ProjectContext.Provider value={{ selectedProjectId, setSelectedProjectId, projects, refreshProjects, isLoadingProjects }}>
       <SidebarProvider defaultOpen={true}>
         <div className="flex w-full">
           <InterviewersSidebar />

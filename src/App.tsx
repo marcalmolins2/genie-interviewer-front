@@ -51,10 +51,10 @@ const App = () => (
               <Route index element={<InterviewersList />} />
               <Route path="trash" element={<InterviewersTrash />} />
               <Route path="archive" element={<InterviewersArchive />} />
+              <Route path="new" element={<InterviewerCreationSelector />} />
+              <Route path="new/manual" element={<CreateInterviewerManual />} />
+              <Route path="new/assisted" element={<CreateInterviewerAssisted />} />
             </Route>
-            <Route path="interviewers/new" element={<InterviewerCreationSelector />} />
-            <Route path="interviewers/new/manual" element={<CreateInterviewerManual />} />
-            <Route path="interviewers/new/assisted" element={<CreateInterviewerAssisted />} />
             <Route path="interviewers/:interviewerId" element={<InterviewerOverview />} />
             <Route path="interviewers/:interviewerId/edit" element={<EditInterviewer />} />
             <Route path="interviewers/:interviewerId/insights" element={<InterviewerInsights />} />
