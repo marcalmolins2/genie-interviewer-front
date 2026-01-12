@@ -505,10 +505,10 @@ export default function CreateInterviewerManual() {
               </p>
             </div>
 
-            {/* Interviewer Identity */}
+            {/* Interviewer Details */}
             <Card>
               <CardHeader>
-                <CardTitle>Interviewer Identity</CardTitle>
+                <CardTitle>Interviewer Details</CardTitle>
                 <CardDescription>
                   Give your interviewer a clear title and description to help identify its purpose.
                 </CardDescription>
