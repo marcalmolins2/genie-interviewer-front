@@ -1099,9 +1099,9 @@ Key Research Goals:
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="flex flex-col h-[calc(100vh-4rem)] bg-background -my-8 -mx-[var(--container-padding,1rem)]" style={{ '--container-padding': '1rem' } as React.CSSProperties}>
       {/* Sticky Header */}
-      <div className="sticky top-0 z-10 border-b bg-card">
+      <div className="sticky top-0 z-10 border-b bg-card shrink-0">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             <Button 
@@ -1119,11 +1119,17 @@ Key Research Goals:
           </div>
         </div>
       </div>
-      <div className="container mx-auto px-4 py-8">
-        <Stepper steps={steps} currentStep={currentStep} completedSteps={completedSteps} onStepClick={goToStep} />
+      
+      {/* Scrollable Content Area */}
+      <div className="flex-1 overflow-auto">
+        <div className="container mx-auto px-4 py-8">
+          <Stepper steps={steps} currentStep={currentStep} completedSteps={completedSteps} onStepClick={goToStep} />
+        </div>
+        <div className="container mx-auto px-4 pb-8">{renderStepContent()}</div>
       </div>
-      <div className="container mx-auto px-4 pb-32">{renderStepContent()}</div>
-      <div className="fixed bottom-0 left-0 right-0 bg-card border-t p-4">
+      
+      {/* Sticky Footer - respects parent container bounds */}
+      <div className="border-t bg-card p-4 shrink-0">
         <div className="container mx-auto">
           <div className="flex justify-between items-center">
             <div className="flex gap-2">

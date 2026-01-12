@@ -280,7 +280,7 @@ export default function InterviewersLayout() {
           <InterviewersSidebar />
 
           <main className="flex-1 py-8 min-h-[calc(100vh-4rem)]">
-            <div className="container">
+            <div className="container px-4">
               <Outlet />
             </div>
           </main>
