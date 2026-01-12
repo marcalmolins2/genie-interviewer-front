@@ -12,6 +12,16 @@ import { ChannelSelector } from "@/components/ChannelSelector";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, ArrowRight, Upload, FileText, X, AlertCircle, Edit, FolderOpen } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { ARCHETYPES, Channel, Archetype, PRICE_BY_CHANNEL, GuideSchema, PROJECT_TYPE_LABELS, Project } from "@/types";
 import { interviewersService, agentsService } from "@/services/interviewers";
 import { useToast } from "@/hooks/use-toast";
@@ -208,6 +218,7 @@ export default function CreateInterviewerManual() {
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
   const [showCreateProjectDialog, setShowCreateProjectDialog] = useState(false);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -219,6 +230,27 @@ export default function CreateInterviewerManual() {
   }, [sidebarProjectId]);
 
   const selectedProject = projects.find(p => p.id === form.selectedProjectId);
+
+  const hasUnsavedChanges = (): boolean => {
+    return completedSteps.length > 0 || 
+           form.title.trim() !== '' || 
+           form.description.trim() !== '' ||
+           form.name.trim() !== '' ||
+           form.selectedProjectId !== sidebarProjectId;
+  };
+
+  const handleCancel = () => {
+    if (hasUnsavedChanges()) {
+      setShowCancelDialog(true);
+    } else {
+      navigate('/app/interviewers');
+    }
+  };
+
+  const confirmCancel = () => {
+    setShowCancelDialog(false);
+    navigate('/app/interviewers');
+  };
 
   const updateForm = (updates: Partial<CreateInterviewerForm>) => {
     setForm((prev) => ({ ...prev, ...updates }));
@@ -1068,10 +1100,23 @@ Key Research Goals:
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="border-b bg-card">
-        <div className="container mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold">Create New Interviewer</h1>
-          <p className="text-muted-foreground mt-1">Follow the steps to configure and deploy your interview agent</p>
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-10 border-b bg-card">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={handleCancel}
+              className="shrink-0"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold">Create New Interviewer</h1>
+              <p className="text-muted-foreground text-sm">Follow the steps to configure and deploy your interview agent</p>
+            </div>
+          </div>
         </div>
       </div>
       <div className="container mx-auto px-4 py-8">
@@ -1139,6 +1184,28 @@ Key Research Goals:
           </div>
         </div>
       </div>
+
+      {/* Cancel Confirmation Dialog */}
+      <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Discard changes?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have unsaved progress. Are you sure you want to leave? 
+              Your changes will be lost.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Continue editing</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmCancel} 
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Discard
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
