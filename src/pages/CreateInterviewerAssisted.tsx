@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Navigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -29,6 +29,7 @@ import {
 import { Channel, Archetype, ARCHETYPES, PRICE_BY_CHANNEL } from '@/types';
 import { interviewersService, agentsService } from '@/services/interviewers';
 import { useToast } from '@/hooks/use-toast';
+import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 
 // Conversation phases for tracking progress
 enum ConversationPhase {
@@ -75,6 +76,12 @@ const phaseLabels = {
 };
 
 export default function CreateInterviewerAssisted() {
+  const isEnabled = useFeatureFlag('ASSISTED_CONFIGURATION');
+  
+  // In-page guard: redirect if flag is disabled while on page
+  if (!isEnabled) {
+    return <Navigate to="/app/interviewers/new" replace />;
+  }
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentMessage, setCurrentMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
