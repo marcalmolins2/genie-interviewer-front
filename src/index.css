@@ -328,6 +328,27 @@
     font-size: 14px;
   }
 
+  .rich-text-editor .ql-editor ul,
+  .rich-text-editor .ql-editor ol {
+    padding-left: 1.5em;
+  }
+
+  .rich-text-editor .ql-editor ul > li,
+  .rich-text-editor .ql-editor ol > li {
+    padding-left: 0.5em;
+    line-height: 1.6;
+  }
+
+  .rich-text-editor .ql-editor ul > li::before {
+    font-size: 0.5em;
+    vertical-align: middle;
+    margin-right: 0.25em;
+  }
+
+  .rich-text-editor .ql-editor li {
+    margin-bottom: 0.25em;
+  }
+
   .rich-text-editor .ql-editor.ql-blank::before {
     @apply text-muted-foreground;
     font-style: normal;
