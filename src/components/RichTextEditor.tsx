@@ -1,10 +1,9 @@
-import ReactQuill, { Quill } from 'react-quill';
+import { useRef, useEffect } from 'react';
+import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 // @ts-ignore - no types available for this package
-import MarkdownShortcuts from 'quill-markdown-shortcuts';
-
-// Register the markdown shortcuts module
-Quill.register('modules/markdownShortcuts', MarkdownShortcuts);
+import QuillMarkdown from 'quilljs-markdown';
+import 'quilljs-markdown/dist/quilljs-markdown-common-style.css';
 
 interface RichTextEditorProps {
   value: string;
@@ -19,8 +18,7 @@ const modules = {
     ['bold', 'italic'],
     [{ 'list': 'ordered'}, { 'list': 'bullet' }],
     ['clean']
-  ],
-  markdownShortcuts: {}
+  ]
 };
 
 const formats = [
@@ -30,12 +28,36 @@ const formats = [
 ];
 
 export const RichTextEditor = ({ value, onChange, placeholder, minHeight = '150px' }: RichTextEditorProps) => {
+  const quillRef = useRef<ReactQuill>(null);
+  const markdownRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (quillRef.current) {
+      const editor = quillRef.current.getEditor();
+      
+      if (markdownRef.current) {
+        markdownRef.current.destroy();
+      }
+      
+      markdownRef.current = new QuillMarkdown(editor, {
+        ignoreTags: ['strikethrough'],
+      });
+    }
+    
+    return () => {
+      if (markdownRef.current) {
+        markdownRef.current.destroy();
+      }
+    };
+  }, []);
+
   return (
     <div 
       className="rich-text-editor [&_.ql-editor]:text-sm"
       style={{ ['--editor-min-height' as string]: minHeight }}
     >
       <ReactQuill
+        ref={quillRef}
         theme="snow"
         value={value}
         onChange={onChange}
