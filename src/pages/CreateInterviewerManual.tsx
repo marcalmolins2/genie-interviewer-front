@@ -1142,8 +1142,8 @@ Key Research Goals:
         <Stepper steps={steps} currentStep={currentStep} completedSteps={completedSteps} onStepClick={goToStep} />
       </div>
       <div className="container mx-auto px-4 pb-32">{renderStepContent()}</div>
-      <div className="fixed bottom-0 left-0 right-0 bg-card border-t p-4">
-        <div className="container mx-auto">
+      <div className="fixed bottom-0 right-0 bg-card border-t p-4" style={{ left: 'var(--sidebar-width, 0px)' }}>
+        <div className="max-w-6xl mx-auto px-4">
           <div className="flex justify-between items-center">
             <div className="flex gap-2">
               <Button variant="outline" onClick={prevStep} disabled={currentStep === 0}>
