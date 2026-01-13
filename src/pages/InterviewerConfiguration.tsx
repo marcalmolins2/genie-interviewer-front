@@ -681,7 +681,40 @@ export default function InterviewerConfiguration({ mode = 'create' }: Interviewe
     switch (currentStep) {
       case 0:
         // In edit mode, show project as read-only
-        if (mode === 'edit' && selectedProject) {
+        if (mode === 'edit') {
+          if (selectedProject) {
+            return (
+              <div className="space-y-6 max-w-2xl mx-auto">
+                <div>
+                  <h2 className="text-2xl font-bold mb-2">Project</h2>
+                  <p className="text-muted-foreground">
+                    This interviewer belongs to the following project.
+                  </p>
+                </div>
+
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-muted">
+                        <FolderOpen className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                      <div>
+                        <p className="font-medium">{selectedProject.name}</p>
+                        <Badge variant="secondary" className="mt-1">
+                          {PROJECT_TYPE_LABELS[selectedProject.projectType]}
+                        </Badge>
+                        {selectedProject.caseCode && (
+                          <p className="text-xs text-muted-foreground mt-1">{selectedProject.caseCode}</p>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            );
+          }
+          
+          // Project not found in edit mode
           return (
             <div className="space-y-6 max-w-2xl mx-auto">
               <div>
@@ -690,25 +723,9 @@ export default function InterviewerConfiguration({ mode = 'create' }: Interviewe
                   This interviewer belongs to the following project.
                 </p>
               </div>
-
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-muted">
-                      <FolderOpen className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                    <div>
-                      <p className="font-medium">{selectedProject.name}</p>
-                      <Badge variant="secondary" className="mt-1">
-                        {PROJECT_TYPE_LABELS[selectedProject.projectType]}
-                      </Badge>
-                      {selectedProject.caseCode && (
-                        <p className="text-xs text-muted-foreground mt-1">{selectedProject.caseCode}</p>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="text-center py-8 bg-muted/30 rounded-lg border border-dashed">
+                <p className="text-muted-foreground">Project not found for this interviewer.</p>
+              </div>
             </div>
           );
         }
@@ -1370,7 +1387,10 @@ Key Research Goals:
   };
 
   // Show loading spinner while loading interviewer data in edit mode
-  if (isLoadingInterviewer) {
+  // Also wait for projects to load so we can resolve selectedProject
+  const isLoading = isLoadingInterviewer || (mode === 'edit' && isLoadingProjects);
+  
+  if (isLoading) {
     return (
       <ConfigurationLayout 
         header={
