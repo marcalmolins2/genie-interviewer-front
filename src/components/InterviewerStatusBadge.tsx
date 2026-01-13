@@ -1,23 +1,23 @@
-import { AgentStatus } from '@/types';
+import { InterviewerStatus } from '@/types';
 import { cn } from '@/lib/utils';
 
 interface InterviewerStatusBadgeProps {
-  status: AgentStatus;
+  status: InterviewerStatus;
   className?: string;
 }
 
-const statusConfig = {
-  live: {
-    label: 'LIVE',
-    className: 'status-badge-live',
-  },
-  ready_to_test: {
+const statusConfig: Record<InterviewerStatus, { label: string; className: string }> = {
+  draft: {
     label: 'DRAFT',
     className: 'status-badge-ready',
   },
-  suspended: {
-    label: 'SUSPENDED',
-    className: 'status-badge-suspended',
+  ready_to_test: {
+    label: 'READY',
+    className: 'status-badge-ready',
+  },
+  live: {
+    label: 'LIVE',
+    className: 'status-badge-live',
   },
   paused: {
     label: 'PAUSED',

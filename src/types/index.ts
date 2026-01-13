@@ -14,8 +14,8 @@ export const PROJECT_TYPE_LABELS: Record<ProjectType, string> = {
   client_work: 'Client Work',
 };
 
-// Interviewer status lifecycle
-export type InterviewerStatus = 'draft' | 'ready_to_test' | 'launching' | 'published' | 'unpublished' | 'archived' | 'deleted' | 'active';
+// Interviewer status lifecycle (unified model)
+export type InterviewerStatus = 'draft' | 'ready_to_test' | 'live' | 'paused' | 'archived' | 'finished';
 
 // Session types
 export type ConversationType = 'test' | 'live';
@@ -377,8 +377,8 @@ export const ARCHETYPES: ArchetypeInfo[] = [
 
 // ============= Legacy Compatibility (to be removed) =============
 
-// Keep Agent type as alias for Interviewer during migration
-export type AgentStatus = 'live' | 'ready_to_test' | 'suspended' | 'paused' | 'archived' | 'finished';
+// Legacy alias - deprecated, use InterviewerStatus
+export type AgentStatus = InterviewerStatus;
 export type AgentPermission = 'viewer' | 'editor' | 'owner';
 
 export interface Agent {

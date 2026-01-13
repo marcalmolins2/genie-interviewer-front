@@ -161,7 +161,7 @@ const mockAgents: Agent[] = [
     archetype: 'customer_user',
     createdAt: '2024-12-05T09:15:00Z',
     updatedAt: '2024-12-18T11:20:00Z',
-    status: 'suspended',
+    status: 'paused',
     language: 'en',
     channel: 'inbound_call',
     interviewsCount: 23,
@@ -774,13 +774,13 @@ export const interviewersService = {
     return { status: 'live' };
   },
 
-  // Activate agent (from suspended to live)
+  // Activate agent (from paused to live)
   async activateAgent(agentId: string): Promise<Agent> {
     await delay(400);
     const agent = mockAgents.find(a => a.id === agentId);
     if (!agent) throw new Error('Agent not found');
     
-    if (agent.status === 'suspended') {
+    if (agent.status === 'paused') {
       agent.status = 'live';
     }
     
@@ -886,9 +886,9 @@ export const interviewersService = {
     }
     
     agent.deletedAt = new Date().toISOString();
-    // Auto-suspend when moving to trash
+    // Auto-pause when moving to trash
     if (agent.status === 'live') {
-      agent.status = 'suspended';
+      agent.status = 'paused';
     }
     return agent;
   },

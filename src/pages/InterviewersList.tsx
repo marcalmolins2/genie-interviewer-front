@@ -13,7 +13,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Agent, Channel, AgentStatus, Project, PROJECT_TYPE_LABELS } from '@/types';
+import { Agent, Channel, InterviewerStatus, Project, PROJECT_TYPE_LABELS } from '@/types';
 import { interviewersService, agentsService } from '@/services/interviewers';
 import { useToast } from '@/hooks/use-toast';
 import { useProjectContext } from './InterviewersLayout';
@@ -67,7 +67,7 @@ export default function InterviewersList() {
   const [interviewers, setInterviewers] = useState<InterviewerWithProject[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedStatuses, setSelectedStatuses] = useState<AgentStatus[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<InterviewerStatus[]>([]);
   const [selectedChannels, setSelectedChannels] = useState<Channel[]>([]);
   const [selectedArchetypes, setSelectedArchetypes] = useState<string[]>([]);
   const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
@@ -437,7 +437,7 @@ export default function InterviewersList() {
                     </AccordionTrigger>
                     <AccordionContent className="pb-3">
                       <div className="space-y-2 pt-2">
-                        {(['live', 'suspended', 'ready_to_test', 'finished'] as AgentStatus[]).map((status) => (
+                        {(['live', 'paused', 'ready_to_test', 'finished'] as InterviewerStatus[]).map((status) => (
                           <div key={status} className="flex items-center space-x-2">
                             <Checkbox
                               id={`status-${status}`}
