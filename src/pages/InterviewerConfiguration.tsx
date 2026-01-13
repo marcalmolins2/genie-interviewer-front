@@ -824,11 +824,11 @@ export default function InterviewerConfiguration({ mode = 'create' }: Interviewe
 
             {/* Expert Source Toggle - Only shown for Expert Interview */}
             {form.archetype === 'expert_interview' && (
-              <Card className="border-primary/20 bg-primary/5">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">How are you sourcing experts?</CardTitle>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Expert Source</CardTitle>
                   <CardDescription>
-                    This affects the interview workflow and how the AI moderator behaves
+                    How are you sourcing experts? This affects the interview workflow.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
