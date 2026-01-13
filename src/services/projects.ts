@@ -45,7 +45,10 @@ export const projectsService = {
    */
   async getProjects(): Promise<ProjectWithMembership[]> {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Not authenticated');
+    if (!user) {
+      // Return empty array instead of throwing - let UI handle redirect
+      return [];
+    }
 
     const { data: memberships, error: membershipError } = await supabase
       .from('project_memberships')
@@ -85,7 +88,7 @@ export const projectsService = {
    */
   async getProject(projectId: string): Promise<ProjectWithMembership | null> {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Not authenticated');
+    if (!user) return null;
 
     const { data, error } = await supabase
       .from('projects')
