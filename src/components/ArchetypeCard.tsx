@@ -4,23 +4,17 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   Microscope, 
-  Users, 
   Heart, 
-  Zap, 
-  Search, 
-  FileSearch, 
-  Users2 
+  Brain, 
+  Target 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const iconMap = {
   Microscope,
-  Users,
   Heart,
-  Zap,
-  Search,
-  FileSearch,
-  Users2,
+  Brain,
+  Target,
 };
 
 interface ArchetypeCardProps {
@@ -31,7 +25,7 @@ interface ArchetypeCardProps {
 }
 
 export function ArchetypeCard({ archetype, selected, onSelect, className }: ArchetypeCardProps) {
-  const IconComponent = iconMap[archetype.icon as keyof typeof iconMap] || Search;
+  const IconComponent = iconMap[archetype.icon as keyof typeof iconMap] || Microscope;
   
   return (
     <Card 

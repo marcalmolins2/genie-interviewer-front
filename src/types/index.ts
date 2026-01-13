@@ -33,7 +33,10 @@ export interface SessionFeedback {
 export type Channel = 'inbound_call' | 'web_link';
 
 // Archetype types
-export type Archetype = 'expert_deep_dive' | 'client_stakeholder' | 'customer_user' | 'rapid_survey' | 'diagnostic' | 'investigative' | 'panel_moderator';
+export type Archetype = 'expert_interview' | 'belief_audit' | 'customer_interview' | 'maturity_assessment';
+
+// Expert source variant (only applicable to expert_interview archetype)
+export type ExpertSource = 'internal' | 'expert_network';
 
 // ============= Core Entities =============
 
@@ -261,6 +264,7 @@ export interface ArchetypeInfo {
   icon: string;
   useCase: string;
   examples: string[];
+  hasVariant?: boolean; // Flag for archetypes with secondary options (e.g., expert_interview)
 }
 
 // ============= Permission Descriptions =============
@@ -318,60 +322,37 @@ export const PRICE_BY_CHANNEL: Record<Channel, number> = {
 
 export const ARCHETYPES: ArchetypeInfo[] = [
   {
-    id: 'expert_deep_dive',
-    title: 'Expert Deep-Dive',
+    id: 'expert_interview',
+    title: 'Expert Interview',
     description: 'In-depth technical discussions with subject matter experts',
     icon: 'Microscope',
-    useCase: 'Technical validation, detailed research insights',
-    examples: ['Battery technology expert interviews', 'Software architecture discussions', 'Medical device validation']
+    useCase: 'Technical validation, industry insights, specialized knowledge',
+    examples: ['Technology expert interviews', 'Industry specialist discussions', 'Technical due diligence'],
+    hasVariant: true
   },
   {
-    id: 'client_stakeholder',
-    title: 'Client Stakeholder',
-    description: 'Strategic conversations with business decision-makers',
-    icon: 'Users',
-    useCase: 'Requirements gathering, strategic alignment',
-    examples: ['Executive interviews', 'Stakeholder alignment sessions', 'Strategic planning discussions']
+    id: 'belief_audit',
+    title: 'Belief Audit',
+    description: 'Explore assumptions, hypotheses, and mental models',
+    icon: 'Brain',
+    useCase: 'Strategic alignment, assumption testing, stakeholder perspectives',
+    examples: ['Executive alignment sessions', 'Hypothesis validation', 'Strategic assumption testing']
   },
   {
-    id: 'customer_user',
-    title: 'Customer User',
-    description: 'Understanding end-user needs and experiences',
+    id: 'customer_interview',
+    title: 'Customer Interview',
+    description: 'Understanding end-user needs, experiences, and feedback',
     icon: 'Heart',
-    useCase: 'User research, product feedback, experience mapping',
+    useCase: 'User research, product feedback, customer satisfaction',
     examples: ['Product usability studies', 'Customer satisfaction research', 'User journey mapping']
   },
   {
-    id: 'rapid_survey',
-    title: 'Rapid Survey',
-    description: 'Quick pulse checks and quantitative data collection',
-    icon: 'Zap',
-    useCase: 'Market research, quick polls, feedback collection',
-    examples: ['NPS surveys', 'Market sentiment analysis', 'Quick preference polling']
-  },
-  {
-    id: 'diagnostic',
-    title: 'Diagnostic',
-    description: 'Problem identification and root cause analysis',
-    icon: 'Search',
-    useCase: 'Issue investigation, process analysis',
-    examples: ['Problem diagnosis interviews', 'Process improvement research', 'Issue investigation']
-  },
-  {
-    id: 'investigative',
-    title: 'Investigative',
-    description: 'Deep research and fact-finding missions',
-    icon: 'FileSearch',
-    useCase: 'Market research, competitive analysis',
-    examples: ['Competitive landscape research', 'Market analysis interviews', 'Due diligence research']
-  },
-  {
-    id: 'panel_moderator',
-    title: 'Panel Moderator',
-    description: 'Facilitating group discussions and workshops',
-    icon: 'Users2',
-    useCase: 'Focus groups, workshops, collaborative sessions',
-    examples: ['Focus groups', 'Workshop facilitation', 'Group ideation sessions']
+    id: 'maturity_assessment',
+    title: 'Maturity Assessment',
+    description: 'Evaluate capabilities, processes, and organizational readiness',
+    icon: 'Target',
+    useCase: 'Capability assessments, benchmarking, gap analysis',
+    examples: ['Digital maturity assessment', 'Process capability evaluation', 'Organizational readiness']
   }
 ];
 
