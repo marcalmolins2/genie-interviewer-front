@@ -811,18 +811,9 @@ export default function InterviewerOverview() {
               <CardTitle>Quick Stats</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-3 bg-muted rounded-lg">
-                  <div className="text-2xl font-bold text-primary">{interviewer.interviewsCount}</div>
-                  <div className="text-xs text-muted-foreground">Total Interviews</div>
-                </div>
-
-                <div className="text-center p-3 bg-muted rounded-lg">
-                  <div className="text-2xl font-bold text-primary">
-                    ${(interviewer.pricePerInterviewUsd * interviewer.interviewsCount).toFixed(2)}
-                  </div>
-                  <div className="text-xs text-muted-foreground">Total Spent</div>
-                </div>
+              <div className="text-center p-3 bg-muted rounded-lg">
+                <div className="text-2xl font-bold text-primary">{interviewer.interviewsCount}</div>
+                <div className="text-xs text-muted-foreground">Total Interviews</div>
               </div>
 
               {stats && (
