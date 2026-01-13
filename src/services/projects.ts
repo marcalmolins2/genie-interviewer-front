@@ -1,31 +1,14 @@
-import { supabase, isSupabaseConfigured } from '@/integrations/supabase/client';
-import type {
-  Project,
-  ProjectMembership,
-  ProjectRole,
-  ProjectType,
-  User,
-} from '@/types';
-import type {
-  Profile,
-  ProjectInsert,
-  ProjectWithMembership,
-  ProjectRow,
-  ProjectMembershipRow,
-  profileToUser,
-  rowToProject,
-  rowToProjectMembership,
-} from '@/integrations/supabase/database.types';
+// Project Service Layer
+import { Project, ProjectMembership, ProjectRole, ProjectType, User } from '@/types';
+import { mockProjects, mockProjectMemberships, mockUsers, getProjectById, getUserById } from './mockData';
 
-// Extended membership type with user
-export type ProjectMembershipWithUser = ProjectMembership & {
-  user?: User;
-};
+// Current user ID (mock - in production this would come from auth)
+const CURRENT_USER_ID = 'user-1';
 
 export interface CreateProjectInput {
   name: string;
   caseCode?: string;
-  projectType?: ProjectType;
+  projectType: ProjectType;
   description?: string;
 }
 
@@ -36,341 +19,193 @@ export interface UpdateProjectInput {
   description?: string;
 }
 
-// Note: Mock data has been removed - all data now comes from Supabase
-// Use seedDataService.seedAll() to populate the database with sample data
+// In-memory store for new projects (mock persistence)
+let projectsStore = [...mockProjects];
+let membershipsStore = [...mockProjectMemberships];
 
 export const projectsService = {
   /**
-   * Get all projects accessible by the current user
+   * Get all projects the current user has access to
    */
-  async getProjects(): Promise<ProjectWithMembership[]> {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      // Return empty array instead of throwing - let UI handle redirect
-      return [];
-    }
-
-    const { data: memberships, error: membershipError } = await supabase
-      .from('project_memberships')
-      .select(`
-        *,
-        project:projects(*)
-      `)
-      .eq('user_id', user.id);
-
-    if (membershipError) throw membershipError;
-
-    return (memberships || []).map(m => {
-      const projectRow = m.project as unknown as ProjectRow;
-      const project: Project = {
-        id: projectRow.id,
-        caseCode: projectRow.case_code || '',
-        name: projectRow.name,
-        description: projectRow.description || undefined,
-        projectType: projectRow.project_type as ProjectType,
-        createdAt: projectRow.created_at,
-        updatedAt: projectRow.updated_at,
-      };
-      const membership: ProjectMembership = {
-        id: m.id,
-        projectId: m.project_id,
-        userId: m.user_id,
-        role: m.role as ProjectRole,
-        createdAt: m.created_at,
-        updatedAt: m.created_at,
-      };
-      return { ...project, membership };
-    });
+  async getProjects(): Promise<Project[]> {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // Get projects where user has membership
+    const userMemberships = membershipsStore.filter(pm => pm.userId === CURRENT_USER_ID);
+    const projectIds = userMemberships.map(pm => pm.projectId);
+    
+    return projectsStore.filter(p => projectIds.includes(p.id));
   },
 
   /**
    * Get a single project by ID
    */
-  async getProject(projectId: string): Promise<ProjectWithMembership | null> {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return null;
-
-    const { data, error } = await supabase
-      .from('projects')
-      .select('*')
-      .eq('id', projectId)
-      .maybeSingle();
-
-    if (error) throw error;
-    if (!data) return null;
-
-    const projectRow = data as ProjectRow;
-    const project: Project = {
-      id: projectRow.id,
-      caseCode: projectRow.case_code || '',
-      name: projectRow.name,
-      description: projectRow.description || undefined,
-      projectType: projectRow.project_type as ProjectType,
-      createdAt: projectRow.created_at,
-      updatedAt: projectRow.updated_at,
-    };
-
-    const { data: membership } = await supabase
-      .from('project_memberships')
-      .select('*')
-      .eq('project_id', projectId)
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    if (membership) {
-      const mem: ProjectMembership = {
-        id: membership.id,
-        projectId: membership.project_id,
-        userId: membership.user_id,
-        role: membership.role as ProjectRole,
-        createdAt: membership.created_at,
-        updatedAt: membership.created_at,
-      };
-      return { ...project, membership: mem };
-    }
-
-    return project;
+  async getProject(projectId: string): Promise<Project | null> {
+    await new Promise(resolve => setTimeout(resolve, 50));
+    return projectsStore.find(p => p.id === projectId) || null;
   },
 
   /**
    * Get current user's role in a project
    */
   async getUserProjectRole(projectId: string): Promise<ProjectRole | null> {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return null;
-
-    const { data, error } = await supabase
-      .from('project_memberships')
-      .select('role')
-      .eq('project_id', projectId)
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    if (error || !data) return null;
-    return data.role as ProjectRole;
+    await new Promise(resolve => setTimeout(resolve, 50));
+    const membership = membershipsStore.find(
+      pm => pm.projectId === projectId && pm.userId === CURRENT_USER_ID
+    );
+    return membership?.role || null;
   },
 
   /**
    * Create a new project (current user becomes owner)
    */
-  async createProject(input: CreateProjectInput): Promise<Project> {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Not authenticated');
-
-    const projectData: ProjectInsert = {
-      name: input.name,
-      description: input.description || null,
-      project_type: input.projectType || 'internal_work',
-      case_code: input.caseCode,
+  async createProject(data: CreateProjectInput): Promise<Project> {
+    await new Promise(resolve => setTimeout(resolve, 200));
+    
+    const now = new Date().toISOString();
+    const newProject: Project = {
+      id: `project-${Date.now()}`,
+      name: data.name,
+      caseCode: data.caseCode,
+      projectType: data.projectType,
+      description: data.description,
+      createdAt: now,
+      updatedAt: now,
     };
 
-    const { data, error } = await supabase
-      .from('projects')
-      .insert(projectData)
-      .select()
-      .single();
+    projectsStore.push(newProject);
 
-    if (error) throw error;
-
-    const { error: membershipError } = await supabase
-      .from('project_memberships')
-      .insert({
-        project_id: data.id,
-        user_id: user.id,
-        role: 'owner',
-      });
-
-    if (membershipError) {
-      await supabase.from('projects').delete().eq('id', data.id);
-      throw membershipError;
-    }
-
-    const projectRow = data as ProjectRow;
-    return {
-      id: projectRow.id,
-      caseCode: projectRow.case_code || '',
-      name: projectRow.name,
-      description: projectRow.description || undefined,
-      projectType: projectRow.project_type as ProjectType,
-      createdAt: projectRow.created_at,
-      updatedAt: projectRow.updated_at,
+    // Add current user as owner
+    const membership: ProjectMembership = {
+      id: `pm-${Date.now()}`,
+      userId: CURRENT_USER_ID,
+      projectId: newProject.id,
+      role: 'owner',
+      createdAt: now,
+      updatedAt: now,
     };
+    membershipsStore.push(membership);
+
+    return newProject;
   },
 
   /**
    * Update a project
    */
-  async updateProject(projectId: string, input: UpdateProjectInput): Promise<Project> {
-    const updateData: Record<string, unknown> = {
-      updated_at: new Date().toISOString(),
+  async updateProject(projectId: string, data: UpdateProjectInput): Promise<Project> {
+    await new Promise(resolve => setTimeout(resolve, 150));
+    
+    const index = projectsStore.findIndex(p => p.id === projectId);
+    if (index === -1) {
+      throw new Error('Project not found');
+    }
+
+    projectsStore[index] = {
+      ...projectsStore[index],
+      ...data,
+      updatedAt: new Date().toISOString(),
     };
-    if (input.name) updateData.name = input.name;
-    if (input.description !== undefined) updateData.description = input.description;
-    if (input.projectType) updateData.project_type = input.projectType;
-    if (input.caseCode !== undefined) updateData.case_code = input.caseCode;
 
-    const { data, error } = await supabase
-      .from('projects')
-      .update(updateData)
-      .eq('id', projectId)
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    const projectRow = data as ProjectRow;
-    return {
-      id: projectRow.id,
-      caseCode: projectRow.case_code || '',
-      name: projectRow.name,
-      description: projectRow.description || undefined,
-      projectType: projectRow.project_type as ProjectType,
-      createdAt: projectRow.created_at,
-      updatedAt: projectRow.updated_at,
-    };
+    return projectsStore[index];
   },
 
   /**
    * Delete a project
    */
   async deleteProject(projectId: string): Promise<void> {
-    const { error } = await supabase
-      .from('projects')
-      .delete()
-      .eq('id', projectId);
-
-    if (error) throw error;
+    await new Promise(resolve => setTimeout(resolve, 150));
+    
+    projectsStore = projectsStore.filter(p => p.id !== projectId);
+    membershipsStore = membershipsStore.filter(pm => pm.projectId !== projectId);
   },
 
   /**
    * Get all members of a project
    */
-  async getProjectMembers(projectId: string): Promise<ProjectMembershipWithUser[]> {
-    const { data, error } = await supabase
-      .from('project_memberships')
-      .select(`
-        *,
-        profile:profiles(*)
-      `)
-      .eq('project_id', projectId);
-
-    if (error) throw error;
-
-    return (data || []).map(m => {
-      const profile = m.profile as unknown as { id: string; email: string; name: string | null; avatar_url: string | null; created_at: string; updated_at: string } | null;
-      const membership: ProjectMembershipWithUser = {
-        id: m.id,
-        projectId: m.project_id,
-        userId: m.user_id,
-        role: m.role as ProjectRole,
-        createdAt: m.created_at,
-        updatedAt: m.created_at,
-      };
-      if (profile) {
-        membership.user = {
-          id: profile.id,
-          email: profile.email || '',
-          name: profile.name || '',
-          avatar: profile.avatar_url || undefined,
-          isActive: true,
-          isSuperuser: false,
-          createdAt: profile.created_at,
-          updatedAt: profile.updated_at,
-        };
-      }
-      return membership;
-    });
+  async getProjectMembers(projectId: string): Promise<(ProjectMembership & { user?: User })[]> {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    return membershipsStore
+      .filter(pm => pm.projectId === projectId)
+      .map(pm => ({
+        ...pm,
+        user: getUserById(pm.userId) || mockUsers.find(u => u.id === pm.userId),
+      }));
   },
 
   /**
    * Add a member to a project
    */
-  async addProjectMember(
-    projectId: string,
-    userId: string,
-    role: ProjectRole = 'viewer'
-  ): Promise<ProjectMembership> {
-    const { data, error } = await supabase
-      .from('project_memberships')
-      .insert({
-        project_id: projectId,
-        user_id: userId,
-        role,
-      })
-      .select()
-      .single();
+  async addProjectMember(projectId: string, userId: string, role: ProjectRole): Promise<ProjectMembership> {
+    await new Promise(resolve => setTimeout(resolve, 150));
+    
+    // Check if already a member
+    const existing = membershipsStore.find(
+      pm => pm.projectId === projectId && pm.userId === userId
+    );
+    if (existing) {
+      throw new Error('User is already a member of this project');
+    }
 
-    if (error) throw error;
-    return {
-      id: data.id,
-      projectId: data.project_id,
-      userId: data.user_id,
-      role: data.role as ProjectRole,
-      createdAt: data.created_at,
-      updatedAt: data.created_at,
+    const now = new Date().toISOString();
+    const membership: ProjectMembership = {
+      id: `pm-${Date.now()}`,
+      userId,
+      projectId,
+      role,
+      createdAt: now,
+      updatedAt: now,
     };
+
+    membershipsStore.push(membership);
+    return membership;
   },
 
   /**
    * Update a member's role
    */
-  async updateMemberRole(
-    projectId: string,
-    userId: string,
-    role: ProjectRole
-  ): Promise<ProjectMembership> {
-    const { data, error } = await supabase
-      .from('project_memberships')
-      .update({ role })
-      .eq('project_id', projectId)
-      .eq('user_id', userId)
-      .select()
-      .single();
+  async updateMemberRole(projectId: string, userId: string, role: ProjectRole): Promise<ProjectMembership> {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    const index = membershipsStore.findIndex(
+      pm => pm.projectId === projectId && pm.userId === userId
+    );
+    if (index === -1) {
+      throw new Error('Membership not found');
+    }
 
-    if (error) throw error;
-    return {
-      id: data.id,
-      projectId: data.project_id,
-      userId: data.user_id,
-      role: data.role as ProjectRole,
-      createdAt: data.created_at,
-      updatedAt: data.created_at,
+    membershipsStore[index] = {
+      ...membershipsStore[index],
+      role,
+      updatedAt: new Date().toISOString(),
     };
+
+    return membershipsStore[index];
   },
 
   /**
    * Remove a member from a project
    */
   async removeMember(projectId: string, userId: string): Promise<void> {
-    const { error } = await supabase
-      .from('project_memberships')
-      .delete()
-      .eq('project_id', projectId)
-      .eq('user_id', userId);
-
-    if (error) throw error;
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    membershipsStore = membershipsStore.filter(
+      pm => !(pm.projectId === projectId && pm.userId === userId)
+    );
   },
 
   /**
    * Search users (for inviting)
    */
   async searchUsers(query: string): Promise<User[]> {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .or(`email.ilike.%${query}%,name.ilike.%${query}%`)
-      .limit(10);
-
-    if (error) throw error;
-    return (data || []).map(profile => ({
-      id: profile.id,
-      email: profile.email || '',
-      name: profile.name || '',
-      avatar: profile.avatar_url || undefined,
-      isActive: true,
-      isSuperuser: false,
-      createdAt: profile.created_at,
-      updatedAt: profile.updated_at,
-    }));
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    const lowerQuery = query.toLowerCase();
+    return mockUsers.filter(
+      u => u.isActive && (
+        u.name.toLowerCase().includes(lowerQuery) ||
+        u.email.toLowerCase().includes(lowerQuery)
+      )
+    );
   },
 };

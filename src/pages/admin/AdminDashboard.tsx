@@ -10,64 +10,21 @@ import {
   MessageSquare,
   ArrowRight,
   Clock,
-  TrendingUp,
-  Database,
-  CheckCircle,
-  Loader2
+  TrendingUp
 } from 'lucide-react';
 import { getSystemAnalytics, SystemAnalytics } from '@/services/admin';
-import { seedDataService } from '@/services/seedData';
 import { formatDistanceToNow } from 'date-fns';
-import { useToast } from '@/hooks/use-toast';
 
 export default function AdminDashboard() {
   const [analytics, setAnalytics] = useState<SystemAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
-  const [seeding, setSeeding] = useState(false);
-  const [seedExists, setSeedExists] = useState(false);
-  const { toast } = useToast();
 
   useEffect(() => {
-    Promise.all([
-      getSystemAnalytics(),
-      seedDataService.checkSeedDataExists()
-    ]).then(([data, exists]) => {
+    getSystemAnalytics().then(data => {
       setAnalytics(data);
-      setSeedExists(exists);
       setLoading(false);
     });
   }, []);
-
-  const handleSeedData = async () => {
-    setSeeding(true);
-    try {
-      const result = await seedDataService.seedAll();
-      if (result.success) {
-        toast({
-          title: 'Data seeded successfully',
-          description: result.results.join('\n'),
-        });
-        setSeedExists(true);
-        // Refresh analytics
-        const data = await getSystemAnalytics();
-        setAnalytics(data);
-      } else {
-        toast({
-          title: 'Seeding failed',
-          description: result.results.join('\n'),
-          variant: 'destructive',
-        });
-      }
-    } catch (error) {
-      toast({
-        title: 'Error seeding data',
-        description: error instanceof Error ? error.message : 'Unknown error',
-        variant: 'destructive',
-      });
-    } finally {
-      setSeeding(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -80,7 +37,6 @@ export default function AdminDashboard() {
   const quickLinks = [
     { name: 'Manage Archetypes', href: '/app/admin/archetypes', icon: Shapes, description: 'Add, edit, or remove interview archetypes' },
     { name: 'View Analytics', href: '/app/admin/analytics', icon: BarChart3, description: 'See detailed usage statistics and trends' },
-    { name: 'Feature Flags', href: '/app/admin/feature-flags', icon: TrendingUp, description: 'Toggle features on or off' },
   ];
 
   return (
@@ -133,41 +89,6 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Seed Data Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Database className="h-5 w-5" />
-            Seed Sample Data
-          </CardTitle>
-          <CardDescription>
-            Populate the database with sample projects, interviewers, and sessions for testing
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {seedExists ? (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <CheckCircle className="h-4 w-4 text-green-500" />
-              Sample data already exists in the database
-            </div>
-          ) : (
-            <Button onClick={handleSeedData} disabled={seeding}>
-              {seeding ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Seeding...
-                </>
-              ) : (
-                <>
-                  <Database className="mr-2 h-4 w-4" />
-                  Seed Data Now
-                </>
-              )}
-            </Button>
-          )}
-        </CardContent>
-      </Card>
 
       {/* Quick Links and Recent Activity */}
       <div className="grid gap-6 lg:grid-cols-2">

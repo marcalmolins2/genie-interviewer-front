@@ -57,7 +57,7 @@ interface SearchUser {
   id: string;
   name: string;
   email: string;
-  department?: string;
+  department: string;
 }
 
 export function ShareInterviewerDialog({
@@ -89,16 +89,11 @@ export function ShareInterviewerDialog({
 
       setSearching(true);
       try {
-        const results = await agentsService.searchUsers(searchQuery);
-        // Filter out users already in pending invites and map to SearchUser
-        const filtered: SearchUser[] = results
-          .filter(user => !pendingInvites.find(p => p.id === user.id))
-          .map(user => ({
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            department: undefined,
-          }));
+        const results = await agentsService.searchUsers(searchQuery, interviewerId);
+        // Filter out users already in pending invites
+        const filtered = results.filter(
+          user => !pendingInvites.find(p => p.id === user.id)
+        );
         setSearchResults(filtered);
       } catch (error) {
         console.error('Failed to search users:', error);
@@ -156,10 +151,7 @@ export function ShareInterviewerDialog({
 
   const handleUpdatePermission = async (collaboratorId: string, permission: AgentPermission) => {
     try {
-      // Find the collaborator to get userId
-      const collab = collaborators.find(c => c.id === collaboratorId);
-      if (!collab) throw new Error('Collaborator not found');
-      await agentsService.updateCollaboratorPermission(interviewerId, collab.userId, permission as any);
+      await agentsService.updateCollaboratorPermission(collaboratorId, permission);
       toast({
         title: 'Permission Updated',
         description: 'Collaborator permission has been updated.'
@@ -176,10 +168,7 @@ export function ShareInterviewerDialog({
 
   const handleRemoveCollaborator = async (collaboratorId: string) => {
     try {
-      // Find the collaborator to get userId
-      const collab = collaborators.find(c => c.id === collaboratorId);
-      if (!collab) throw new Error('Collaborator not found');
-      await agentsService.removeCollaborator(interviewerId, collab.userId);
+      await agentsService.removeCollaborator(collaboratorId);
       toast({
         title: 'Collaborator Removed',
         description: 'Collaborator has been removed from this interviewer.'

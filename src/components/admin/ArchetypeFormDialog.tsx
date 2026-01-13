@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-react';
-import { ArchetypeInfo, Archetype } from '@/types';
+import { ArchetypeInfo } from '@/types';
 import { createArchetype, updateArchetype } from '@/services/admin';
 import { useToast } from '@/hooks/use-toast';
 
@@ -128,7 +128,7 @@ export function ArchetypeFormDialog({
           description: `"${formData.title}" has been updated.`,
         });
       } else {
-        const id = formData.title.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '') as Archetype;
+        const id = formData.title.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
         await createArchetype({
           id,
           title: formData.title,

@@ -58,21 +58,9 @@ export function ProjectMembersList({ projectId }: ProjectMembersListProps) {
       setIsSearching(true);
       try {
         const results = await projectsService.searchUsers(searchQuery);
-        // Filter out existing members and map Profile to User format
+        // Filter out existing members
         const memberIds = members.map(m => m.userId);
-        const mappedResults: User[] = results
-          .filter(u => !memberIds.includes(u.id))
-          .map(user => ({
-            id: user.id,
-            email: user.email || '',
-            name: user.name || '',
-            avatarUrl: user.avatar || null,
-            isActive: true,
-            isSuperuser: false,
-            createdAt: user.createdAt,
-            updatedAt: user.updatedAt,
-          }));
-        setSearchResults(mappedResults);
+        setSearchResults(results.filter(u => !memberIds.includes(u.id)));
       } catch (error) {
         console.error('Search failed:', error);
       } finally {

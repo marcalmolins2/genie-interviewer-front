@@ -598,7 +598,6 @@ export default function InterviewerConfiguration({ mode = 'create' }: Interviewe
     setIsCreating(true);
     try {
       const agent = await agentsService.createAgent({
-        projectId: form.selectedProjectId,
         name: form.name || form.title,
         title: form.title,
         description: form.description,
@@ -606,12 +605,20 @@ export default function InterviewerConfiguration({ mode = 'create' }: Interviewe
         language: form.language,
         voiceId: form.voiceId,
         channel: form.channel,
-        targetDurationMin: parseInt(form.targetDuration),
+        projectId: form.selectedProjectId,
+        targetDuration: parseInt(form.targetDuration),
+        interviewContext: form.interviewContext,
+        introContext: form.introContext,
+        enableScreener: form.enableScreener,
+        screenerQuestions: form.screenerQuestions,
+        introductionQuestions: form.introductionQuestions,
+        closeContext: form.closeContext,
+        caseCode: form.caseCode,
       });
       
       // Update guide if provided
       if (form.interviewGuide) {
-        await agentsService.updateAgentGuide(agent.id, { guideContent: form.interviewGuide });
+        await agentsService.updateAgentGuide(agent.id, form.interviewGuide, form.guideStructured);
       }
       
       // Add knowledge if provided
@@ -645,11 +652,17 @@ export default function InterviewerConfiguration({ mode = 'create' }: Interviewe
         language: form.language,
         voiceId: form.voiceId,
         channel: form.channel,
-        targetDurationMin: parseInt(form.targetDuration),
+        targetDuration: parseInt(form.targetDuration),
+        interviewContext: form.interviewContext,
+        introContext: form.introContext,
+        enableScreener: form.enableScreener,
+        screenerQuestions: form.screenerQuestions,
+        introductionQuestions: form.introductionQuestions,
+        closeContext: form.closeContext,
       });
       
       // Update guide
-      await agentsService.updateAgentGuide(interviewerId, { guideContent: form.interviewGuide });
+      await agentsService.updateAgentGuide(interviewerId, form.interviewGuide, form.guideStructured);
       
       toast({ title: "Success!", description: "Interviewer updated successfully." });
       navigate(`/app/interviewers/${interviewerId}`);
