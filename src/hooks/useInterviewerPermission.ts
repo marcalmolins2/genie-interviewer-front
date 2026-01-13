@@ -32,8 +32,28 @@ export function useInterviewerPermission(interviewerId: string | undefined): Use
         interviewersService.getUserPermission(interviewerId),
         interviewersService.getAgentCollaborators(interviewerId)
       ]);
-      setPermission(userPermission);
-      setCollaborators(collabs);
+      // Extract the role from the permission object
+      if (userPermission) {
+        setPermission(userPermission.role);
+      } else {
+        setPermission(null);
+      }
+      // Map collabs to AgentCollaborator format
+      const mappedCollabs: AgentCollaborator[] = collabs.map(c => ({
+        id: c.id,
+        agentId: interviewerId,
+        userId: c.userId,
+        user: c.user ? {
+          id: c.user.id,
+          email: c.user.email,
+          name: c.user.name,
+          avatar: c.user.avatar,
+        } : { id: c.userId, email: '', name: 'Unknown' },
+        permission: c.role as AgentPermission,
+        createdAt: c.createdAt,
+        updatedAt: c.createdAt,
+      }));
+      setCollaborators(mappedCollabs);
     } catch (error) {
       console.error('Failed to load permissions:', error);
       setPermission(null);

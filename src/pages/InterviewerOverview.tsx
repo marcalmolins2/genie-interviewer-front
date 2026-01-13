@@ -179,7 +179,7 @@ export default function InterviewerOverview() {
 
     setIsDeploying(true);
     try {
-      await agentsService.deployAgent(interviewer.id, caseCode);
+      await agentsService.deployAgent(interviewer.id);
       setInterviewer((prev) => (prev ? { ...prev, status: "live" } : null));
       setDeployDialogOpen(false);
       setCaseCode("");
