@@ -1,30 +1,33 @@
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { adminService } from '@/services/admin';
 
-// Mock admin check - in production this would check against Supabase user_roles table
-export function useIsAdmin() {
+// Query key for admin status
+const adminQueryKey = ['isAdmin'] as const;
+
+export function useIsAdmin(): { isAdmin: boolean; loading: boolean } {
+  const { data: isAdmin, isLoading } = useQuery({
+    queryKey: adminQueryKey,
+    queryFn: () => adminService.isAdmin(),
+    staleTime: 300000, // 5 minutes
+    refetchOnWindowFocus: false,
+  });
+
+  return {
+    isAdmin: isAdmin ?? false,
+    loading: isLoading,
+  };
+}
+
+// Synchronous check for initial render (uses cached value)
+export function useIsAdminSync(): boolean {
   const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Mock implementation - check localStorage user for admin flag
-    // In production, this would query the user_roles table via Supabase
-    const checkAdmin = () => {
-      try {
-        const userData = localStorage.getItem('user');
-        if (userData) {
-          const user = JSON.parse(userData);
-          // Mock: check if user has admin role (for demo, we'll set this in localStorage)
-          setIsAdmin(user.isAdmin === true);
-        }
-      } catch {
-        setIsAdmin(false);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkAdmin();
+    adminService.isAdmin().then(setIsAdmin);
   }, []);
 
-  return { isAdmin, loading };
+  return isAdmin;
 }
+
+export default useIsAdmin;
