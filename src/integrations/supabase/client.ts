@@ -1,27 +1,15 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Public Supabase credentials (safe to expose - RLS protects data)
+const SUPABASE_URL = "https://wrgeciefpwdxrjdjycgl.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyZ2VjaWVmcHdkeHJqZGp5Y2dsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0NjE4OTcsImV4cCI6MjA2MjAzNzg5N30.gxBnXFH3QKeaJhCfdHsQU_o7ij-QCvYr1yx60YWzI9M";
 
-// Check if Supabase is properly configured
-export const isSupabaseConfigured = (): boolean => {
-  return Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
-};
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+  },
+});
 
-// Create a real or placeholder Supabase client
-let supabaseInstance: SupabaseClient | null = null;
-
-if (isSupabaseConfigured()) {
-  supabaseInstance = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-    },
-  });
-} else {
-  console.warn('Supabase credentials not configured. Running in mock mode.');
-}
-
-// Export the client - will be null if not configured
-// Services should check isSupabaseConfigured() before using
-export const supabase = supabaseInstance as SupabaseClient;
+// Always configured now with hardcoded credentials
+export const isSupabaseConfigured = () => true;
