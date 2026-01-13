@@ -36,72 +36,14 @@ export interface UpdateProjectInput {
   description?: string;
 }
 
-// Mock data for when Supabase is not configured
-const mockProjects: Project[] = [
-  {
-    id: 'proj-1',
-    caseCode: 'CASE-001',
-    name: 'Consumer Research Q1',
-    description: 'Q1 consumer research initiatives',
-    projectType: 'internal_work',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'proj-2',
-    caseCode: 'CASE-002',
-    name: 'B2B Healthcare Study',
-    description: 'Enterprise healthcare decision maker interviews',
-    projectType: 'client_work',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
-
-let mockMemberships: ProjectMembership[] = [
-  {
-    id: 'pm-1',
-    projectId: 'proj-1',
-    userId: 'user-1',
-    role: 'owner',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'pm-2',
-    projectId: 'proj-2',
-    userId: 'user-1',
-    role: 'owner',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
-
-const mockUsers: User[] = [
-  {
-    id: 'user-1',
-    email: 'user@example.com',
-    name: 'Test User',
-    isActive: true,
-    isSuperuser: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
+// Note: Mock data has been removed - all data now comes from Supabase
+// Use seedDataService.seedAll() to populate the database with sample data
 
 export const projectsService = {
   /**
    * Get all projects accessible by the current user
    */
   async getProjects(): Promise<ProjectWithMembership[]> {
-    if (!isSupabaseConfigured()) {
-      await new Promise(resolve => setTimeout(resolve, 100));
-      return mockProjects.map(p => ({ 
-        ...p, 
-        membership: mockMemberships.find(m => m.projectId === p.id) 
-      }));
-    }
-
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated');
 
@@ -142,15 +84,6 @@ export const projectsService = {
    * Get a single project by ID
    */
   async getProject(projectId: string): Promise<ProjectWithMembership | null> {
-    if (!isSupabaseConfigured()) {
-      await new Promise(resolve => setTimeout(resolve, 50));
-      const project = mockProjects.find(p => p.id === projectId);
-      return project ? { 
-        ...project, 
-        membership: mockMemberships.find(m => m.projectId === projectId) 
-      } : null;
-    }
-
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated');
 
@@ -200,12 +133,6 @@ export const projectsService = {
    * Get current user's role in a project
    */
   async getUserProjectRole(projectId: string): Promise<ProjectRole | null> {
-    if (!isSupabaseConfigured()) {
-      await new Promise(resolve => setTimeout(resolve, 50));
-      const membership = mockMemberships.find(m => m.projectId === projectId);
-      return membership?.role || null;
-    }
-
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
 
@@ -224,29 +151,6 @@ export const projectsService = {
    * Create a new project (current user becomes owner)
    */
   async createProject(input: CreateProjectInput): Promise<Project> {
-    if (!isSupabaseConfigured()) {
-      await new Promise(resolve => setTimeout(resolve, 200));
-      const newProject: Project = {
-        id: `proj-${Date.now()}`,
-        caseCode: input.caseCode || '',
-        name: input.name,
-        description: input.description,
-        projectType: input.projectType || 'internal_work',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      mockProjects.push(newProject);
-      mockMemberships.push({
-        id: `pm-${Date.now()}`,
-        projectId: newProject.id,
-        userId: 'user-1',
-        role: 'owner',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
-      return newProject;
-    }
-
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated');
 
@@ -294,21 +198,6 @@ export const projectsService = {
    * Update a project
    */
   async updateProject(projectId: string, input: UpdateProjectInput): Promise<Project> {
-    if (!isSupabaseConfigured()) {
-      await new Promise(resolve => setTimeout(resolve, 150));
-      const index = mockProjects.findIndex(p => p.id === projectId);
-      if (index === -1) throw new Error('Project not found');
-      mockProjects[index] = {
-        ...mockProjects[index],
-        name: input.name ?? mockProjects[index].name,
-        caseCode: input.caseCode ?? mockProjects[index].caseCode,
-        description: input.description ?? mockProjects[index].description,
-        projectType: input.projectType ?? mockProjects[index].projectType,
-        updatedAt: new Date().toISOString(),
-      };
-      return mockProjects[index];
-    }
-
     const updateData: Record<string, unknown> = {
       updated_at: new Date().toISOString(),
     };
@@ -342,14 +231,6 @@ export const projectsService = {
    * Delete a project
    */
   async deleteProject(projectId: string): Promise<void> {
-    if (!isSupabaseConfigured()) {
-      await new Promise(resolve => setTimeout(resolve, 150));
-      const index = mockProjects.findIndex(p => p.id === projectId);
-      if (index !== -1) mockProjects.splice(index, 1);
-      mockMemberships = mockMemberships.filter(m => m.projectId !== projectId);
-      return;
-    }
-
     const { error } = await supabase
       .from('projects')
       .delete()
@@ -362,16 +243,6 @@ export const projectsService = {
    * Get all members of a project
    */
   async getProjectMembers(projectId: string): Promise<ProjectMembershipWithUser[]> {
-    if (!isSupabaseConfigured()) {
-      await new Promise(resolve => setTimeout(resolve, 100));
-      return mockMemberships
-        .filter(m => m.projectId === projectId)
-        .map(m => ({
-          ...m,
-          user: mockUsers.find(u => u.id === m.userId),
-        }));
-    }
-
     const { data, error } = await supabase
       .from('project_memberships')
       .select(`
@@ -416,25 +287,6 @@ export const projectsService = {
     userId: string,
     role: ProjectRole = 'viewer'
   ): Promise<ProjectMembership> {
-    if (!isSupabaseConfigured()) {
-      await new Promise(resolve => setTimeout(resolve, 150));
-      const existing = mockMemberships.find(
-        m => m.projectId === projectId && m.userId === userId
-      );
-      if (existing) throw new Error('User is already a member');
-      
-      const membership: ProjectMembership = {
-        id: `pm-${Date.now()}`,
-        projectId,
-        userId,
-        role,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      mockMemberships.push(membership);
-      return membership;
-    }
-
     const { data, error } = await supabase
       .from('project_memberships')
       .insert({
@@ -464,17 +316,6 @@ export const projectsService = {
     userId: string,
     role: ProjectRole
   ): Promise<ProjectMembership> {
-    if (!isSupabaseConfigured()) {
-      await new Promise(resolve => setTimeout(resolve, 100));
-      const index = mockMemberships.findIndex(
-        m => m.projectId === projectId && m.userId === userId
-      );
-      if (index === -1) throw new Error('Membership not found');
-      mockMemberships[index].role = role;
-      mockMemberships[index].updatedAt = new Date().toISOString();
-      return mockMemberships[index];
-    }
-
     const { data, error } = await supabase
       .from('project_memberships')
       .update({ role })
@@ -498,14 +339,6 @@ export const projectsService = {
    * Remove a member from a project
    */
   async removeMember(projectId: string, userId: string): Promise<void> {
-    if (!isSupabaseConfigured()) {
-      await new Promise(resolve => setTimeout(resolve, 100));
-      mockMemberships = mockMemberships.filter(
-        m => !(m.projectId === projectId && m.userId === userId)
-      );
-      return;
-    }
-
     const { error } = await supabase
       .from('project_memberships')
       .delete()
@@ -519,14 +352,6 @@ export const projectsService = {
    * Search users (for inviting)
    */
   async searchUsers(query: string): Promise<User[]> {
-    if (!isSupabaseConfigured()) {
-      await new Promise(resolve => setTimeout(resolve, 100));
-      return mockUsers.filter(u => 
-        u.name.toLowerCase().includes(query.toLowerCase()) ||
-        u.email.toLowerCase().includes(query.toLowerCase())
-      );
-    }
-
     const { data, error } = await supabase
       .from('profiles')
       .select('*')

@@ -141,75 +141,14 @@ function interviewerToAgent(interviewer: Interviewer & { project?: Project }): A
   };
 }
 
-// Mock data for when Supabase is not configured
-const mockInterviewers: Interviewer[] = [
-  {
-    id: 'int-1',
-    projectId: 'proj-1',
-    title: 'Consumer Feedback Agent',
-    name: 'Sam',
-    description: 'Gathers feedback from retail consumers',
-    archetype: 'customer_interview',
-    status: 'live',
-    channel: 'web_link',
-    language: 'en',
-    voiceId: 'alloy',
-    contact: { linkId: 'ABC123' },
-    credentialsReady: true,
-    sessionsCount: 12,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'int-2',
-    projectId: 'proj-2',
-    title: 'Healthcare Executive Interviewer',
-    name: 'Alex',
-    description: 'B2B interviews with healthcare decision makers',
-    archetype: 'expert_interview',
-    status: 'draft',
-    channel: 'inbound_call',
-    language: 'en',
-    voiceId: 'echo',
-    contact: { phoneNumber: '+1234567890' },
-    credentialsReady: true,
-    sessionsCount: 5,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
-
-const mockSessions: Session[] = [
-  {
-    id: 'sess-1',
-    interviewerId: 'int-1',
-    conversationType: 'live',
-    startedAt: new Date(Date.now() - 86400000).toISOString(),
-    endedAt: new Date(Date.now() - 84600000).toISOString(),
-    durationSec: 1800,
-    completed: true,
-    createdAt: new Date().toISOString(),
-  },
-];
-
-// Store for interview guides and knowledge (mock)
-const mockGuides: Record<string, InterviewGuide> = {};
-const mockKnowledge: Record<string, KnowledgeAsset[]> = {};
+// Note: Mock data has been removed - all data now comes from Supabase
+// Use seedDataService.seedAll() to populate the database with sample data
 
 export const interviewersService = {
   /**
    * Get all interviewers (optionally filtered by project)
    */
   async getInterviewers(projectId?: string): Promise<InterviewerWithProject[]> {
-    if (!isSupabaseConfigured()) {
-      await new Promise(resolve => setTimeout(resolve, 100));
-      let filtered = mockInterviewers.filter(i => i.status !== 'archived');
-      if (projectId) {
-        filtered = filtered.filter(i => i.projectId === projectId);
-      }
-      return filtered;
-    }
-
     let query = supabase
       .from('interviewers')
       .select(`*, project:projects(*)`)
@@ -245,15 +184,6 @@ export const interviewersService = {
    * Get archived interviewers
    */
   async getArchivedInterviewers(projectId?: string): Promise<InterviewerWithProject[]> {
-    if (!isSupabaseConfigured()) {
-      await new Promise(resolve => setTimeout(resolve, 100));
-      let filtered = mockInterviewers.filter(i => i.status === 'archived');
-      if (projectId) {
-        filtered = filtered.filter(i => i.projectId === projectId);
-      }
-      return filtered;
-    }
-
     let query = supabase
       .from('interviewers')
       .select(`*, project:projects(*)`)
@@ -289,11 +219,6 @@ export const interviewersService = {
    * Get deleted (trashed) interviewers
    */
   async getDeletedInterviewers(projectId?: string): Promise<InterviewerWithProject[]> {
-    if (!isSupabaseConfigured()) {
-      await new Promise(resolve => setTimeout(resolve, 100));
-      return [];
-    }
-
     let query = supabase
       .from('interviewers')
       .select(`*, project:projects(*)`)
@@ -328,11 +253,6 @@ export const interviewersService = {
    * Get a single interviewer by ID
    */
   async getInterviewer(id: string): Promise<InterviewerWithProject | null> {
-    if (!isSupabaseConfigured()) {
-      await new Promise(resolve => setTimeout(resolve, 50));
-      return mockInterviewers.find(i => i.id === id) || null;
-    }
-
     const { data, error } = await supabase
       .from('interviewers')
       .select(`*, project:projects(*)`)
@@ -362,11 +282,6 @@ export const interviewersService = {
    * Get interviewer by short code (for public access)
    */
   async getInterviewerByShortCode(shortCode: string): Promise<Interviewer | null> {
-    if (!isSupabaseConfigured()) {
-      await new Promise(resolve => setTimeout(resolve, 50));
-      return mockInterviewers.find(i => i.contact.linkId === shortCode) || null;
-    }
-
     const { data, error } = await supabase
       .from('interviewers')
       .select('*')
@@ -391,29 +306,6 @@ export const interviewersService = {
    * Create a new interviewer
    */
   async createInterviewer(input: CreateInterviewerInput): Promise<Interviewer> {
-    if (!isSupabaseConfigured()) {
-      await new Promise(resolve => setTimeout(resolve, 200));
-      const newInterviewer: Interviewer = {
-        id: `int-${Date.now()}`,
-        projectId: input.projectId,
-        title: input.title || input.name,
-        name: input.name,
-        description: input.description,
-        archetype: input.archetype || 'customer_interview',
-        status: 'draft',
-        channel: input.channel || 'web_link',
-        language: input.language || 'en',
-        voiceId: input.voiceId || 'alloy',
-        contact: { linkId: generateShortCode() },
-        credentialsReady: false,
-        targetDurationMin: input.targetDurationMin,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      mockInterviewers.push(newInterviewer);
-      return newInterviewer;
-    }
-
     const { data: { user } } = await supabase.auth.getUser();
     const shortCode = generateShortCode();
 
@@ -447,32 +339,6 @@ export const interviewersService = {
    * Update an interviewer
    */
   async updateInterviewer(id: string, input: UpdateInterviewerInput): Promise<Interviewer> {
-    if (!isSupabaseConfigured()) {
-      await new Promise(resolve => setTimeout(resolve, 150));
-      const index = mockInterviewers.findIndex(i => i.id === id);
-      if (index === -1) throw new Error('Interviewer not found');
-      mockInterviewers[index] = {
-        ...mockInterviewers[index],
-        name: input.name ?? mockInterviewers[index].name,
-        title: input.title ?? mockInterviewers[index].title,
-        description: input.description ?? mockInterviewers[index].description,
-        archetype: input.archetype ?? mockInterviewers[index].archetype,
-        status: input.status ?? mockInterviewers[index].status,
-        channel: input.channel ?? mockInterviewers[index].channel,
-        language: input.language ?? mockInterviewers[index].language,
-        voiceId: input.voiceId ?? mockInterviewers[index].voiceId,
-        targetDurationMin: input.targetDurationMin ?? mockInterviewers[index].targetDurationMin,
-        contact: {
-          ...mockInterviewers[index].contact,
-          phoneNumber: input.phoneNumber ?? mockInterviewers[index].contact.phoneNumber,
-          chatUrl: input.chatUrl ?? mockInterviewers[index].contact.chatUrl,
-          linkId: input.linkId ?? mockInterviewers[index].contact.linkId,
-        },
-        updatedAt: new Date().toISOString(),
-      };
-      return mockInterviewers[index];
-    }
-
     const updateData: InterviewerUpdate = {};
     if (input.name) updateData.name = input.name;
     if (input.title) updateData.title = input.title;
@@ -503,14 +369,6 @@ export const interviewersService = {
    * Archive an interviewer
    */
   async archiveInterviewer(id: string): Promise<Interviewer> {
-    if (!isSupabaseConfigured()) {
-      await new Promise(resolve => setTimeout(resolve, 100));
-      const index = mockInterviewers.findIndex(i => i.id === id);
-      if (index === -1) throw new Error('Interviewer not found');
-      mockInterviewers[index].status = 'archived';
-      return mockInterviewers[index];
-    }
-
     const { data, error } = await supabase
       .from('interviewers')
       .update({
@@ -530,14 +388,6 @@ export const interviewersService = {
    * Restore an archived interviewer
    */
   async restoreInterviewer(id: string): Promise<Interviewer> {
-    if (!isSupabaseConfigured()) {
-      await new Promise(resolve => setTimeout(resolve, 100));
-      const index = mockInterviewers.findIndex(i => i.id === id);
-      if (index === -1) throw new Error('Interviewer not found');
-      mockInterviewers[index].status = 'paused';
-      return mockInterviewers[index];
-    }
-
     const { data, error } = await supabase
       .from('interviewers')
       .update({
@@ -558,14 +408,6 @@ export const interviewersService = {
    * Soft delete an interviewer (move to trash)
    */
   async deleteInterviewer(id: string): Promise<Interviewer> {
-    if (!isSupabaseConfigured()) {
-      await new Promise(resolve => setTimeout(resolve, 100));
-      const index = mockInterviewers.findIndex(i => i.id === id);
-      if (index === -1) throw new Error('Interviewer not found');
-      mockInterviewers.splice(index, 1);
-      return mockInterviewers[0];
-    }
-
     const { data, error } = await supabase
       .from('interviewers')
       .update({
@@ -584,13 +426,6 @@ export const interviewersService = {
    * Permanently delete an interviewer
    */
   async permanentlyDeleteInterviewer(id: string): Promise<void> {
-    if (!isSupabaseConfigured()) {
-      await new Promise(resolve => setTimeout(resolve, 100));
-      const index = mockInterviewers.findIndex(i => i.id === id);
-      if (index !== -1) mockInterviewers.splice(index, 1);
-      return;
-    }
-
     const { error } = await supabase
       .from('interviewers')
       .delete()
@@ -617,11 +452,6 @@ export const interviewersService = {
    * Get sessions for an interviewer
    */
   async getInterviewerSessions(interviewerId: string): Promise<Session[]> {
-    if (!isSupabaseConfigured()) {
-      await new Promise(resolve => setTimeout(resolve, 100));
-      return mockSessions.filter(s => s.interviewerId === interviewerId);
-    }
-
     const { data, error } = await supabase
       .from('sessions')
       .select('*')
@@ -636,11 +466,6 @@ export const interviewersService = {
    * Get a single session
    */
   async getSession(sessionId: string): Promise<Session | null> {
-    if (!isSupabaseConfigured()) {
-      await new Promise(resolve => setTimeout(resolve, 50));
-      return mockSessions.find(s => s.id === sessionId) || null;
-    }
-
     const { data, error } = await supabase
       .from('sessions')
       .select('*')
@@ -656,20 +481,6 @@ export const interviewersService = {
    * Create a new session
    */
   async createSession(interviewerId: string, data?: { respondentName?: string; respondentEmail?: string }): Promise<Session> {
-    if (!isSupabaseConfigured()) {
-      await new Promise(resolve => setTimeout(resolve, 150));
-      const newSession: Session = {
-        id: `sess-${Date.now()}`,
-        interviewerId,
-        conversationType: 'live',
-        startedAt: new Date().toISOString(),
-        completed: false,
-        createdAt: new Date().toISOString(),
-      };
-      mockSessions.push(newSession);
-      return newSession;
-    }
-
     const { data: session, error } = await supabase
       .from('sessions')
       .insert({
@@ -844,30 +655,28 @@ export const interviewersService = {
     return sessions[0].startedAt;
   },
 
-  /** Get interview guide */
-  async getAgentGuide(id: string): Promise<InterviewGuide | null> {
-    if (!isSupabaseConfigured()) {
-      return mockGuides[id] || null;
-    }
-    const interviewer = await this.getInterviewer(id);
-    return interviewer ? (mockGuides[id] || null) : null;
+  /** Get interview guide - TODO: implement with Supabase */
+  async getAgentGuide(_id: string): Promise<InterviewGuide | null> {
+    // Guide storage not yet implemented in Supabase
+    return null;
   },
 
-  /** Update interview guide */
+  /** Update interview guide - TODO: implement with Supabase */
   async updateAgentGuide(id: string, guide: Partial<InterviewGuide>): Promise<InterviewGuide> {
-    const existing = mockGuides[id] || { id: `guide-${id}`, interviewerId: id };
-    mockGuides[id] = { ...existing, ...guide } as InterviewGuide;
-    return mockGuides[id];
+    // Guide storage not yet implemented in Supabase
+    return { id: `guide-${id}`, interviewerId: id, ...guide } as InterviewGuide;
   },
 
-  /** Get knowledge assets */
-  async getAgentKnowledge(id: string): Promise<KnowledgeAsset[]> {
-    return mockKnowledge[id] || [];
+  /** Get knowledge assets - TODO: implement with Supabase */
+  async getAgentKnowledge(_id: string): Promise<KnowledgeAsset[]> {
+    // Knowledge storage not yet implemented in Supabase
+    return [];
   },
 
-  /** Add knowledge asset */
+  /** Add knowledge asset - TODO: implement with Supabase */
   async addKnowledgeAsset(id: string, asset: Partial<KnowledgeAsset>): Promise<KnowledgeAsset> {
-    const newAsset: KnowledgeAsset = {
+    // Knowledge storage not yet implemented in Supabase
+    return {
       id: `ka-${Date.now()}`,
       interviewerId: id,
       title: asset.title || 'Untitled',
@@ -876,9 +685,6 @@ export const interviewersService = {
       fileName: asset.fileName,
       fileSize: asset.fileSize,
     };
-    if (!mockKnowledge[id]) mockKnowledge[id] = [];
-    mockKnowledge[id].push(newAsset);
-    return newAsset;
   },
 
   /** Get agent stats */
