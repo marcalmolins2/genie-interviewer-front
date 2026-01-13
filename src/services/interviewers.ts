@@ -13,7 +13,9 @@ import type {
   InterviewGuide,
   KnowledgeAsset,
   AgentPermission,
+  Agent,
 } from '@/types';
+import { PRICE_BY_CHANNEL } from '@/types';
 import type {
   Profile,
   InterviewerInsert,
@@ -116,6 +118,29 @@ function rowToSession(row: SessionRow): Session {
   };
 }
 
+// Helper to convert Interviewer to legacy Agent type
+function interviewerToAgent(interviewer: Interviewer & { project?: Project }): Agent {
+  return {
+    id: interviewer.id,
+    name: interviewer.name,
+    title: interviewer.title,
+    description: interviewer.description,
+    archetype: interviewer.archetype,
+    createdAt: interviewer.createdAt,
+    updatedAt: interviewer.updatedAt,
+    status: interviewer.status,
+    language: interviewer.language,
+    voiceId: interviewer.voiceId,
+    channel: interviewer.channel,
+    interviewsCount: interviewer.sessionsCount || 0,
+    pricePerInterviewUsd: PRICE_BY_CHANNEL[interviewer.channel] || 50,
+    contact: interviewer.contact,
+    credentialsReady: interviewer.credentialsReady,
+    projectId: interviewer.projectId,
+    targetDuration: interviewer.targetDurationMin,
+  };
+}
+
 // Mock data for when Supabase is not configured
 const mockInterviewers: Interviewer[] = [
   {
@@ -131,6 +156,7 @@ const mockInterviewers: Interviewer[] = [
     voiceId: 'alloy',
     contact: { linkId: 'ABC123' },
     credentialsReady: true,
+    sessionsCount: 12,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -147,6 +173,7 @@ const mockInterviewers: Interviewer[] = [
     voiceId: 'echo',
     contact: { phoneNumber: '+1234567890' },
     credentialsReady: true,
+    sessionsCount: 5,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -353,10 +380,11 @@ export const interviewersService = {
   },
 
   /**
-   * Get interviewer by link ID (for public access)
+   * @deprecated Use getInterviewerByShortCode instead - returns Agent for legacy compatibility
    */
-  async getAgentByLinkId(linkId: string): Promise<Interviewer | null> {
-    return this.getInterviewerByShortCode(linkId);
+  async getAgentByLinkId(linkId: string): Promise<Agent | null> {
+    const interviewer = await this.getInterviewerByShortCode(linkId);
+    return interviewer ? interviewerToAgent(interviewer) : null;
   },
 
   /**
@@ -710,59 +738,70 @@ export const interviewersService = {
   // LEGACY ALIASES (backward compatibility)
   // ==========================================
 
-  /** @deprecated Use getInterviewers instead */
-  async getAgents(projectId?: string) {
-    return this.getInterviewers(projectId);
+  /** @deprecated Use getInterviewers instead - returns Agent[] for legacy compatibility */
+  async getAgents(projectId?: string): Promise<Agent[]> {
+    const interviewers = await this.getInterviewers(projectId);
+    return interviewers.map(interviewerToAgent);
   },
 
-  /** @deprecated Use getArchivedInterviewers instead */
-  async getArchivedAgents(projectId?: string) {
-    return this.getArchivedInterviewers(projectId);
+  /** @deprecated Use getArchivedInterviewers instead - returns Agent[] for legacy compatibility */
+  async getArchivedAgents(projectId?: string): Promise<Agent[]> {
+    const interviewers = await this.getArchivedInterviewers(projectId);
+    return interviewers.map(interviewerToAgent);
   },
 
-  /** @deprecated Use getDeletedInterviewers instead */
-  async getTrashedAgents(projectId?: string) {
-    return this.getDeletedInterviewers(projectId);
+  /** @deprecated Use getDeletedInterviewers instead - returns Agent[] for legacy compatibility */
+  async getTrashedAgents(projectId?: string): Promise<Agent[]> {
+    const interviewers = await this.getDeletedInterviewers(projectId);
+    return interviewers.map(interviewerToAgent);
   },
 
-  /** @deprecated Use getInterviewer instead */
-  async getAgent(id: string) {
-    return this.getInterviewer(id);
+  /** @deprecated Use getInterviewer instead - returns Agent for legacy compatibility */
+  async getAgent(id: string): Promise<Agent | null> {
+    const interviewer = await this.getInterviewer(id);
+    return interviewer ? interviewerToAgent(interviewer) : null;
   },
 
-  /** @deprecated Use createInterviewer instead */
-  async createAgent(input: CreateInterviewerInput) {
-    return this.createInterviewer(input);
+  /** @deprecated Use createInterviewer instead - returns Agent for legacy compatibility */
+  async createAgent(input: CreateInterviewerInput): Promise<Agent> {
+    const interviewer = await this.createInterviewer(input);
+    return interviewerToAgent(interviewer);
   },
 
-  /** @deprecated Use updateInterviewer instead */
-  async updateAgent(id: string, input: UpdateInterviewerInput) {
-    return this.updateInterviewer(id, input);
+  /** @deprecated Use updateInterviewer instead - returns Agent for legacy compatibility */
+  async updateAgent(id: string, input: UpdateInterviewerInput): Promise<Agent> {
+    const interviewer = await this.updateInterviewer(id, input);
+    return interviewerToAgent(interviewer);
   },
 
-  /** @deprecated Use archiveInterviewer instead */
-  async archiveAgent(id: string) {
-    return this.archiveInterviewer(id);
+  /** @deprecated Use archiveInterviewer instead - returns Agent for legacy compatibility */
+  async archiveAgent(id: string): Promise<Agent> {
+    const interviewer = await this.archiveInterviewer(id);
+    return interviewerToAgent(interviewer);
   },
 
-  /** @deprecated Use restoreInterviewer instead */
-  async unarchiveAgent(id: string) {
-    return this.restoreInterviewer(id);
+  /** @deprecated Use restoreInterviewer instead - returns Agent for legacy compatibility */
+  async unarchiveAgent(id: string): Promise<Agent> {
+    const interviewer = await this.restoreInterviewer(id);
+    return interviewerToAgent(interviewer);
   },
 
-  /** @deprecated Use restoreInterviewer instead */
-  async restoreAgent(id: string) {
-    return this.restoreInterviewer(id);
+  /** @deprecated Use restoreInterviewer instead - returns Agent for legacy compatibility */
+  async restoreAgent(id: string): Promise<Agent> {
+    const interviewer = await this.restoreInterviewer(id);
+    return interviewerToAgent(interviewer);
   },
 
-  /** @deprecated Use deleteInterviewer instead */
-  async deleteAgent(id: string) {
-    return this.deleteInterviewer(id);
+  /** @deprecated Use deleteInterviewer instead - returns Agent for legacy compatibility */
+  async deleteAgent(id: string): Promise<Agent> {
+    const interviewer = await this.deleteInterviewer(id);
+    return interviewerToAgent(interviewer);
   },
 
-  /** @deprecated Use deleteInterviewer instead */
-  async moveToTrash(id: string) {
-    return this.deleteInterviewer(id);
+  /** @deprecated Use deleteInterviewer instead - returns Agent for legacy compatibility */
+  async moveToTrash(id: string): Promise<Agent> {
+    const interviewer = await this.deleteInterviewer(id);
+    return interviewerToAgent(interviewer);
   },
 
   /** @deprecated Use permanentlyDeleteInterviewer instead */
@@ -770,19 +809,22 @@ export const interviewersService = {
     return this.permanentlyDeleteInterviewer(id);
   },
 
-  /** @deprecated Use deployInterviewer instead */
-  async deployAgent(id: string) {
-    return this.deployInterviewer(id);
+  /** @deprecated Use deployInterviewer instead - returns Agent for legacy compatibility */
+  async deployAgent(id: string): Promise<Agent> {
+    const interviewer = await this.deployInterviewer(id);
+    return interviewerToAgent(interviewer);
   },
 
-  /** @deprecated Use deployInterviewer instead */
-  async activateAgent(id: string) {
-    return this.deployInterviewer(id);
+  /** @deprecated Use deployInterviewer instead - returns Agent for legacy compatibility */
+  async activateAgent(id: string): Promise<Agent> {
+    const interviewer = await this.deployInterviewer(id);
+    return interviewerToAgent(interviewer);
   },
 
-  /** @deprecated Use pauseInterviewer instead */
-  async pauseAgent(id: string) {
-    return this.pauseInterviewer(id);
+  /** @deprecated Use pauseInterviewer instead - returns Agent for legacy compatibility */
+  async pauseAgent(id: string): Promise<Agent> {
+    const interviewer = await this.pauseInterviewer(id);
+    return interviewerToAgent(interviewer);
   },
 
   /** @deprecated Use getInterviewerSessions instead */

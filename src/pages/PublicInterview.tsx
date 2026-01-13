@@ -1,36 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { interviewersService, agentsService } from '@/services/interviewers';
-import { Agent, Interviewer, Channel, PRICE_BY_CHANNEL } from '@/types';
+import { interviewersService } from '@/services/interviewers';
+import { Agent } from '@/types';
 import { InterviewWelcome } from '@/components/interview/InterviewWelcome';
 import { InterviewLive } from '@/components/interview/InterviewLive';
 import { InterviewComplete } from '@/components/interview/InterviewComplete';
 import { InterviewUnavailable } from '@/components/interview/InterviewUnavailable';
 
 type InterviewState = 'loading' | 'unavailable' | 'welcome' | 'live' | 'complete';
-
-// Helper to convert Interviewer to legacy Agent format
-function toAgent(interviewer: Interviewer): Agent {
-  return {
-    id: interviewer.id,
-    name: interviewer.name,
-    title: interviewer.title,
-    description: interviewer.description,
-    archetype: interviewer.archetype,
-    createdAt: interviewer.createdAt,
-    updatedAt: interviewer.updatedAt,
-    status: interviewer.status,
-    language: interviewer.language,
-    voiceId: interviewer.voiceId,
-    channel: interviewer.channel,
-    interviewsCount: interviewer.sessionsCount || 0,
-    pricePerInterviewUsd: PRICE_BY_CHANNEL[interviewer.channel] || 50,
-    contact: interviewer.contact,
-    credentialsReady: interviewer.credentialsReady,
-    projectId: interviewer.projectId,
-    targetDuration: interviewer.targetDurationMin,
-  };
-}
 
 export default function PublicInterview() {
   const { linkId } = useParams<{ linkId: string }>();
@@ -63,7 +40,7 @@ export default function PublicInterview() {
       return;
     }
 
-    setInterviewer(toAgent(foundInterviewer));
+    setInterviewer(foundInterviewer);
     setState('welcome');
   };
 
