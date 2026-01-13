@@ -6,19 +6,30 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-// Enum types matching database
-export type ProjectRole = 'owner' | 'editor' | 'viewer';
-export type InterviewerRole = 'owner' | 'editor' | 'viewer';
-export type ProjectType = 'consumer' | 'b2b' | 'internal' | 'other';
-export type InterviewerStatus = 'draft' | 'active' | 'paused' | 'archived' | 'deleted';
-export type ConversationType = 'structured' | 'exploratory' | 'mixed';
-export type ChannelType = 'web' | 'phone' | 'sms';
-export type ArchetypeType = 'market_research' | 'ux_research' | 'academic' | 'custom';
-export type ExpertSourceType = 'glg' | 'alphasights' | 'direct' | 'other';
+// Re-export types from the main types file for compatibility
+// These should match the existing types in src/types/index.ts
+export type { 
+  ProjectRole, 
+  InterviewerRole, 
+  ProjectType, 
+  InterviewerStatus,
+  ConversationType,
+  Channel as ChannelType,
+  Archetype as ArchetypeType,
+  ExpertSource as ExpertSourceType,
+  User,
+  Project,
+  ProjectMembership,
+  Interviewer,
+  InterviewerMembership,
+  Session,
+} from '@/types';
+
+// Supabase-specific types
 export type AppRole = 'admin' | 'user';
 export type FeatureFlagCategory = 'production' | 'experimental' | 'roadmap';
 
-// Table row types
+// Profile matches the profiles table (different from User type)
 export interface Profile {
   id: string;
   email: string;
@@ -38,75 +49,64 @@ export interface FeatureFlag {
   updated_at: string;
 }
 
-export interface Project {
+// Insert types for Supabase operations
+export interface ProfileInsert {
   id: string;
-  name: string;
-  description: string | null;
-  project_type: ProjectType;
-  created_at: string;
-  updated_at: string;
+  email: string;
+  name?: string | null;
+  avatar_url?: string | null;
 }
 
-export interface ProjectMembership {
-  id: string;
+export interface ProjectInsert {
+  name: string;
+  caseCode?: string;
+  description?: string | null;
+  projectType?: string;
+}
+
+export interface ProjectMembershipInsert {
   project_id: string;
   user_id: string;
-  role: ProjectRole;
-  created_at: string;
+  role?: string;
 }
 
-export interface Interviewer {
-  id: string;
+export interface InterviewerInsert {
   project_id: string;
   name: string;
-  description: string | null;
-  archetype: ArchetypeType;
-  status: InterviewerStatus;
-  channel: ChannelType;
-  conversation_type: ConversationType;
-  expert_source: ExpertSourceType | null;
-  voice: string | null;
-  interview_guide: Json | null;
-  knowledge_assets: Json | null;
-  short_code: string | null;
-  phone_number: string | null;
-  created_by: string | null;
-  created_at: string;
-  updated_at: string;
-  archived_at: string | null;
-  deleted_at: string | null;
+  title?: string;
+  description?: string | null;
+  archetype?: string;
+  channel?: string;
+  language?: string;
+  voice_id?: string;
+  target_duration_min?: number;
+  created_by?: string | null;
 }
 
-export interface Session {
-  id: string;
+export interface SessionInsert {
   interviewer_id: string;
-  respondent_name: string | null;
-  respondent_email: string | null;
-  status: string;
-  started_at: string | null;
-  ended_at: string | null;
-  duration_minutes: number | null;
-  transcript: Json | null;
-  summary: Json | null;
-  feedback: string | null;
-  created_at: string;
-  updated_at: string;
+  conversation_type?: string;
+  respondent_id?: string;
 }
-
-// Insert types
-export type ProfileInsert = Partial<Profile> & { id: string; email: string };
-export type ProjectInsert = Partial<Project> & { name: string };
-export type ProjectMembershipInsert = Partial<ProjectMembership> & { project_id: string; user_id: string };
-export type InterviewerInsert = Partial<Interviewer> & { project_id: string; name: string };
-export type SessionInsert = Partial<Session> & { interviewer_id: string };
 
 // Update types
-export type ProfileUpdate = Partial<Profile>;
-export type ProjectUpdate = Partial<Project>;
-export type InterviewerUpdate = Partial<Interviewer>;
-export type SessionUpdate = Partial<Session>;
+export type ProfileUpdate = Partial<ProfileInsert>;
+export type ProjectUpdate = Partial<ProjectInsert>;
+export type InterviewerUpdate = Partial<InterviewerInsert> & {
+  status?: string;
+  archived_at?: string | null;
+  deleted_at?: string | null;
+};
+export type SessionUpdate = Partial<SessionInsert> & {
+  started_at?: string | null;
+  ended_at?: string | null;
+  duration_sec?: number | null;
+  completed?: boolean;
+};
 
-// Extended types with relations
+// Extended types with relations (for Supabase queries)
+import type { Project, ProjectMembership, Interviewer } from '@/types';
+
 export type ProjectWithMembership = Project & {
   membership?: ProjectMembership;
 };

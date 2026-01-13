@@ -1,9 +1,65 @@
-// Mock Service Layer for Agents API
-import { Agent, InterviewGuide, KnowledgeAsset, AudienceUpload, Share, InterviewSummary, GuideSchema, PRICE_BY_CHANNEL, AgentCollaborator, AgentPermission, Channel } from '@/types';
+import { supabase, isSupabaseConfigured } from '@/integrations/supabase/client';
+import type {
+  Interviewer,
+  InterviewerInsert,
+  InterviewerUpdate,
+  Session,
+  SessionInsert,
+  Profile,
+  InterviewerRole,
+  InterviewerWithProject,
+  ArchetypeType,
+  ChannelType,
+  ConversationType,
+  ExpertSourceType,
+  InterviewerStatus,
+  Project,
+  ProjectMembership,
+} from '@/integrations/supabase/database.types';
 
-// Generate a short 6-character alphanumeric code
+// Extended membership type with user profile
+export interface InterviewerMembership {
+  id: string;
+  interviewer_id: string;
+  user_id: string;
+  role: InterviewerRole;
+  created_at: string;
+}
+
+export type InterviewerMembershipWithUser = InterviewerMembership & {
+  profile?: Profile;
+};
+
+export interface CreateInterviewerInput {
+  projectId: string;
+  name: string;
+  description?: string;
+  archetype?: ArchetypeType;
+  channel?: ChannelType;
+  conversationType?: ConversationType;
+  expertSource?: ExpertSourceType;
+  voice?: string;
+  interviewGuide?: object;
+  knowledgeAssets?: object[];
+}
+
+export interface UpdateInterviewerInput {
+  name?: string;
+  description?: string;
+  archetype?: ArchetypeType;
+  status?: InterviewerStatus;
+  channel?: ChannelType;
+  conversationType?: ConversationType;
+  expertSource?: ExpertSourceType;
+  voice?: string;
+  interviewGuide?: object;
+  knowledgeAssets?: object[];
+  phoneNumber?: string;
+}
+
+// Generate random short code for sharing
 function generateShortCode(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Excluding confusing chars
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let result = '';
   for (let i = 0; i < 6; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -11,1114 +67,568 @@ function generateShortCode(): string {
   return result;
 }
 
-// Current user ID (mock - in production this would come from auth)
-const CURRENT_USER_ID = 'current-user-1';
-const CURRENT_USER = {
-  id: 'current-user-1',
-  name: 'You (Current User)',
-  email: 'your.email@bcg.com',
-  department: 'Strategy'
-};
-
-// Mock Okta users for sharing
-const mockOktaUsers = [
-  { id: 'user-1', name: 'Sarah Chen', email: 'sarah.chen@bcg.com', department: 'Strategy' },
-  { id: 'user-2', name: 'Michael Rodriguez', email: 'michael.rodriguez@bcg.com', department: 'Operations' },
-  { id: 'user-3', name: 'Emma Johnson', email: 'emma.johnson@bcg.com', department: 'Digital' },
-  { id: 'user-4', name: 'David Kim', email: 'david.kim@bcg.com', department: 'Technology' },
-  { id: 'user-5', name: 'Lisa Wang', email: 'lisa.wang@bcg.com', department: 'Marketing' },
-  { id: 'user-6', name: 'James Thompson', email: 'james.thompson@bcg.com', department: 'Finance' },
-  { id: 'user-7', name: 'Ana Garcia', email: 'ana.garcia@bcg.com', department: 'Strategy' },
-  { id: 'user-8', name: 'Robert Lee', email: 'robert.lee@bcg.com', department: 'Operations' },
+// Mock data for when Supabase is not configured
+const mockInterviewers: Interviewer[] = [
+  {
+    id: 'int-1',
+    project_id: 'proj-1',
+    name: 'Consumer Feedback Agent',
+    description: 'Gathers feedback from retail consumers',
+    archetype: 'market_research',
+    status: 'active',
+    channel: 'web',
+    conversation_type: 'structured',
+    expert_source: null,
+    voice: 'alloy',
+    interview_guide: null,
+    knowledge_assets: null,
+    short_code: 'ABC123',
+    phone_number: null,
+    created_by: 'user-1',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    archived_at: null,
+    deleted_at: null,
+  },
+  {
+    id: 'int-2',
+    project_id: 'proj-2',
+    name: 'Healthcare Executive Interviewer',
+    description: 'B2B interviews with healthcare decision makers',
+    archetype: 'ux_research',
+    status: 'draft',
+    channel: 'phone',
+    conversation_type: 'exploratory',
+    expert_source: 'glg',
+    voice: 'echo',
+    interview_guide: null,
+    knowledge_assets: null,
+    short_code: 'XYZ789',
+    phone_number: '+1234567890',
+    created_by: 'user-1',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    archived_at: null,
+    deleted_at: null,
+  },
 ];
 
-// Mock collaborators data - current user is owner of all agents by default
-const mockCollaborators: AgentCollaborator[] = [
+const mockSessions: Session[] = [
   {
-    id: 'collab-1',
-    agentId: 'agent-1',
-    userId: CURRENT_USER_ID,
-    user: CURRENT_USER,
-    permission: 'owner',
-    createdAt: '2024-12-01T10:00:00Z',
-    updatedAt: '2024-12-01T10:00:00Z'
+    id: 'sess-1',
+    interviewer_id: 'int-1',
+    respondent_name: 'John Doe',
+    respondent_email: 'john@example.com',
+    status: 'completed',
+    started_at: new Date(Date.now() - 86400000).toISOString(),
+    ended_at: new Date(Date.now() - 84600000).toISOString(),
+    duration_minutes: 30,
+    transcript: null,
+    summary: null,
+    feedback: 'positive',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   },
-  {
-    id: 'collab-2',
-    agentId: 'agent-1',
-    userId: 'user-1',
-    user: mockOktaUsers[0],
-    permission: 'editor',
-    invitedBy: CURRENT_USER_ID,
-    createdAt: '2024-12-02T14:00:00Z',
-    updatedAt: '2024-12-02T14:00:00Z'
-  },
-  {
-    id: 'collab-3',
-    agentId: 'agent-1',
-    userId: 'user-2',
-    user: mockOktaUsers[1],
-    permission: 'viewer',
-    invitedBy: CURRENT_USER_ID,
-    createdAt: '2024-12-03T09:00:00Z',
-    updatedAt: '2024-12-03T09:00:00Z'
-  },
-  {
-    id: 'collab-4',
-    agentId: 'agent-genai-strategy',
-    userId: CURRENT_USER_ID,
-    user: CURRENT_USER,
-    permission: 'owner',
-    createdAt: '2024-11-25T08:00:00Z',
-    updatedAt: '2024-11-25T08:00:00Z'
-  },
-  {
-    id: 'collab-5',
-    agentId: 'agent-2',
-    userId: CURRENT_USER_ID,
-    user: CURRENT_USER,
-    permission: 'owner',
-    createdAt: '2024-11-28T14:30:00Z',
-    updatedAt: '2024-11-28T14:30:00Z'
-  },
-  {
-    id: 'collab-6',
-    agentId: 'agent-3',
-    userId: CURRENT_USER_ID,
-    user: CURRENT_USER,
-    permission: 'owner',
-    createdAt: '2024-12-05T09:15:00Z',
-    updatedAt: '2024-12-05T09:15:00Z'
-  },
-  {
-    id: 'collab-7',
-    agentId: 'agent-4',
-    userId: CURRENT_USER_ID,
-    user: CURRENT_USER,
-    permission: 'owner',
-    createdAt: '2024-12-01T11:00:00Z',
-    updatedAt: '2024-12-01T11:00:00Z'
-  },
-  {
-    id: 'collab-8',
-    agentId: 'agent-web-link',
-    userId: CURRENT_USER_ID,
-    user: CURRENT_USER,
-    permission: 'owner',
-    createdAt: '2024-12-10T09:00:00Z',
-    updatedAt: '2024-12-10T09:00:00Z'
-  }
-];
-// Mock data
-const mockAgents: Agent[] = [
-  {
-    id: 'agent-genai-strategy',
-    name: 'GenAI Strategy Consulting Research',
-    archetype: 'expert_interview',
-    createdAt: '2024-11-25T08:00:00Z',
-    updatedAt: '2024-12-15T14:30:00Z',
-    status: 'live',
-    language: 'en',
-    voiceId: 'voice-2',
-    channel: 'inbound_call',
-    interviewsCount: 34,
-    pricePerInterviewUsd: PRICE_BY_CHANNEL.inbound_call,
-    contact: { phoneNumber: '+1 (555) 987-6543' },
-    credentialsReady: true,
-  },
-  {
-    id: 'agent-1',
-    name: 'EU Battery Expert Deep-Dive',
-    archetype: 'expert_interview',
-    createdAt: '2024-12-01T10:00:00Z',
-    updatedAt: '2024-12-20T09:00:00Z',
-    status: 'ready_to_test',
-    language: 'en',
-    voiceId: 'voice-1',
-    channel: 'inbound_call',
-    interviewsCount: 8,
-    pricePerInterviewUsd: PRICE_BY_CHANNEL.inbound_call,
-    contact: { phoneNumber: '+1 (555) 234-7890' },
-    credentialsReady: true,
-  },
-  {
-    id: 'agent-2',
-    name: 'Retail NPS Pulse',
-    archetype: 'customer_interview',
-    createdAt: '2024-11-28T14:30:00Z',
-    updatedAt: '2024-12-10T16:45:00Z',
-    status: 'live',
-    language: 'es',
-    channel: 'inbound_call',
-    interviewsCount: 142,
-    pricePerInterviewUsd: PRICE_BY_CHANNEL.inbound_call,
-    contact: { phoneNumber: '+1 (555) 234-5678' },
-    credentialsReady: true,
-  },
-  {
-    id: 'agent-3',
-    name: 'Customer Feedback Portal',
-    archetype: 'customer_interview',
-    createdAt: '2024-12-05T09:15:00Z',
-    updatedAt: '2024-12-18T11:20:00Z',
-    status: 'paused',
-    language: 'en',
-    channel: 'inbound_call',
-    interviewsCount: 23,
-    pricePerInterviewUsd: PRICE_BY_CHANNEL.inbound_call,
-    contact: { phoneNumber: '+1 (555) 345-6789' },
-    credentialsReady: true,
-    hasActiveCall: false,
-  },
-  {
-    id: 'agent-4',
-    name: 'Active Call Demo Agent',
-    archetype: 'maturity_assessment',
-    createdAt: '2024-12-01T11:00:00Z',
-    updatedAt: '2024-12-22T08:30:00Z',
-    status: 'live',
-    language: 'en',
-    channel: 'inbound_call',
-    interviewsCount: 5,
-    pricePerInterviewUsd: PRICE_BY_CHANNEL.inbound_call,
-    contact: { phoneNumber: '+1 (555) 111-2222' },
-    credentialsReady: true,
-    hasActiveCall: true, // Mock: this agent has an ongoing call
-  },
-  {
-    id: 'agent-web-link',
-    name: 'Web Interview Demo',
-    archetype: 'customer_interview',
-    createdAt: '2024-12-10T09:00:00Z',
-    updatedAt: '2024-12-12T10:15:00Z',
-    status: 'live',
-    language: 'en',
-    voiceId: 'voice-1',
-    channel: 'web_link',
-    interviewsCount: 12,
-    pricePerInterviewUsd: PRICE_BY_CHANNEL.web_link,
-    contact: { linkId: 'DEMO42' },
-    credentialsReady: true,
-  }
 ];
 
-const mockInterviewGuides: InterviewGuide[] = [
-  {
-    id: 'guide-genai-strategy',
-    agentId: 'agent-genai-strategy',
-    rawText: `### Respondent Screener
-- Confirm the respondent's role and experience in strategy consulting, with specific exposure to GenAI initiatives either as an internal practitioner or client-facing consultant.
-- Verify their involvement in GenAI use case development, implementation, or strategic planning within a consulting environment.
-- Assess their experience level with both traditional strategy methodologies and emerging AI-enhanced approaches.
-
-### Industry Overview
-- What percentage of strategy consulting engagements now incorporate GenAI tools or methodologies? **[QUANTIFY]**
-- How are leading strategy consulting firms (McKinsey, BCG, Bain, Deloitte, etc.) differentiating their GenAI capabilities in the market?
-- What is the current maturity level of GenAI adoption across the strategy consulting industry — are most firms still in pilot phases or have some moved to scaled implementation?
-- How do clients perceive the value proposition of GenAI-enhanced strategy consulting versus traditional approaches?
-
-### Process Analysis
-- Walk through a typical strategy engagement workflow and identify where GenAI tools are currently being integrated (e.g., market research, scenario planning, competitive analysis, synthesis).
-- What are the most successful GenAI use cases you've seen in strategy work? (e.g., market sizing, trend analysis, strategic option generation, stakeholder analysis)
-- How do you balance human strategic thinking with AI-generated insights? Where do you see the most value in human oversight versus automation?
-- What is the typical timeline and resource allocation for implementing GenAI tools in a strategy engagement? **[QUANTIFY]**
-- What are the primary challenges in scaling GenAI use cases from proof-of-concept to standard practice?
-
-### Market Dynamics
-- How are strategy consulting firms pricing GenAI-enhanced engagements? Are clients willing to pay premiums for AI-augmented strategy work, or do they expect cost reductions due to efficiency gains?
-- What is driving client demand for GenAI in strategy consulting — cost reduction, speed to insight, analytical depth, or competitive advantage?
-- How do boutique strategy firms compete with larger firms that have more resources to invest in GenAI capabilities?
-- What role do partnerships with technology providers (OpenAI, Google, Microsoft, specialized AI vendors) play in strategy consulting firms' GenAI offerings?
-- How do you handle client concerns about data security, confidentiality, and competitive intelligence when using GenAI tools?
-
-### Future Trends
-- Looking ahead 3–5 years, which strategic consulting functions do you believe will be most transformed by GenAI? (e.g., market research, scenario modeling, recommendation synthesis)
-- How will the role of strategy consultants evolve as GenAI becomes more sophisticated? What skills will become more or less valuable?
-- Do you anticipate GenAI will commoditize certain aspects of strategy consulting, and if so, how should firms adapt their value proposition?
-- What new types of strategic questions or analyses become possible with advanced GenAI that weren't feasible with traditional methods?
-- How might client expectations and engagement models change as GenAI becomes standard in the industry?`,
-    structured: {
-      intro: "This research explores the integration of Generative AI in strategy consulting, examining current adoption patterns, successful use cases, market dynamics, and future implications for the industry.",
-      objectives: [
-        "Quantify current GenAI adoption rates in strategy consulting engagements",
-        "Map successful GenAI integration points in typical strategy workflows",
-        "Analyze pricing models and client value perception of AI-enhanced consulting",
-        "Identify competitive dynamics and differentiation strategies among consulting firms",
-        "Project future evolution of consultant roles and client expectations"
-      ],
-      sections: [
-        {
-          title: "Respondent Screener",
-          questions: [
-            {
-              id: "screener-role",
-              type: "single",
-              prompt: "What is your current role in strategy consulting?",
-              options: ["Partner/Principal", "Engagement Manager", "Senior Associate", "Associate", "Other"],
-              required: true
-            },
-            {
-              id: "screener-genai-exposure",
-              type: "single",
-              prompt: "How would you describe your exposure to GenAI initiatives?",
-              options: ["Internal practitioner", "Client-facing consultant", "Both", "Limited exposure"],
-              required: true
-            },
-            {
-              id: "screener-experience",
-              type: "scale",
-              prompt: "Rate your experience level with AI-enhanced strategy approaches",
-              scale: { min: 1, max: 5, labels: { 1: "Beginner", 5: "Expert" } },
-              required: true
-            }
-          ]
-        },
-        {
-          title: "Industry Overview",
-          questions: [
-            {
-              id: "adoption-percentage",
-              type: "open",
-              prompt: "What percentage of strategy consulting engagements now incorporate GenAI tools or methodologies?",
-              required: true,
-              followUps: ["How has this changed over the past 12 months?", "What factors are driving this adoption rate?"]
-            },
-            {
-              id: "firm-differentiation",
-              type: "open",
-              prompt: "How are leading strategy consulting firms differentiating their GenAI capabilities?",
-              followUps: ["Which firms do you see as leaders in this space?", "What specific capabilities set them apart?"]
-            },
-            {
-              id: "maturity-level",
-              type: "single",
-              prompt: "What is the current maturity level of GenAI adoption in strategy consulting?",
-              options: ["Pilot/experimentation phase", "Early implementation", "Scaled deployment", "Mature integration"],
-              required: true
-            },
-            {
-              id: "client-perception",
-              type: "scale",
-              prompt: "How do clients perceive the value of GenAI-enhanced vs traditional consulting?",
-              scale: { min: 1, max: 5, labels: { 1: "Traditional preferred", 5: "GenAI strongly preferred" } }
-            }
-          ]
-        },
-        {
-          title: "Process Analysis",
-          questions: [
-            {
-              id: "workflow-integration",
-              type: "open",
-              prompt: "Walk through where GenAI tools are integrated in typical strategy engagements",
-              required: true,
-              followUps: ["Which integration points show the highest ROI?", "Where do you see the most resistance?"]
-            },
-            {
-              id: "successful-use-cases",
-              type: "multi",
-              prompt: "What are the most successful GenAI use cases in strategy work?",
-              options: ["Market sizing", "Trend analysis", "Strategic option generation", "Stakeholder analysis", "Competitive intelligence", "Scenario planning"],
-              required: true
-            },
-            {
-              id: "human-ai-balance",
-              type: "open",
-              prompt: "How do you balance human strategic thinking with AI-generated insights?",
-              followUps: ["Where is human oversight most critical?", "What should never be automated?"]
-            },
-            {
-              id: "implementation-timeline",
-              type: "open",
-              prompt: "What is the typical timeline and resource allocation for implementing GenAI tools?",
-              required: true
-            }
-          ]
-        },
-        {
-          title: "Market Dynamics",
-          questions: [
-            {
-              id: "pricing-models",
-              type: "open",
-              prompt: "How are firms pricing GenAI-enhanced engagements?",
-              required: true,
-              followUps: ["Are clients willing to pay premiums?", "Do they expect cost reductions due to efficiency?"]
-            },
-            {
-              id: "demand-drivers",
-              type: "multi",
-              prompt: "What is driving client demand for GenAI in strategy consulting?",
-              options: ["Cost reduction", "Speed to insight", "Analytical depth", "Competitive advantage", "Innovation capability"],
-              required: true
-            },
-            {
-              id: "boutique-competition",
-              type: "open",
-              prompt: "How do boutique firms compete with larger firms on GenAI capabilities?"
-            },
-            {
-              id: "tech-partnerships",
-              type: "multi",
-              prompt: "Which technology partnerships are most valuable?",
-              options: ["OpenAI", "Google", "Microsoft", "Specialized AI vendors", "Internal development"],
-              followUps: ["How do these partnerships influence client choices?"]
-            }
-          ]
-        },
-        {
-          title: "Future Trends",
-          questions: [
-            {
-              id: "transformed-functions",
-              type: "multi",
-              prompt: "Which consulting functions will be most transformed by GenAI in 3-5 years?",
-              options: ["Market research", "Scenario modeling", "Recommendation synthesis", "Data analysis", "Client presentations", "Project management"],
-              required: true
-            },
-            {
-              id: "consultant-evolution",
-              type: "open",
-              prompt: "How will consultant roles evolve as GenAI becomes more sophisticated?",
-              followUps: ["What skills will become more valuable?", "What skills will become less valuable?"]
-            },
-            {
-              id: "commoditization-risk",
-              type: "scale",
-              prompt: "Will GenAI commoditize aspects of strategy consulting?",
-              scale: { min: 1, max: 5, labels: { 1: "No risk", 5: "High risk" } },
-              followUps: ["How should firms adapt their value proposition?"]
-            },
-            {
-              id: "new-capabilities",
-              type: "open",
-              prompt: "What new strategic analyses become possible with advanced GenAI?"
-            }
-          ]
-        }
-      ],
-      closing: "Thank you for sharing your insights on GenAI in strategy consulting. Your perspective helps us understand this rapidly evolving landscape."
-    }
-  },
-  {
-    id: 'guide-1',
-    agentId: 'agent-1',
-    rawText: `Welcome to our expert interview on EU battery technologies. We're conducting research to understand the current landscape and future opportunities in this rapidly evolving sector.
-
-Objectives:
-- Assess current market dynamics in EU battery manufacturing
-- Identify key technological trends and innovations
-- Understand regulatory landscape and its impact
-- Evaluate competitive positioning of major players
-
-Questions:
-1. What are the main drivers of growth in the EU battery market?
-2. How do you see the regulatory environment evolving?
-3. Which technologies show the most promise for the next 5 years?
-4. What are the key challenges facing battery manufacturers today?
-
-Thank you for your participation in this research.`,
-    structured: {
-      intro: "Welcome to our expert interview on EU battery technologies. We're conducting research to understand the current landscape and future opportunities in this rapidly evolving sector.",
-      objectives: [
-        "Assess current market dynamics in EU battery manufacturing",
-        "Identify key technological trends and innovations",
-        "Understand regulatory landscape and its impact",
-        "Evaluate competitive positioning of major players"
-      ],
-      sections: [
-        {
-          title: "Market Dynamics",
-          questions: [
-            {
-              id: "q1",
-              type: "open",
-              prompt: "What are the main drivers of growth in the EU battery market?",
-              required: true
-            },
-            {
-              id: "q2",
-              type: "scale",
-              prompt: "How would you rate the current competitive intensity?",
-              scale: { min: 1, max: 5, labels: { 1: "Very Low", 5: "Very High" } },
-              required: true
-            }
-          ]
-        },
-        {
-          title: "Technology & Innovation",
-          questions: [
-            {
-              id: "q3",
-              type: "open",
-              prompt: "Which technologies show the most promise for the next 5 years?",
-              followUps: ["Can you elaborate on the technical advantages?", "What are the main barriers to adoption?"]
-            },
-            {
-              id: "q4",
-              type: "multi",
-              prompt: "Which of these areas need the most innovation investment?",
-              options: ["Energy density", "Charging speed", "Longevity", "Sustainability", "Cost reduction"],
-              required: true
-            }
-          ]
-        }
-      ],
-      closing: "Thank you for your participation in this research."
-    }
-  },
-  {
-    id: 'guide-2',
-    agentId: 'agent-2',
-    rawText: `Quick NPS survey for retail experience.
-
-1. How likely are you to recommend us to a friend? (0-10 scale)
-2. What's the main reason for your score?
-3. Any suggestions for improvement?
-
-Thank you!`,
-    structured: {
-      intro: "Quick NPS survey for retail experience.",
-      objectives: ["Measure customer satisfaction", "Identify improvement areas"],
-      sections: [
-        {
-          title: "NPS Assessment",
-          questions: [
-            {
-              id: "nps",
-              type: "scale",
-              prompt: "How likely are you to recommend us to a friend?",
-              scale: { min: 0, max: 10 },
-              required: true
-            },
-            {
-              id: "reason",
-              type: "open",
-              prompt: "What's the main reason for your score?",
-              required: true
-            },
-            {
-              id: "suggestions",
-              type: "open",
-              prompt: "Any suggestions for improvement?"
-            }
-          ]
-        }
-      ],
-      closing: "Thank you!"
-    }
-  }
-];
-
-const mockKnowledgeAssets: KnowledgeAsset[] = [
-  {
-    id: 'knowledge-genai-1',
-    agentId: 'agent-genai-strategy',
-    title: 'GenAI in Consulting Industry Report 2024',
-    type: 'file',
-    fileName: 'genai_consulting_landscape_2024.pdf',
-    fileSize: 3200000
-  },
-  {
-    id: 'knowledge-genai-2',
-    agentId: 'agent-genai-strategy',
-    title: 'Strategy Consultant Interview Protocol',
-    type: 'text',
-    contentText: `Interview Guidelines:
-    
-Target Respondents:
-- Strategy consultants with 3+ years experience
-- Direct exposure to GenAI projects (either internal or client-facing)
-- Mix of firm sizes: MBB, Big 4, boutique firms
-- Geographic diversity: North America, Europe, Asia-Pacific
-
-Key Probing Areas:
-1. Quantify adoption rates and timelines
-2. Understand workflow integration points
-3. Explore pricing and value perception
-4. Assess competitive positioning
-5. Project future industry evolution
-
-Interview Duration: 45-60 minutes
-Compensation: $200 consulting credit or equivalent`
-  },
-  {
-    id: 'knowledge-genai-3',
-    agentId: 'agent-genai-strategy',
-    title: 'Consulting Firm GenAI Capabilities Matrix',
-    type: 'file',
-    fileName: 'firm_genai_capabilities_comparison.xlsx',
-    fileSize: 750000
-  },
-  {
-    id: 'knowledge-genai-4',
-    agentId: 'agent-genai-strategy',
-    title: 'GenAI Technology Stack Reference',
-    type: 'text',
-    contentText: `Common GenAI Technologies in Strategy Consulting:
-
-Large Language Models:
-- GPT-4, Claude, Gemini for analysis and synthesis
-- Custom fine-tuned models for specific domains
-
-Specialized Tools:
-- Market research: Crayon, Klenty, SimilarWeb
-- Data analysis: DataRobot, H2O.ai, Dataiku
-- Presentation: Gamma, Beautiful.ai, Tome
-
-Integration Platforms:
-- Microsoft Copilot for M365
-- Google Workspace AI features
-- Custom enterprise solutions
-
-Key Considerations:
-- Data security and client confidentiality
-- Model accuracy and bias mitigation
-- Integration with existing workflows
-- Training and change management`
-  },
-  {
-    id: 'knowledge-1',
-    agentId: 'agent-1',
-    title: 'EU Battery Market Report 2024',
-    type: 'file',
-    fileName: 'eu_battery_market_2024.pdf',
-    fileSize: 2400000
-  },
-  {
-    id: 'knowledge-2',
-    agentId: 'agent-1',
-    title: 'Industry Expert Contacts',
-    type: 'text',
-    contentText: 'List of key industry experts in EU battery sector:\n\n1. Dr. Maria Schmidt - Head of Battery Research, TU Berlin\n2. Prof. Jean Dubois - Energy Storage Institute, Sorbonne\n3. Henrik Andersson - CTO, NorthVolt\n\nContact protocols and key topics for each expert...'
-  },
-  {
-    id: 'knowledge-3',
-    agentId: 'agent-1',
-    title: 'Technical Specifications Guide',
-    type: 'file',
-    fileName: 'battery_tech_specs_v3.docx',
-    fileSize: 890000
-  },
-  {
-    id: 'knowledge-4',
-    agentId: 'agent-2',
-    title: 'Retail Location Details',
-    type: 'text',
-    contentText: 'Store information:\n- Location: Downtown Shopping Center\n- Opening hours: 9 AM - 9 PM\n- Store size: 2,500 sq ft\n- Staff: 8 team members\n- Peak hours: 12-2 PM, 6-8 PM'
-  },
-  {
-    id: 'knowledge-5',
-    agentId: 'agent-2',
-    title: 'Previous NPS Results',
-    type: 'file',
-    fileName: 'nps_history_q1_q3.xlsx',
-    fileSize: 156000
-  }
-];
-
-const mockInterviews: InterviewSummary[] = [
-  {
-    id: 'interview-genai-1',
-    agentId: 'agent-genai-strategy',
-    startedAt: '2024-12-08T14:00:00Z',
-    durationSec: 2834,
-    channel: 'inbound_call',
-    completed: true,
-    conversationType: 'live',
-    respondentId: 'resp-genai-1'
-  },
-  {
-    id: 'interview-genai-2',
-    agentId: 'agent-genai-strategy',
-    startedAt: '2024-12-08T16:30:00Z',
-    durationSec: 3156,
-    channel: 'inbound_call',
-    completed: true,
-    conversationType: 'live',
-    respondentId: 'resp-genai-2'
-  },
-  {
-    id: 'interview-genai-3',
-    agentId: 'agent-genai-strategy',
-    startedAt: '2024-12-09T10:15:00Z',
-    durationSec: 2945,
-    channel: 'inbound_call',
-    completed: false,
-    conversationType: 'live',
-    respondentId: 'resp-genai-3'
-  },
-  {
-    id: 'interview-1',
-    agentId: 'agent-1',
-    startedAt: '2024-12-08T15:30:00Z',
-    durationSec: 1847,
-    channel: 'inbound_call',
-    completed: true,
-    conversationType: 'live',
-    respondentId: 'resp-1'
-  },
-  {
-    id: 'interview-2',
-    agentId: 'agent-2',
-    startedAt: '2024-12-08T14:15:00Z',
-    durationSec: 325,
-    channel: 'inbound_call',
-    completed: true,
-    conversationType: 'live',
-    respondentId: 'resp-2'
-  }
-];
-
-// API Service Functions
 export const interviewersService = {
-  // Get all agents (excludes deleted and auto-removes items deleted > 30 days ago)
-  async getAgents(): Promise<Agent[]> {
-    await delay(500);
-    // Auto-cleanup agents deleted more than 30 days ago
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const indicesToRemove = mockAgents
-      .map((agent, index) => ({ agent, index }))
-      .filter(({ agent }) => agent.deletedAt && new Date(agent.deletedAt) < thirtyDaysAgo)
-      .map(({ index }) => index);
-    
-    // Remove from end to start to maintain correct indices
-    indicesToRemove.reverse().forEach(index => mockAgents.splice(index, 1));
-    
-    // Return only non-deleted and non-archived agents
-    return mockAgents.filter(agent => !agent.deletedAt && !agent.archivedAt);
-  },
-
-  // Get single agent
-  async getAgent(id: string): Promise<Agent | null> {
-    await delay(300);
-    return mockAgents.find(agent => agent.id === id) || null;
-  },
-
-  // Create new agent
-  async createAgent(data: Partial<Agent>): Promise<Agent> {
-    await delay(800);
-    const channel = data.channel || 'inbound_call';
-    const contact: Agent['contact'] = {};
-    
-    // Generate contact info based on channel
-    if (channel === 'inbound_call') {
-      contact.phoneNumber = `+1 (555) ${Math.floor(Math.random() * 900 + 100)}-${Math.floor(Math.random() * 9000 + 1000)}`;
-    } else if (channel === 'web_link') {
-      contact.linkId = generateShortCode();
-    }
-    
-    const newAgent: Agent = {
-      id: `agent-${Date.now()}`,
-      name: data.name || 'Untitled Agent',
-      archetype: data.archetype || 'customer_interview',
-      createdAt: new Date().toISOString(),
-      status: 'ready_to_test',
-      language: data.language || 'en',
-      voiceId: data.voiceId,
-      channel,
-      interviewsCount: 0,
-      pricePerInterviewUsd: PRICE_BY_CHANNEL[channel],
-      contact,
-      credentialsReady: true,
-    };
-    
-    mockAgents.push(newAgent);
-    return newAgent;
-  },
-
-  // Update agent
-  async updateAgent(id: string, data: Partial<Agent>): Promise<Agent> {
-    await delay(500);
-    const index = mockAgents.findIndex(agent => agent.id === id);
-    if (index === -1) throw new Error('Agent not found');
-    
-    mockAgents[index] = { ...mockAgents[index], ...data };
-    return mockAgents[index];
-  },
-
-  // Provision contact info (phone/web link)
-  async provisionContact(agentId: string): Promise<{ contact: Agent['contact'] }> {
-    await delay(1000);
-    const agent = mockAgents.find(a => a.id === agentId);
-    if (!agent) throw new Error('Agent not found');
-
-    let contact: Agent['contact'] = {};
-    
-    if (agent.channel === 'inbound_call') {
-      contact.phoneNumber = `+1 (555) ${Math.floor(Math.random() * 900 + 100)}-${Math.floor(Math.random() * 9000 + 1000)}`;
-    } else if (agent.channel === 'web_link') {
-      contact.linkId = generateShortCode();
+  /**
+   * Get all interviewers (optionally filtered by project)
+   */
+  async getInterviewers(projectId?: string): Promise<InterviewerWithProject[]> {
+    if (!isSupabaseConfigured()) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      let filtered = mockInterviewers.filter(i => !i.deleted_at && !i.archived_at);
+      if (projectId) {
+        filtered = filtered.filter(i => i.project_id === projectId);
+      }
+      return filtered.map(i => ({ ...i, project: undefined }));
     }
 
-    // Update the agent
-    agent.contact = contact;
-    agent.credentialsReady = true;
-    
-    return { contact };
-  },
+    let query = supabase
+      .from('interviewers')
+      .select(`
+        *,
+        project:projects(*)
+      `)
+      .is('deleted_at', null)
+      .is('archived_at', null);
 
-  // Get agent by link ID (for public interview page)
-  async getAgentByLinkId(linkId: string): Promise<Agent | null> {
-    await delay(300);
-    return mockAgents.find(agent => agent.contact?.linkId === linkId) || null;
-  },
-
-  // Deploy agent (go live)
-  async deployAgent(agentId: string, caseCode: string): Promise<{ status: 'live' }> {
-    await delay(800);
-    const agent = mockAgents.find(a => a.id === agentId);
-    if (!agent) throw new Error('Agent not found');
-    
-    agent.status = 'live';
-    return { status: 'live' };
-  },
-
-  // Activate agent (from paused to live)
-  async activateAgent(agentId: string): Promise<Agent> {
-    await delay(400);
-    const agent = mockAgents.find(a => a.id === agentId);
-    if (!agent) throw new Error('Agent not found');
-    
-    if (agent.status === 'paused') {
-      agent.status = 'live';
+    if (projectId) {
+      query = query.eq('project_id', projectId);
     }
-    
-    return agent;
+
+    const { data, error } = await query.order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return (data || []).map(d => ({
+      ...d,
+      project: d.project as unknown as Project,
+    })) as InterviewerWithProject[];
   },
 
-  // Get agent interviews
-  async getAgentInterviews(agentId: string): Promise<InterviewSummary[]> {
-    await delay(400);
-    return mockInterviews.filter(interview => interview.agentId === agentId);
+  /**
+   * Get archived interviewers
+   */
+  async getArchivedInterviewers(projectId?: string): Promise<InterviewerWithProject[]> {
+    if (!isSupabaseConfigured()) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      let filtered = mockInterviewers.filter(i => i.archived_at && !i.deleted_at);
+      if (projectId) {
+        filtered = filtered.filter(i => i.project_id === projectId);
+      }
+      return filtered.map(i => ({ ...i, project: undefined }));
+    }
+
+    let query = supabase
+      .from('interviewers')
+      .select(`
+        *,
+        project:projects(*)
+      `)
+      .not('archived_at', 'is', null)
+      .is('deleted_at', null);
+
+    if (projectId) {
+      query = query.eq('project_id', projectId);
+    }
+
+    const { data, error } = await query.order('archived_at', { ascending: false });
+
+    if (error) throw error;
+    return (data || []).map(d => ({
+      ...d,
+      project: d.project as unknown as Project,
+    })) as InterviewerWithProject[];
   },
 
-  // Get agent stats
-  async getAgentStats(agentId: string): Promise<any> {
-    await delay(600);
-    const interviews = mockInterviews.filter(i => i.agentId === agentId);
-    
+  /**
+   * Get deleted (trashed) interviewers
+   */
+  async getDeletedInterviewers(projectId?: string): Promise<InterviewerWithProject[]> {
+    if (!isSupabaseConfigured()) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      let filtered = mockInterviewers.filter(i => i.deleted_at);
+      if (projectId) {
+        filtered = filtered.filter(i => i.project_id === projectId);
+      }
+      return filtered.map(i => ({ ...i, project: undefined }));
+    }
+
+    let query = supabase
+      .from('interviewers')
+      .select(`
+        *,
+        project:projects(*)
+      `)
+      .not('deleted_at', 'is', null);
+
+    if (projectId) {
+      query = query.eq('project_id', projectId);
+    }
+
+    const { data, error } = await query.order('deleted_at', { ascending: false });
+
+    if (error) throw error;
+    return (data || []).map(d => ({
+      ...d,
+      project: d.project as unknown as Project,
+    })) as InterviewerWithProject[];
+  },
+
+  /**
+   * Get a single interviewer by ID
+   */
+  async getInterviewer(id: string): Promise<InterviewerWithProject | null> {
+    if (!isSupabaseConfigured()) {
+      await new Promise(resolve => setTimeout(resolve, 50));
+      const interviewer = mockInterviewers.find(i => i.id === id);
+      return interviewer ? { ...interviewer, project: undefined } : null;
+    }
+
+    const { data, error } = await supabase
+      .from('interviewers')
+      .select(`
+        *,
+        project:projects(*)
+      `)
+      .eq('id', id)
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!data) return null;
+
     return {
-      totalInterviews: interviews.length,
-      completedInterviews: interviews.filter(i => i.completed).length,
-      averageDuration: interviews.length > 0 
-        ? Math.round(interviews.reduce((sum, i) => sum + i.durationSec, 0) / interviews.length)
-        : 0,
-      completionRate: interviews.length > 0 
-        ? interviews.filter(i => i.completed).length / interviews.length 
-        : 0,
-      last7Days: interviews.filter(i => {
-        const interviewDate = new Date(i.startedAt);
-        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-        return interviewDate > sevenDaysAgo;
-      }).length
-    };
+      ...data,
+      project: data.project as unknown as Project,
+    } as InterviewerWithProject;
   },
 
-  // Get agent interview guide
-  async getAgentGuide(agentId: string): Promise<InterviewGuide | null> {
-    await delay(300);
-    return mockInterviewGuides.find(guide => guide.agentId === agentId) || null;
+  /**
+   * Get interviewer by short code (for public access)
+   */
+  async getInterviewerByShortCode(shortCode: string): Promise<Interviewer | null> {
+    if (!isSupabaseConfigured()) {
+      await new Promise(resolve => setTimeout(resolve, 50));
+      return mockInterviewers.find(i => i.short_code === shortCode) || null;
+    }
+
+    const { data, error } = await supabase
+      .from('interviewers')
+      .select('*')
+      .eq('short_code', shortCode)
+      .eq('status', 'active')
+      .maybeSingle();
+
+    if (error) throw error;
+    return data;
   },
 
-  // Get agent knowledge assets
-  async getAgentKnowledge(agentId: string): Promise<KnowledgeAsset[]> {
-    await delay(300);
-    return mockKnowledgeAssets.filter(asset => asset.agentId === agentId);
-  },
-
-  // Update agent guide
-  async updateAgentGuide(agentId: string, guideText: string, structured?: GuideSchema | null): Promise<InterviewGuide> {
-    await delay(400);
-    const guideIndex = mockInterviewGuides.findIndex(g => g.agentId === agentId);
-    
-    if (guideIndex === -1) {
-      // Create new guide
-      const newGuide: InterviewGuide = {
-        id: `guide-${Date.now()}`,
-        agentId,
-        rawText: guideText,
-        structured: structured || undefined
+  /**
+   * Create a new interviewer
+   */
+  async createInterviewer(input: CreateInterviewerInput): Promise<Interviewer> {
+    if (!isSupabaseConfigured()) {
+      await new Promise(resolve => setTimeout(resolve, 200));
+      const newInterviewer: Interviewer = {
+        id: `int-${Date.now()}`,
+        project_id: input.projectId,
+        name: input.name,
+        description: input.description || null,
+        archetype: input.archetype || 'custom',
+        status: 'draft',
+        channel: input.channel || 'web',
+        conversation_type: input.conversationType || 'structured',
+        expert_source: input.expertSource || null,
+        voice: input.voice || 'alloy',
+        interview_guide: input.interviewGuide || null,
+        knowledge_assets: input.knowledgeAssets || null,
+        short_code: generateShortCode(),
+        phone_number: null,
+        created_by: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        archived_at: null,
+        deleted_at: null,
       };
-      mockInterviewGuides.push(newGuide);
-      return newGuide;
-    } else {
-      // Update existing guide
-      mockInterviewGuides[guideIndex] = {
-        ...mockInterviewGuides[guideIndex],
-        rawText: guideText,
-        structured: structured || mockInterviewGuides[guideIndex].structured
+      mockInterviewers.push(newInterviewer);
+      return newInterviewer;
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+
+    const interviewerData: InterviewerInsert = {
+      project_id: input.projectId,
+      name: input.name,
+      description: input.description,
+      archetype: input.archetype || 'custom',
+      channel: input.channel || 'web',
+      conversation_type: input.conversationType || 'structured',
+      expert_source: input.expertSource,
+      voice: input.voice || 'alloy',
+      interview_guide: input.interviewGuide,
+      knowledge_assets: input.knowledgeAssets,
+      short_code: generateShortCode(),
+      created_by: user?.id,
+    };
+
+    const { data, error } = await supabase
+      .from('interviewers')
+      .insert(interviewerData)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Update an interviewer
+   */
+  async updateInterviewer(id: string, input: UpdateInterviewerInput): Promise<Interviewer> {
+    if (!isSupabaseConfigured()) {
+      await new Promise(resolve => setTimeout(resolve, 150));
+      const index = mockInterviewers.findIndex(i => i.id === id);
+      if (index === -1) throw new Error('Interviewer not found');
+      mockInterviewers[index] = {
+        ...mockInterviewers[index],
+        name: input.name ?? mockInterviewers[index].name,
+        description: input.description ?? mockInterviewers[index].description,
+        archetype: input.archetype ?? mockInterviewers[index].archetype,
+        status: input.status ?? mockInterviewers[index].status,
+        channel: input.channel ?? mockInterviewers[index].channel,
+        conversation_type: input.conversationType ?? mockInterviewers[index].conversation_type,
+        expert_source: input.expertSource ?? mockInterviewers[index].expert_source,
+        voice: input.voice ?? mockInterviewers[index].voice,
+        phone_number: input.phoneNumber ?? mockInterviewers[index].phone_number,
+        updated_at: new Date().toISOString(),
       };
-      return mockInterviewGuides[guideIndex];
-    }
-  },
-
-  // Add knowledge asset
-  async addKnowledgeAsset(agentId: string, assetData: { title: string; type: 'text' | 'file'; contentText?: string; fileName?: string; fileSize?: number }): Promise<KnowledgeAsset> {
-    await delay(400);
-    const newAsset: KnowledgeAsset = {
-      id: `knowledge-${Date.now()}`,
-      agentId,
-      ...assetData
-    };
-    mockKnowledgeAssets.push(newAsset);
-    return newAsset;
-  },
-
-  // Remove knowledge asset
-  async removeKnowledgeAsset(assetId: string): Promise<void> {
-    await delay(300);
-    const assetIndex = mockKnowledgeAssets.findIndex(a => a.id === assetId);
-    if (assetIndex !== -1) {
-      mockKnowledgeAssets.splice(assetIndex, 1);
-    }
-  },
-
-  // Trash operations
-  async moveToTrash(agentId: string): Promise<Agent> {
-    await delay(400);
-    const agent = mockAgents.find(a => a.id === agentId);
-    if (!agent) throw new Error('Agent not found');
-    
-    // Block deletion if a call is in progress
-    if (agent.hasActiveCall) {
-      throw new Error('ACTIVE_CALL_IN_PROGRESS');
-    }
-    
-    agent.deletedAt = new Date().toISOString();
-    // Auto-pause when moving to trash
-    if (agent.status === 'live') {
-      agent.status = 'paused';
-    }
-    return agent;
-  },
-
-  async restoreAgent(agentId: string): Promise<Agent> {
-    await delay(400);
-    const agent = mockAgents.find(a => a.id === agentId);
-    if (!agent) throw new Error('Agent not found');
-    
-    delete agent.deletedAt;
-    return agent;
-  },
-
-  async permanentlyDeleteAgent(agentId: string): Promise<void> {
-    await delay(500);
-    const agentIndex = mockAgents.findIndex(a => a.id === agentId);
-    if (agentIndex === -1) throw new Error('Agent not found');
-    
-    mockAgents.splice(agentIndex, 1);
-    
-    // Also remove associated data
-    const guideIndex = mockInterviewGuides.findIndex(g => g.agentId === agentId);
-    if (guideIndex !== -1) mockInterviewGuides.splice(guideIndex, 1);
-    
-    const assetIndices = mockKnowledgeAssets
-      .map((asset, index) => asset.agentId === agentId ? index : -1)
-      .filter(index => index !== -1);
-    assetIndices.reverse().forEach(index => mockKnowledgeAssets.splice(index, 1));
-  },
-
-  async getTrashedAgents(): Promise<Agent[]> {
-    await delay(500);
-    return mockAgents.filter(agent => agent.deletedAt);
-  },
-
-  // Archive operations
-  async archiveAgent(agentId: string): Promise<Agent> {
-    await delay(400);
-    const agent = mockAgents.find(a => a.id === agentId);
-    if (!agent) throw new Error('Interviewer not found');
-    
-    agent.archivedAt = new Date().toISOString();
-    agent.status = 'archived';
-    return agent;
-  },
-
-  async unarchiveAgent(agentId: string): Promise<Agent> {
-    await delay(400);
-    const agent = mockAgents.find(a => a.id === agentId);
-    if (!agent) throw new Error('Interviewer not found');
-    
-    delete agent.archivedAt;
-    agent.status = 'paused';
-    return agent;
-  },
-
-  async getLastInterviewDate(agentId: string): Promise<string | null> {
-    await delay(200);
-    const interviews = mockInterviews.filter(i => i.agentId === agentId);
-    if (interviews.length === 0) return null;
-    return interviews.sort((a, b) => 
-      new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime()
-    )[0].startedAt;
-  },
-
-  async getArchivedAgents(): Promise<Agent[]> {
-    await delay(500);
-    return mockAgents.filter(agent => agent.archivedAt && !agent.deletedAt);
-  },
-
-  // ============= Collaborator Management =============
-
-  // Get collaborators for an agent
-  async getAgentCollaborators(agentId: string): Promise<AgentCollaborator[]> {
-    await delay(300);
-    return mockCollaborators.filter(c => c.agentId === agentId);
-  },
-
-  // Get current user's permission on an agent
-  async getUserPermission(agentId: string): Promise<AgentPermission | null> {
-    await delay(200);
-    const collab = mockCollaborators.find(
-      c => c.agentId === agentId && c.userId === CURRENT_USER_ID
-    );
-    return collab?.permission || null;
-  },
-
-  // Search available users to invite
-  async searchUsers(query: string, agentId: string): Promise<typeof mockOktaUsers> {
-    await delay(200);
-    const existingUserIds = mockCollaborators
-      .filter(c => c.agentId === agentId)
-      .map(c => c.userId);
-    
-    return mockOktaUsers.filter(user => 
-      !existingUserIds.includes(user.id) &&
-      (user.name.toLowerCase().includes(query.toLowerCase()) ||
-       user.email.toLowerCase().includes(query.toLowerCase()) ||
-       user.department.toLowerCase().includes(query.toLowerCase()))
-    );
-  },
-
-  // Invite collaborator (owner only)
-  async inviteCollaborator(agentId: string, userId: string, permission: AgentPermission): Promise<AgentCollaborator> {
-    await delay(400);
-    
-    // Check if current user is owner
-    const currentUserCollab = mockCollaborators.find(
-      c => c.agentId === agentId && c.userId === CURRENT_USER_ID
-    );
-    if (currentUserCollab?.permission !== 'owner') {
-      throw new Error('Only owners can invite collaborators');
+      return mockInterviewers[index];
     }
 
-    // Check if user already has access
-    const existing = mockCollaborators.find(
-      c => c.agentId === agentId && c.userId === userId
-    );
-    if (existing) {
-      throw new Error('User already has access to this agent');
-    }
-
-    // Find the user to invite
-    const userToInvite = mockOktaUsers.find(u => u.id === userId);
-    if (!userToInvite) {
-      throw new Error('User not found');
-    }
-
-    const newCollab: AgentCollaborator = {
-      id: `collab-${Date.now()}`,
-      agentId,
-      userId,
-      user: userToInvite,
-      permission,
-      invitedBy: CURRENT_USER_ID,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+    const updateData: InterviewerUpdate = {
+      ...(input.name && { name: input.name }),
+      ...(input.description !== undefined && { description: input.description }),
+      ...(input.archetype && { archetype: input.archetype }),
+      ...(input.status && { status: input.status }),
+      ...(input.channel && { channel: input.channel }),
+      ...(input.conversationType && { conversation_type: input.conversationType }),
+      ...(input.expertSource !== undefined && { expert_source: input.expertSource }),
+      ...(input.voice && { voice: input.voice }),
+      ...(input.interviewGuide !== undefined && { interview_guide: input.interviewGuide }),
+      ...(input.knowledgeAssets !== undefined && { knowledge_assets: input.knowledgeAssets }),
+      ...(input.phoneNumber !== undefined && { phone_number: input.phoneNumber }),
+      updated_at: new Date().toISOString(),
     };
 
-    mockCollaborators.push(newCollab);
-    return newCollab;
+    const { data, error } = await supabase
+      .from('interviewers')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
   },
 
-  // Update collaborator permission (owner only)
-  async updateCollaboratorPermission(collaboratorId: string, permission: AgentPermission): Promise<AgentCollaborator> {
-    await delay(300);
-    
-    const collab = mockCollaborators.find(c => c.id === collaboratorId);
-    if (!collab) {
-      throw new Error('Collaborator not found');
+  /**
+   * Archive an interviewer
+   */
+  async archiveInterviewer(id: string): Promise<Interviewer> {
+    if (!isSupabaseConfigured()) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      const index = mockInterviewers.findIndex(i => i.id === id);
+      if (index === -1) throw new Error('Interviewer not found');
+      mockInterviewers[index].archived_at = new Date().toISOString();
+      mockInterviewers[index].status = 'archived';
+      return mockInterviewers[index];
     }
 
-    // Check if current user is owner
-    const currentUserCollab = mockCollaborators.find(
-      c => c.agentId === collab.agentId && c.userId === CURRENT_USER_ID
-    );
-    if (currentUserCollab?.permission !== 'owner') {
-      throw new Error('Only owners can change permissions');
-    }
+    const { data, error } = await supabase
+      .from('interviewers')
+      .update({
+        archived_at: new Date().toISOString(),
+        status: 'archived',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single();
 
-    // Cannot change own permission
-    if (collab.userId === CURRENT_USER_ID) {
-      throw new Error('Cannot change your own permission');
-    }
-
-    collab.permission = permission;
-    collab.updatedAt = new Date().toISOString();
-    return collab;
+    if (error) throw error;
+    return data;
   },
 
-  // Remove collaborator (owner only)
-  async removeCollaborator(collaboratorId: string): Promise<void> {
-    await delay(300);
-    
-    const collabIndex = mockCollaborators.findIndex(c => c.id === collaboratorId);
-    if (collabIndex === -1) {
-      throw new Error('Collaborator not found');
+  /**
+   * Restore an archived interviewer
+   */
+  async restoreInterviewer(id: string): Promise<Interviewer> {
+    if (!isSupabaseConfigured()) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      const index = mockInterviewers.findIndex(i => i.id === id);
+      if (index === -1) throw new Error('Interviewer not found');
+      mockInterviewers[index].archived_at = null;
+      mockInterviewers[index].deleted_at = null;
+      mockInterviewers[index].status = 'paused';
+      return mockInterviewers[index];
     }
 
-    const collab = mockCollaborators[collabIndex];
+    const { data, error } = await supabase
+      .from('interviewers')
+      .update({
+        archived_at: null,
+        deleted_at: null,
+        status: 'paused',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single();
 
-    // Check if current user is owner
-    const currentUserCollab = mockCollaborators.find(
-      c => c.agentId === collab.agentId && c.userId === CURRENT_USER_ID
-    );
-    if (currentUserCollab?.permission !== 'owner') {
-      throw new Error('Only owners can remove collaborators');
-    }
-
-    // Cannot remove self
-    if (collab.userId === CURRENT_USER_ID) {
-      throw new Error('Cannot remove yourself. Transfer ownership first.');
-    }
-
-    mockCollaborators.splice(collabIndex, 1);
+    if (error) throw error;
+    return data;
   },
 
-  // Transfer ownership (owner only)
-  async transferOwnership(agentId: string, newOwnerId: string): Promise<void> {
-    await delay(400);
-    
-    // Check if current user is owner
-    const currentOwnerCollab = mockCollaborators.find(
-      c => c.agentId === agentId && c.userId === CURRENT_USER_ID && c.permission === 'owner'
-    );
-    if (!currentOwnerCollab) {
-      throw new Error('Only owners can transfer ownership');
+  /**
+   * Soft delete an interviewer (move to trash)
+   */
+  async deleteInterviewer(id: string): Promise<Interviewer> {
+    if (!isSupabaseConfigured()) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      const index = mockInterviewers.findIndex(i => i.id === id);
+      if (index === -1) throw new Error('Interviewer not found');
+      mockInterviewers[index].deleted_at = new Date().toISOString();
+      mockInterviewers[index].status = 'deleted';
+      return mockInterviewers[index];
     }
 
-    // Find the new owner
-    const newOwnerCollab = mockCollaborators.find(
-      c => c.agentId === agentId && c.userId === newOwnerId
-    );
-    if (!newOwnerCollab) {
-      throw new Error('New owner must be an existing collaborator');
+    const { data, error } = await supabase
+      .from('interviewers')
+      .update({
+        deleted_at: new Date().toISOString(),
+        status: 'deleted',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Permanently delete an interviewer
+   */
+  async permanentlyDeleteInterviewer(id: string): Promise<void> {
+    if (!isSupabaseConfigured()) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      const index = mockInterviewers.findIndex(i => i.id === id);
+      if (index !== -1) mockInterviewers.splice(index, 1);
+      return;
     }
 
-    // Transfer ownership
-    currentOwnerCollab.permission = 'editor';
-    currentOwnerCollab.updatedAt = new Date().toISOString();
-    
-    newOwnerCollab.permission = 'owner';
-    newOwnerCollab.updatedAt = new Date().toISOString();
-  }
+    const { error } = await supabase
+      .from('interviewers')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+  },
+
+  /**
+   * Deploy an interviewer (set to active)
+   */
+  async deployInterviewer(id: string): Promise<Interviewer> {
+    return this.updateInterviewer(id, { status: 'active' });
+  },
+
+  /**
+   * Pause an interviewer
+   */
+  async pauseInterviewer(id: string): Promise<Interviewer> {
+    return this.updateInterviewer(id, { status: 'paused' });
+  },
+
+  /**
+   * Get sessions for an interviewer
+   */
+  async getInterviewerSessions(interviewerId: string): Promise<Session[]> {
+    if (!isSupabaseConfigured()) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      return mockSessions.filter(s => s.interviewer_id === interviewerId);
+    }
+
+    const { data, error } = await supabase
+      .from('sessions')
+      .select('*')
+      .eq('interviewer_id', interviewerId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  /**
+   * Get a single session
+   */
+  async getSession(sessionId: string): Promise<Session | null> {
+    if (!isSupabaseConfigured()) {
+      await new Promise(resolve => setTimeout(resolve, 50));
+      return mockSessions.find(s => s.id === sessionId) || null;
+    }
+
+    const { data, error } = await supabase
+      .from('sessions')
+      .select('*')
+      .eq('id', sessionId)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Create a new session
+   */
+  async createSession(interviewerId: string, data?: Partial<SessionInsert>): Promise<Session> {
+    if (!isSupabaseConfigured()) {
+      await new Promise(resolve => setTimeout(resolve, 150));
+      const newSession: Session = {
+        id: `sess-${Date.now()}`,
+        interviewer_id: interviewerId,
+        respondent_name: data?.respondent_name || null,
+        respondent_email: data?.respondent_email || null,
+        status: 'pending',
+        started_at: null,
+        ended_at: null,
+        duration_minutes: null,
+        transcript: null,
+        summary: null,
+        feedback: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      mockSessions.push(newSession);
+      return newSession;
+    }
+
+    const sessionData: SessionInsert = {
+      interviewer_id: interviewerId,
+      respondent_name: data?.respondent_name,
+      respondent_email: data?.respondent_email,
+      status: 'pending',
+    };
+
+    const { data: session, error } = await supabase
+      .from('sessions')
+      .insert(sessionData)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return session;
+  },
+
+  /**
+   * Get interviewer collaborators/members (via project membership - interviewers inherit from projects)
+   */
+  async getInterviewerMembers(interviewerId: string): Promise<InterviewerMembershipWithUser[]> {
+    if (!isSupabaseConfigured()) {
+      return [];
+    }
+
+    // Get the interviewer's project first
+    const { data: interviewer, error: intError } = await supabase
+      .from('interviewers')
+      .select('project_id')
+      .eq('id', interviewerId)
+      .single();
+
+    if (intError || !interviewer) return [];
+
+    // Get project members (interviewers inherit access from projects)
+    const { data, error } = await supabase
+      .from('project_memberships')
+      .select(`
+        *,
+        profile:profiles(*)
+      `)
+      .eq('project_id', interviewer.project_id);
+
+    if (error) throw error;
+
+    return (data || []).map(m => ({
+      id: m.id,
+      interviewer_id: interviewerId,
+      user_id: m.user_id,
+      role: m.role as InterviewerRole,
+      created_at: m.created_at,
+      profile: m.profile as unknown as Profile,
+    }));
+  },
 };
 
 // Legacy alias for backward compatibility
 export const agentsService = interviewersService;
-
-// Utility function for simulating API delays
-function delay(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
