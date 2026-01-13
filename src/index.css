@@ -275,12 +275,6 @@
     color: hsl(45 93% 47%);
   }
 
-  .status-badge-suspended {
-    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold tracking-wide;
-    background-color: hsl(var(--muted));
-    color: hsl(var(--muted-foreground));
-  }
-
   .status-badge-finished {
     @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold tracking-wide;
     background-color: hsl(var(--muted));

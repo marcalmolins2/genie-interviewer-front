@@ -409,7 +409,7 @@ export default function InterviewerOverview() {
             </Dialog>
           )}
 
-          {(interviewer.status === "suspended" || interviewer.status === "paused") && (
+          {interviewer.status === "paused" && (
             <Button size="sm" onClick={handleActivate}>
               <Play className="h-4 w-4 mr-2" />
               Activate
