@@ -384,6 +384,8 @@ export type AgentPermission = 'viewer' | 'editor' | 'owner';
 export interface Agent {
   id: string;
   name: string;
+  title?: string;                      // Interviewer title
+  description?: string;                // Optional description
   archetype: Archetype;
   createdAt: string;
   updatedAt?: string;
@@ -398,6 +400,16 @@ export interface Agent {
   deletedAt?: string;
   archivedAt?: string;
   hasActiveCall?: boolean;
+  // Configuration fields
+  projectId?: string;
+  targetDuration?: number;
+  interviewContext?: string;
+  introContext?: string;
+  enableScreener?: boolean;
+  screenerQuestions?: string;
+  introductionQuestions?: string;
+  closeContext?: string;
+  caseCode?: string;
 }
 
 export interface AgentCollaborator {

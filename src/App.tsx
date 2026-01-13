@@ -11,10 +11,9 @@ import InterviewersList from "./pages/InterviewersList";
 import InterviewersTrash from "./pages/InterviewersTrash";
 import InterviewersArchive from "./pages/InterviewersArchive";
 import InterviewerCreationSelector from "./pages/InterviewerCreationSelector";
-import CreateInterviewerManual from "./pages/CreateInterviewerManual";
+import InterviewerConfiguration from "./pages/InterviewerConfiguration";
 import CreateInterviewerAssisted from "./pages/CreateInterviewerAssisted";
 import InterviewerOverview from "./pages/InterviewerOverview";
-import EditInterviewer from "./pages/EditInterviewer";
 import InterviewerInsights from "./pages/InterviewerInsights";
 import SessionDetail from "./pages/SessionDetail";
 import NotFound from "./pages/NotFound";
@@ -47,7 +46,7 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/interview/:linkId" element={<PublicInterview />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
-          <Route path="/app" element={<AppLayout />}>
+          <Route path="app" element={<AppLayout />}>
             {/* Primary routes - /app/interviewers */}
             <Route path="interviewers" element={<InterviewersLayout />}>
               <Route index element={<InterviewersList />} />
@@ -56,7 +55,7 @@ const App = () => (
               <Route path="new" element={<InterviewerCreationSelector />} />
               <Route path="new/manual" element={
                 <FeatureFlagRoute flag="MANUAL_CONFIGURATION" redirectTo="/app/interviewers/new">
-                  <CreateInterviewerManual />
+                  <InterviewerConfiguration mode="create" />
                 </FeatureFlagRoute>
               } />
               <Route path="new/assisted" element={
@@ -64,9 +63,10 @@ const App = () => (
                   <CreateInterviewerAssisted />
                 </FeatureFlagRoute>
               } />
+              {/* Edit route inside layout for ProjectContext access */}
+              <Route path=":interviewerId/edit" element={<InterviewerConfiguration mode="edit" />} />
             </Route>
             <Route path="interviewers/:interviewerId" element={<InterviewerOverview />} />
-            <Route path="interviewers/:interviewerId/edit" element={<EditInterviewer />} />
             <Route path="interviewers/:interviewerId/insights" element={<InterviewerInsights />} />
             {/* Legacy redirect from /analyze to /insights */}
             <Route path="interviewers/:interviewerId/analyze" element={<LegacyAnalyzeRedirect />} />
