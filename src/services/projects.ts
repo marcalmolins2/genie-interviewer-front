@@ -1,19 +1,25 @@
 import { supabase, isSupabaseConfigured } from '@/integrations/supabase/client';
 import type {
   Project,
-  ProjectInsert,
-  ProjectUpdate,
   ProjectMembership,
-  ProjectMembershipInsert,
-  Profile,
   ProjectRole,
-  ProjectWithMembership,
   ProjectType,
+  User,
+} from '@/types';
+import type {
+  Profile,
+  ProjectInsert,
+  ProjectWithMembership,
+  ProjectRow,
+  ProjectMembershipRow,
+  profileToUser,
+  rowToProject,
+  rowToProjectMembership,
 } from '@/integrations/supabase/database.types';
 
-// Extended membership type with user profile
+// Extended membership type with user
 export type ProjectMembershipWithUser = ProjectMembership & {
-  profile?: Profile;
+  user?: User;
 };
 
 export interface CreateProjectInput {
@@ -34,36 +40,52 @@ export interface UpdateProjectInput {
 const mockProjects: Project[] = [
   {
     id: 'proj-1',
+    caseCode: 'CASE-001',
     name: 'Consumer Research Q1',
     description: 'Q1 consumer research initiatives',
-    project_type: 'consumer',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+    projectType: 'internal_work',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
   {
     id: 'proj-2',
+    caseCode: 'CASE-002',
     name: 'B2B Healthcare Study',
     description: 'Enterprise healthcare decision maker interviews',
-    project_type: 'b2b',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+    projectType: 'client_work',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
 ];
 
 let mockMemberships: ProjectMembership[] = [
   {
     id: 'pm-1',
-    project_id: 'proj-1',
-    user_id: 'user-1',
+    projectId: 'proj-1',
+    userId: 'user-1',
     role: 'owner',
-    created_at: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
   {
     id: 'pm-2',
-    project_id: 'proj-2',
-    user_id: 'user-1',
+    projectId: 'proj-2',
+    userId: 'user-1',
     role: 'owner',
-    created_at: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+];
+
+const mockUsers: User[] = [
+  {
+    id: 'user-1',
+    email: 'user@example.com',
+    name: 'Test User',
+    isActive: true,
+    isSuperuser: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
 ];
 
@@ -76,14 +98,13 @@ export const projectsService = {
       await new Promise(resolve => setTimeout(resolve, 100));
       return mockProjects.map(p => ({ 
         ...p, 
-        membership: mockMemberships.find(m => m.project_id === p.id) 
+        membership: mockMemberships.find(m => m.projectId === p.id) 
       }));
     }
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated');
 
-    // RLS handles access control - user can only see projects they're members of
     const { data: memberships, error: membershipError } = await supabase
       .from('project_memberships')
       .select(`
@@ -94,16 +115,27 @@ export const projectsService = {
 
     if (membershipError) throw membershipError;
 
-    return (memberships || []).map(m => ({
-      ...(m.project as unknown as Project),
-      membership: {
+    return (memberships || []).map(m => {
+      const projectRow = m.project as unknown as ProjectRow;
+      const project: Project = {
+        id: projectRow.id,
+        caseCode: projectRow.case_code || '',
+        name: projectRow.name,
+        description: projectRow.description || undefined,
+        projectType: projectRow.project_type as ProjectType,
+        createdAt: projectRow.created_at,
+        updatedAt: projectRow.updated_at,
+      };
+      const membership: ProjectMembership = {
         id: m.id,
-        project_id: m.project_id,
-        user_id: m.user_id,
-        role: m.role,
-        created_at: m.created_at,
-      },
-    }));
+        projectId: m.project_id,
+        userId: m.user_id,
+        role: m.role as ProjectRole,
+        createdAt: m.created_at,
+        updatedAt: m.created_at,
+      };
+      return { ...project, membership };
+    });
   },
 
   /**
@@ -115,7 +147,7 @@ export const projectsService = {
       const project = mockProjects.find(p => p.id === projectId);
       return project ? { 
         ...project, 
-        membership: mockMemberships.find(m => m.project_id === projectId) 
+        membership: mockMemberships.find(m => m.projectId === projectId) 
       } : null;
     }
 
@@ -131,7 +163,17 @@ export const projectsService = {
     if (error) throw error;
     if (!data) return null;
 
-    // Get user's membership for this project
+    const projectRow = data as ProjectRow;
+    const project: Project = {
+      id: projectRow.id,
+      caseCode: projectRow.case_code || '',
+      name: projectRow.name,
+      description: projectRow.description || undefined,
+      projectType: projectRow.project_type as ProjectType,
+      createdAt: projectRow.created_at,
+      updatedAt: projectRow.updated_at,
+    };
+
     const { data: membership } = await supabase
       .from('project_memberships')
       .select('*')
@@ -139,10 +181,19 @@ export const projectsService = {
       .eq('user_id', user.id)
       .maybeSingle();
 
-    return {
-      ...data,
-      membership: membership || undefined,
-    };
+    if (membership) {
+      const mem: ProjectMembership = {
+        id: membership.id,
+        projectId: membership.project_id,
+        userId: membership.user_id,
+        role: membership.role as ProjectRole,
+        createdAt: membership.created_at,
+        updatedAt: membership.created_at,
+      };
+      return { ...project, membership: mem };
+    }
+
+    return project;
   },
 
   /**
@@ -151,7 +202,7 @@ export const projectsService = {
   async getUserProjectRole(projectId: string): Promise<ProjectRole | null> {
     if (!isSupabaseConfigured()) {
       await new Promise(resolve => setTimeout(resolve, 50));
-      const membership = mockMemberships.find(m => m.project_id === projectId);
+      const membership = mockMemberships.find(m => m.projectId === projectId);
       return membership?.role || null;
     }
 
@@ -166,7 +217,7 @@ export const projectsService = {
       .maybeSingle();
 
     if (error || !data) return null;
-    return data.role;
+    return data.role as ProjectRole;
   },
 
   /**
@@ -177,19 +228,21 @@ export const projectsService = {
       await new Promise(resolve => setTimeout(resolve, 200));
       const newProject: Project = {
         id: `proj-${Date.now()}`,
+        caseCode: input.caseCode || '',
         name: input.name,
-        description: input.description || null,
-        project_type: input.projectType || 'other',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        description: input.description,
+        projectType: input.projectType || 'internal_work',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
       mockProjects.push(newProject);
       mockMemberships.push({
         id: `pm-${Date.now()}`,
-        project_id: newProject.id,
-        user_id: 'user-1',
+        projectId: newProject.id,
+        userId: 'user-1',
         role: 'owner',
-        created_at: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       });
       return newProject;
     }
@@ -199,8 +252,9 @@ export const projectsService = {
 
     const projectData: ProjectInsert = {
       name: input.name,
-      description: input.description,
-      project_type: input.projectType || 'other',
+      description: input.description || null,
+      project_type: input.projectType || 'internal_work',
+      case_code: input.caseCode,
     };
 
     const { data, error } = await supabase
@@ -211,24 +265,29 @@ export const projectsService = {
 
     if (error) throw error;
 
-    // Auto-create owner membership
-    const membershipData: ProjectMembershipInsert = {
-      project_id: data.id,
-      user_id: user.id,
-      role: 'owner',
-    };
-
     const { error: membershipError } = await supabase
       .from('project_memberships')
-      .insert(membershipData);
+      .insert({
+        project_id: data.id,
+        user_id: user.id,
+        role: 'owner',
+      });
 
     if (membershipError) {
-      // Rollback project creation if membership fails
       await supabase.from('projects').delete().eq('id', data.id);
       throw membershipError;
     }
 
-    return data;
+    const projectRow = data as ProjectRow;
+    return {
+      id: projectRow.id,
+      caseCode: projectRow.case_code || '',
+      name: projectRow.name,
+      description: projectRow.description || undefined,
+      projectType: projectRow.project_type as ProjectType,
+      createdAt: projectRow.created_at,
+      updatedAt: projectRow.updated_at,
+    };
   },
 
   /**
@@ -242,19 +301,21 @@ export const projectsService = {
       mockProjects[index] = {
         ...mockProjects[index],
         name: input.name ?? mockProjects[index].name,
+        caseCode: input.caseCode ?? mockProjects[index].caseCode,
         description: input.description ?? mockProjects[index].description,
-        project_type: input.projectType ?? mockProjects[index].project_type,
-        updated_at: new Date().toISOString(),
+        projectType: input.projectType ?? mockProjects[index].projectType,
+        updatedAt: new Date().toISOString(),
       };
       return mockProjects[index];
     }
 
-    const updateData: ProjectUpdate = {
-      ...(input.name && { name: input.name }),
-      ...(input.description !== undefined && { description: input.description }),
-      ...(input.projectType && { project_type: input.projectType }),
+    const updateData: Record<string, unknown> = {
       updated_at: new Date().toISOString(),
     };
+    if (input.name) updateData.name = input.name;
+    if (input.description !== undefined) updateData.description = input.description;
+    if (input.projectType) updateData.project_type = input.projectType;
+    if (input.caseCode !== undefined) updateData.case_code = input.caseCode;
 
     const { data, error } = await supabase
       .from('projects')
@@ -264,7 +325,17 @@ export const projectsService = {
       .single();
 
     if (error) throw error;
-    return data;
+
+    const projectRow = data as ProjectRow;
+    return {
+      id: projectRow.id,
+      caseCode: projectRow.case_code || '',
+      name: projectRow.name,
+      description: projectRow.description || undefined,
+      projectType: projectRow.project_type as ProjectType,
+      createdAt: projectRow.created_at,
+      updatedAt: projectRow.updated_at,
+    };
   },
 
   /**
@@ -275,7 +346,7 @@ export const projectsService = {
       await new Promise(resolve => setTimeout(resolve, 150));
       const index = mockProjects.findIndex(p => p.id === projectId);
       if (index !== -1) mockProjects.splice(index, 1);
-      mockMemberships = mockMemberships.filter(m => m.project_id !== projectId);
+      mockMemberships = mockMemberships.filter(m => m.projectId !== projectId);
       return;
     }
 
@@ -294,17 +365,10 @@ export const projectsService = {
     if (!isSupabaseConfigured()) {
       await new Promise(resolve => setTimeout(resolve, 100));
       return mockMemberships
-        .filter(m => m.project_id === projectId)
+        .filter(m => m.projectId === projectId)
         .map(m => ({
           ...m,
-          profile: {
-            id: m.user_id,
-            email: 'mock@example.com',
-            name: 'Mock User',
-            avatar_url: null,
-            created_at: m.created_at,
-            updated_at: m.created_at,
-          },
+          user: mockUsers.find(u => u.id === m.userId),
         }));
     }
 
@@ -318,14 +382,30 @@ export const projectsService = {
 
     if (error) throw error;
 
-    return (data || []).map(m => ({
-      id: m.id,
-      project_id: m.project_id,
-      user_id: m.user_id,
-      role: m.role,
-      created_at: m.created_at,
-      profile: m.profile as unknown as Profile,
-    }));
+    return (data || []).map(m => {
+      const profile = m.profile as unknown as { id: string; email: string; name: string | null; avatar_url: string | null; created_at: string; updated_at: string } | null;
+      const membership: ProjectMembershipWithUser = {
+        id: m.id,
+        projectId: m.project_id,
+        userId: m.user_id,
+        role: m.role as ProjectRole,
+        createdAt: m.created_at,
+        updatedAt: m.created_at,
+      };
+      if (profile) {
+        membership.user = {
+          id: profile.id,
+          email: profile.email || '',
+          name: profile.name || '',
+          avatar: profile.avatar_url || undefined,
+          isActive: true,
+          isSuperuser: false,
+          createdAt: profile.created_at,
+          updatedAt: profile.updated_at,
+        };
+      }
+      return membership;
+    });
   },
 
   /**
@@ -339,35 +419,41 @@ export const projectsService = {
     if (!isSupabaseConfigured()) {
       await new Promise(resolve => setTimeout(resolve, 150));
       const existing = mockMemberships.find(
-        m => m.project_id === projectId && m.user_id === userId
+        m => m.projectId === projectId && m.userId === userId
       );
       if (existing) throw new Error('User is already a member');
       
       const membership: ProjectMembership = {
         id: `pm-${Date.now()}`,
-        project_id: projectId,
-        user_id: userId,
+        projectId,
+        userId,
         role,
-        created_at: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
       mockMemberships.push(membership);
       return membership;
     }
 
-    const membershipData: ProjectMembershipInsert = {
-      project_id: projectId,
-      user_id: userId,
-      role,
-    };
-
     const { data, error } = await supabase
       .from('project_memberships')
-      .insert(membershipData)
+      .insert({
+        project_id: projectId,
+        user_id: userId,
+        role,
+      })
       .select()
       .single();
 
     if (error) throw error;
-    return data;
+    return {
+      id: data.id,
+      projectId: data.project_id,
+      userId: data.user_id,
+      role: data.role as ProjectRole,
+      createdAt: data.created_at,
+      updatedAt: data.created_at,
+    };
   },
 
   /**
@@ -381,10 +467,11 @@ export const projectsService = {
     if (!isSupabaseConfigured()) {
       await new Promise(resolve => setTimeout(resolve, 100));
       const index = mockMemberships.findIndex(
-        m => m.project_id === projectId && m.user_id === userId
+        m => m.projectId === projectId && m.userId === userId
       );
       if (index === -1) throw new Error('Membership not found');
       mockMemberships[index].role = role;
+      mockMemberships[index].updatedAt = new Date().toISOString();
       return mockMemberships[index];
     }
 
@@ -397,7 +484,14 @@ export const projectsService = {
       .single();
 
     if (error) throw error;
-    return data;
+    return {
+      id: data.id,
+      projectId: data.project_id,
+      userId: data.user_id,
+      role: data.role as ProjectRole,
+      createdAt: data.created_at,
+      updatedAt: data.created_at,
+    };
   },
 
   /**
@@ -407,7 +501,7 @@ export const projectsService = {
     if (!isSupabaseConfigured()) {
       await new Promise(resolve => setTimeout(resolve, 100));
       mockMemberships = mockMemberships.filter(
-        m => !(m.project_id === projectId && m.user_id === userId)
+        m => !(m.projectId === projectId && m.userId === userId)
       );
       return;
     }
@@ -424,10 +518,13 @@ export const projectsService = {
   /**
    * Search users (for inviting)
    */
-  async searchUsers(query: string): Promise<Profile[]> {
+  async searchUsers(query: string): Promise<User[]> {
     if (!isSupabaseConfigured()) {
       await new Promise(resolve => setTimeout(resolve, 100));
-      return [];
+      return mockUsers.filter(u => 
+        u.name.toLowerCase().includes(query.toLowerCase()) ||
+        u.email.toLowerCase().includes(query.toLowerCase())
+      );
     }
 
     const { data, error } = await supabase
@@ -437,6 +534,15 @@ export const projectsService = {
       .limit(10);
 
     if (error) throw error;
-    return data || [];
+    return (data || []).map(profile => ({
+      id: profile.id,
+      email: profile.email || '',
+      name: profile.name || '',
+      avatar: profile.avatar_url || undefined,
+      isActive: true,
+      isSuperuser: false,
+      createdAt: profile.created_at,
+      updatedAt: profile.updated_at,
+    }));
   },
 };

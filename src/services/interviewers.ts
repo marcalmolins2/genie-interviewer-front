@@ -1,60 +1,67 @@
 import { supabase, isSupabaseConfigured } from '@/integrations/supabase/client';
 import type {
   Interviewer,
-  InterviewerInsert,
-  InterviewerUpdate,
   Session,
-  SessionInsert,
-  Profile,
-  InterviewerRole,
-  InterviewerWithProject,
-  ArchetypeType,
-  ChannelType,
-  ConversationType,
-  ExpertSourceType,
-  InterviewerStatus,
   Project,
   ProjectMembership,
+  InterviewerRole,
+  InterviewerStatus,
+  Channel,
+  Archetype,
+  ConversationType,
+  User,
+  InterviewGuide,
+  KnowledgeAsset,
+  AgentPermission,
+} from '@/types';
+import type {
+  Profile,
+  InterviewerInsert,
+  InterviewerUpdate,
+  InterviewerWithProject,
+  InterviewerRow,
+  SessionRow,
+  ProjectRow,
 } from '@/integrations/supabase/database.types';
 
 // Extended membership type with user profile
 export interface InterviewerMembership {
   id: string;
-  interviewer_id: string;
-  user_id: string;
+  interviewerId: string;
+  userId: string;
   role: InterviewerRole;
-  created_at: string;
+  createdAt: string;
 }
 
 export type InterviewerMembershipWithUser = InterviewerMembership & {
-  profile?: Profile;
+  user?: User;
 };
 
 export interface CreateInterviewerInput {
   projectId: string;
   name: string;
+  title?: string;
   description?: string;
-  archetype?: ArchetypeType;
-  channel?: ChannelType;
-  conversationType?: ConversationType;
-  expertSource?: ExpertSourceType;
-  voice?: string;
-  interviewGuide?: object;
-  knowledgeAssets?: object[];
+  archetype?: Archetype;
+  channel?: Channel;
+  language?: string;
+  voiceId?: string;
+  targetDurationMin?: number;
 }
 
 export interface UpdateInterviewerInput {
   name?: string;
+  title?: string;
   description?: string;
-  archetype?: ArchetypeType;
+  archetype?: Archetype;
   status?: InterviewerStatus;
-  channel?: ChannelType;
-  conversationType?: ConversationType;
-  expertSource?: ExpertSourceType;
-  voice?: string;
-  interviewGuide?: object;
-  knowledgeAssets?: object[];
+  channel?: Channel;
+  language?: string;
+  voiceId?: string;
+  targetDurationMin?: number;
   phoneNumber?: string;
+  chatUrl?: string;
+  linkId?: string;
 }
 
 // Generate random short code for sharing
@@ -67,69 +74,100 @@ function generateShortCode(): string {
   return result;
 }
 
+// Helper to convert InterviewerRow to Interviewer
+function rowToInterviewer(row: InterviewerRow, project?: Project): Interviewer {
+  return {
+    id: row.id,
+    projectId: row.project_id,
+    title: row.title || row.name,
+    description: row.description || undefined,
+    name: row.name,
+    archetype: row.archetype as Archetype,
+    status: row.status as InterviewerStatus,
+    channel: row.channel as Channel,
+    language: row.language || 'en',
+    voiceId: row.voice_id || undefined,
+    contact: {
+      phoneNumber: row.phone_number || undefined,
+      chatUrl: row.chat_url || undefined,
+      chatPassword: row.chat_password || undefined,
+      linkId: row.link_id || row.short_code || undefined,
+    },
+    credentialsReady: row.credentials_ready || false,
+    targetDurationMin: row.target_duration_min || undefined,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    project,
+  };
+}
+
+// Helper to convert SessionRow to Session
+function rowToSession(row: SessionRow): Session {
+  return {
+    id: row.id,
+    interviewerId: row.interviewer_id,
+    conversationType: (row.conversation_type || 'live') as ConversationType,
+    startedAt: row.started_at || row.created_at,
+    endedAt: row.ended_at || undefined,
+    durationSec: row.duration_sec || undefined,
+    completed: row.completed,
+    respondentId: row.respondent_id || undefined,
+    createdAt: row.created_at,
+  };
+}
+
 // Mock data for when Supabase is not configured
 const mockInterviewers: Interviewer[] = [
   {
     id: 'int-1',
-    project_id: 'proj-1',
-    name: 'Consumer Feedback Agent',
+    projectId: 'proj-1',
+    title: 'Consumer Feedback Agent',
+    name: 'Sam',
     description: 'Gathers feedback from retail consumers',
-    archetype: 'market_research',
-    status: 'active',
-    channel: 'web',
-    conversation_type: 'structured',
-    expert_source: null,
-    voice: 'alloy',
-    interview_guide: null,
-    knowledge_assets: null,
-    short_code: 'ABC123',
-    phone_number: null,
-    created_by: 'user-1',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    archived_at: null,
-    deleted_at: null,
+    archetype: 'customer_interview',
+    status: 'live',
+    channel: 'web_link',
+    language: 'en',
+    voiceId: 'alloy',
+    contact: { linkId: 'ABC123' },
+    credentialsReady: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
   {
     id: 'int-2',
-    project_id: 'proj-2',
-    name: 'Healthcare Executive Interviewer',
+    projectId: 'proj-2',
+    title: 'Healthcare Executive Interviewer',
+    name: 'Alex',
     description: 'B2B interviews with healthcare decision makers',
-    archetype: 'ux_research',
+    archetype: 'expert_interview',
     status: 'draft',
-    channel: 'phone',
-    conversation_type: 'exploratory',
-    expert_source: 'glg',
-    voice: 'echo',
-    interview_guide: null,
-    knowledge_assets: null,
-    short_code: 'XYZ789',
-    phone_number: '+1234567890',
-    created_by: 'user-1',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    archived_at: null,
-    deleted_at: null,
+    channel: 'inbound_call',
+    language: 'en',
+    voiceId: 'echo',
+    contact: { phoneNumber: '+1234567890' },
+    credentialsReady: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
 ];
 
 const mockSessions: Session[] = [
   {
     id: 'sess-1',
-    interviewer_id: 'int-1',
-    respondent_name: 'John Doe',
-    respondent_email: 'john@example.com',
-    status: 'completed',
-    started_at: new Date(Date.now() - 86400000).toISOString(),
-    ended_at: new Date(Date.now() - 84600000).toISOString(),
-    duration_minutes: 30,
-    transcript: null,
-    summary: null,
-    feedback: 'positive',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+    interviewerId: 'int-1',
+    conversationType: 'live',
+    startedAt: new Date(Date.now() - 86400000).toISOString(),
+    endedAt: new Date(Date.now() - 84600000).toISOString(),
+    durationSec: 1800,
+    completed: true,
+    createdAt: new Date().toISOString(),
   },
 ];
+
+// Store for interview guides and knowledge (mock)
+const mockGuides: Record<string, InterviewGuide> = {};
+const mockKnowledge: Record<string, KnowledgeAsset[]> = {};
 
 export const interviewersService = {
   /**
@@ -138,19 +176,16 @@ export const interviewersService = {
   async getInterviewers(projectId?: string): Promise<InterviewerWithProject[]> {
     if (!isSupabaseConfigured()) {
       await new Promise(resolve => setTimeout(resolve, 100));
-      let filtered = mockInterviewers.filter(i => !i.deleted_at && !i.archived_at);
+      let filtered = mockInterviewers.filter(i => i.status !== 'archived');
       if (projectId) {
-        filtered = filtered.filter(i => i.project_id === projectId);
+        filtered = filtered.filter(i => i.projectId === projectId);
       }
-      return filtered.map(i => ({ ...i, project: undefined }));
+      return filtered;
     }
 
     let query = supabase
       .from('interviewers')
-      .select(`
-        *,
-        project:projects(*)
-      `)
+      .select(`*, project:projects(*)`)
       .is('deleted_at', null)
       .is('archived_at', null);
 
@@ -161,10 +196,22 @@ export const interviewersService = {
     const { data, error } = await query.order('created_at', { ascending: false });
 
     if (error) throw error;
-    return (data || []).map(d => ({
-      ...d,
-      project: d.project as unknown as Project,
-    })) as InterviewerWithProject[];
+    return (data || []).map(d => {
+      const row = d as unknown as InterviewerRow & { project: ProjectRow | null };
+      let project: Project | undefined;
+      if (row.project) {
+        project = {
+          id: row.project.id,
+          caseCode: row.project.case_code || '',
+          name: row.project.name,
+          description: row.project.description || undefined,
+          projectType: row.project.project_type as any,
+          createdAt: row.project.created_at,
+          updatedAt: row.project.updated_at,
+        };
+      }
+      return rowToInterviewer(row, project);
+    });
   },
 
   /**
@@ -173,19 +220,16 @@ export const interviewersService = {
   async getArchivedInterviewers(projectId?: string): Promise<InterviewerWithProject[]> {
     if (!isSupabaseConfigured()) {
       await new Promise(resolve => setTimeout(resolve, 100));
-      let filtered = mockInterviewers.filter(i => i.archived_at && !i.deleted_at);
+      let filtered = mockInterviewers.filter(i => i.status === 'archived');
       if (projectId) {
-        filtered = filtered.filter(i => i.project_id === projectId);
+        filtered = filtered.filter(i => i.projectId === projectId);
       }
-      return filtered.map(i => ({ ...i, project: undefined }));
+      return filtered;
     }
 
     let query = supabase
       .from('interviewers')
-      .select(`
-        *,
-        project:projects(*)
-      `)
+      .select(`*, project:projects(*)`)
       .not('archived_at', 'is', null)
       .is('deleted_at', null);
 
@@ -196,10 +240,22 @@ export const interviewersService = {
     const { data, error } = await query.order('archived_at', { ascending: false });
 
     if (error) throw error;
-    return (data || []).map(d => ({
-      ...d,
-      project: d.project as unknown as Project,
-    })) as InterviewerWithProject[];
+    return (data || []).map(d => {
+      const row = d as unknown as InterviewerRow & { project: ProjectRow | null };
+      let project: Project | undefined;
+      if (row.project) {
+        project = {
+          id: row.project.id,
+          caseCode: row.project.case_code || '',
+          name: row.project.name,
+          description: row.project.description || undefined,
+          projectType: row.project.project_type as any,
+          createdAt: row.project.created_at,
+          updatedAt: row.project.updated_at,
+        };
+      }
+      return rowToInterviewer(row, project);
+    });
   },
 
   /**
@@ -208,19 +264,12 @@ export const interviewersService = {
   async getDeletedInterviewers(projectId?: string): Promise<InterviewerWithProject[]> {
     if (!isSupabaseConfigured()) {
       await new Promise(resolve => setTimeout(resolve, 100));
-      let filtered = mockInterviewers.filter(i => i.deleted_at);
-      if (projectId) {
-        filtered = filtered.filter(i => i.project_id === projectId);
-      }
-      return filtered.map(i => ({ ...i, project: undefined }));
+      return [];
     }
 
     let query = supabase
       .from('interviewers')
-      .select(`
-        *,
-        project:projects(*)
-      `)
+      .select(`*, project:projects(*)`)
       .not('deleted_at', 'is', null);
 
     if (projectId) {
@@ -230,10 +279,22 @@ export const interviewersService = {
     const { data, error } = await query.order('deleted_at', { ascending: false });
 
     if (error) throw error;
-    return (data || []).map(d => ({
-      ...d,
-      project: d.project as unknown as Project,
-    })) as InterviewerWithProject[];
+    return (data || []).map(d => {
+      const row = d as unknown as InterviewerRow & { project: ProjectRow | null };
+      let project: Project | undefined;
+      if (row.project) {
+        project = {
+          id: row.project.id,
+          caseCode: row.project.case_code || '',
+          name: row.project.name,
+          description: row.project.description || undefined,
+          projectType: row.project.project_type as any,
+          createdAt: row.project.created_at,
+          updatedAt: row.project.updated_at,
+        };
+      }
+      return rowToInterviewer(row, project);
+    });
   },
 
   /**
@@ -242,26 +303,32 @@ export const interviewersService = {
   async getInterviewer(id: string): Promise<InterviewerWithProject | null> {
     if (!isSupabaseConfigured()) {
       await new Promise(resolve => setTimeout(resolve, 50));
-      const interviewer = mockInterviewers.find(i => i.id === id);
-      return interviewer ? { ...interviewer, project: undefined } : null;
+      return mockInterviewers.find(i => i.id === id) || null;
     }
 
     const { data, error } = await supabase
       .from('interviewers')
-      .select(`
-        *,
-        project:projects(*)
-      `)
+      .select(`*, project:projects(*)`)
       .eq('id', id)
       .maybeSingle();
 
     if (error) throw error;
     if (!data) return null;
 
-    return {
-      ...data,
-      project: data.project as unknown as Project,
-    } as InterviewerWithProject;
+    const row = data as unknown as InterviewerRow & { project: ProjectRow | null };
+    let project: Project | undefined;
+    if (row.project) {
+      project = {
+        id: row.project.id,
+        caseCode: row.project.case_code || '',
+        name: row.project.name,
+        description: row.project.description || undefined,
+        projectType: row.project.project_type as any,
+        createdAt: row.project.created_at,
+        updatedAt: row.project.updated_at,
+      };
+    }
+    return rowToInterviewer(row, project);
   },
 
   /**
@@ -270,18 +337,26 @@ export const interviewersService = {
   async getInterviewerByShortCode(shortCode: string): Promise<Interviewer | null> {
     if (!isSupabaseConfigured()) {
       await new Promise(resolve => setTimeout(resolve, 50));
-      return mockInterviewers.find(i => i.short_code === shortCode) || null;
+      return mockInterviewers.find(i => i.contact.linkId === shortCode) || null;
     }
 
     const { data, error } = await supabase
       .from('interviewers')
       .select('*')
-      .eq('short_code', shortCode)
-      .eq('status', 'active')
+      .or(`short_code.eq.${shortCode},link_id.eq.${shortCode}`)
+      .eq('status', 'live')
       .maybeSingle();
 
     if (error) throw error;
-    return data;
+    if (!data) return null;
+    return rowToInterviewer(data as unknown as InterviewerRow);
+  },
+
+  /**
+   * Get interviewer by link ID (for public access)
+   */
+  async getAgentByLinkId(linkId: string): Promise<Interviewer | null> {
+    return this.getInterviewerByShortCode(linkId);
   },
 
   /**
@@ -292,44 +367,42 @@ export const interviewersService = {
       await new Promise(resolve => setTimeout(resolve, 200));
       const newInterviewer: Interviewer = {
         id: `int-${Date.now()}`,
-        project_id: input.projectId,
+        projectId: input.projectId,
+        title: input.title || input.name,
         name: input.name,
-        description: input.description || null,
-        archetype: input.archetype || 'custom',
+        description: input.description,
+        archetype: input.archetype || 'customer_interview',
         status: 'draft',
-        channel: input.channel || 'web',
-        conversation_type: input.conversationType || 'structured',
-        expert_source: input.expertSource || null,
-        voice: input.voice || 'alloy',
-        interview_guide: input.interviewGuide || null,
-        knowledge_assets: input.knowledgeAssets || null,
-        short_code: generateShortCode(),
-        phone_number: null,
-        created_by: null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        archived_at: null,
-        deleted_at: null,
+        channel: input.channel || 'web_link',
+        language: input.language || 'en',
+        voiceId: input.voiceId || 'alloy',
+        contact: { linkId: generateShortCode() },
+        credentialsReady: false,
+        targetDurationMin: input.targetDurationMin,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
       mockInterviewers.push(newInterviewer);
       return newInterviewer;
     }
 
     const { data: { user } } = await supabase.auth.getUser();
+    const shortCode = generateShortCode();
 
     const interviewerData: InterviewerInsert = {
       project_id: input.projectId,
       name: input.name,
-      description: input.description,
-      archetype: input.archetype || 'custom',
-      channel: input.channel || 'web',
-      conversation_type: input.conversationType || 'structured',
-      expert_source: input.expertSource,
-      voice: input.voice || 'alloy',
-      interview_guide: input.interviewGuide,
-      knowledge_assets: input.knowledgeAssets,
-      short_code: generateShortCode(),
-      created_by: user?.id,
+      title: input.title || input.name,
+      description: input.description || null,
+      archetype: input.archetype || 'customer_interview',
+      channel: input.channel || 'web_link',
+      language: input.language || 'en',
+      voice_id: input.voiceId || null,
+      target_duration_min: input.targetDurationMin || null,
+      short_code: shortCode,
+      link_id: shortCode,
+      credentials_ready: false,
+      created_by: user?.id || null,
     };
 
     const { data, error } = await supabase
@@ -339,7 +412,7 @@ export const interviewersService = {
       .single();
 
     if (error) throw error;
-    return data;
+    return rowToInterviewer(data as unknown as InterviewerRow);
   },
 
   /**
@@ -353,33 +426,39 @@ export const interviewersService = {
       mockInterviewers[index] = {
         ...mockInterviewers[index],
         name: input.name ?? mockInterviewers[index].name,
+        title: input.title ?? mockInterviewers[index].title,
         description: input.description ?? mockInterviewers[index].description,
         archetype: input.archetype ?? mockInterviewers[index].archetype,
         status: input.status ?? mockInterviewers[index].status,
         channel: input.channel ?? mockInterviewers[index].channel,
-        conversation_type: input.conversationType ?? mockInterviewers[index].conversation_type,
-        expert_source: input.expertSource ?? mockInterviewers[index].expert_source,
-        voice: input.voice ?? mockInterviewers[index].voice,
-        phone_number: input.phoneNumber ?? mockInterviewers[index].phone_number,
-        updated_at: new Date().toISOString(),
+        language: input.language ?? mockInterviewers[index].language,
+        voiceId: input.voiceId ?? mockInterviewers[index].voiceId,
+        targetDurationMin: input.targetDurationMin ?? mockInterviewers[index].targetDurationMin,
+        contact: {
+          ...mockInterviewers[index].contact,
+          phoneNumber: input.phoneNumber ?? mockInterviewers[index].contact.phoneNumber,
+          chatUrl: input.chatUrl ?? mockInterviewers[index].contact.chatUrl,
+          linkId: input.linkId ?? mockInterviewers[index].contact.linkId,
+        },
+        updatedAt: new Date().toISOString(),
       };
       return mockInterviewers[index];
     }
 
-    const updateData: InterviewerUpdate = {
-      ...(input.name && { name: input.name }),
-      ...(input.description !== undefined && { description: input.description }),
-      ...(input.archetype && { archetype: input.archetype }),
-      ...(input.status && { status: input.status }),
-      ...(input.channel && { channel: input.channel }),
-      ...(input.conversationType && { conversation_type: input.conversationType }),
-      ...(input.expertSource !== undefined && { expert_source: input.expertSource }),
-      ...(input.voice && { voice: input.voice }),
-      ...(input.interviewGuide !== undefined && { interview_guide: input.interviewGuide }),
-      ...(input.knowledgeAssets !== undefined && { knowledge_assets: input.knowledgeAssets }),
-      ...(input.phoneNumber !== undefined && { phone_number: input.phoneNumber }),
-      updated_at: new Date().toISOString(),
-    };
+    const updateData: InterviewerUpdate = {};
+    if (input.name) updateData.name = input.name;
+    if (input.title) updateData.title = input.title;
+    if (input.description !== undefined) updateData.description = input.description || null;
+    if (input.archetype) updateData.archetype = input.archetype;
+    if (input.status) updateData.status = input.status;
+    if (input.channel) updateData.channel = input.channel;
+    if (input.language) updateData.language = input.language;
+    if (input.voiceId !== undefined) updateData.voice_id = input.voiceId || null;
+    if (input.targetDurationMin !== undefined) updateData.target_duration_min = input.targetDurationMin || null;
+    if (input.phoneNumber !== undefined) updateData.phone_number = input.phoneNumber || null;
+    if (input.chatUrl !== undefined) updateData.chat_url = input.chatUrl || null;
+    if (input.linkId !== undefined) updateData.link_id = input.linkId || null;
+    updateData.updated_at = new Date().toISOString();
 
     const { data, error } = await supabase
       .from('interviewers')
@@ -389,7 +468,7 @@ export const interviewersService = {
       .single();
 
     if (error) throw error;
-    return data;
+    return rowToInterviewer(data as unknown as InterviewerRow);
   },
 
   /**
@@ -400,7 +479,6 @@ export const interviewersService = {
       await new Promise(resolve => setTimeout(resolve, 100));
       const index = mockInterviewers.findIndex(i => i.id === id);
       if (index === -1) throw new Error('Interviewer not found');
-      mockInterviewers[index].archived_at = new Date().toISOString();
       mockInterviewers[index].status = 'archived';
       return mockInterviewers[index];
     }
@@ -417,7 +495,7 @@ export const interviewersService = {
       .single();
 
     if (error) throw error;
-    return data;
+    return rowToInterviewer(data as unknown as InterviewerRow);
   },
 
   /**
@@ -428,8 +506,6 @@ export const interviewersService = {
       await new Promise(resolve => setTimeout(resolve, 100));
       const index = mockInterviewers.findIndex(i => i.id === id);
       if (index === -1) throw new Error('Interviewer not found');
-      mockInterviewers[index].archived_at = null;
-      mockInterviewers[index].deleted_at = null;
       mockInterviewers[index].status = 'paused';
       return mockInterviewers[index];
     }
@@ -447,7 +523,7 @@ export const interviewersService = {
       .single();
 
     if (error) throw error;
-    return data;
+    return rowToInterviewer(data as unknown as InterviewerRow);
   },
 
   /**
@@ -458,16 +534,14 @@ export const interviewersService = {
       await new Promise(resolve => setTimeout(resolve, 100));
       const index = mockInterviewers.findIndex(i => i.id === id);
       if (index === -1) throw new Error('Interviewer not found');
-      mockInterviewers[index].deleted_at = new Date().toISOString();
-      mockInterviewers[index].status = 'deleted';
-      return mockInterviewers[index];
+      mockInterviewers.splice(index, 1);
+      return mockInterviewers[0];
     }
 
     const { data, error } = await supabase
       .from('interviewers')
       .update({
         deleted_at: new Date().toISOString(),
-        status: 'deleted',
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)
@@ -475,7 +549,7 @@ export const interviewersService = {
       .single();
 
     if (error) throw error;
-    return data;
+    return rowToInterviewer(data as unknown as InterviewerRow);
   },
 
   /**
@@ -498,10 +572,10 @@ export const interviewersService = {
   },
 
   /**
-   * Deploy an interviewer (set to active)
+   * Deploy an interviewer (set to live)
    */
   async deployInterviewer(id: string): Promise<Interviewer> {
-    return this.updateInterviewer(id, { status: 'active' });
+    return this.updateInterviewer(id, { status: 'live' });
   },
 
   /**
@@ -517,7 +591,7 @@ export const interviewersService = {
   async getInterviewerSessions(interviewerId: string): Promise<Session[]> {
     if (!isSupabaseConfigured()) {
       await new Promise(resolve => setTimeout(resolve, 100));
-      return mockSessions.filter(s => s.interviewer_id === interviewerId);
+      return mockSessions.filter(s => s.interviewerId === interviewerId);
     }
 
     const { data, error } = await supabase
@@ -527,7 +601,7 @@ export const interviewersService = {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    return (data || []).map(d => rowToSession(d as unknown as SessionRow));
   },
 
   /**
@@ -546,60 +620,52 @@ export const interviewersService = {
       .maybeSingle();
 
     if (error) throw error;
-    return data;
+    if (!data) return null;
+    return rowToSession(data as unknown as SessionRow);
   },
 
   /**
    * Create a new session
    */
-  async createSession(interviewerId: string, data?: Partial<SessionInsert>): Promise<Session> {
+  async createSession(interviewerId: string, data?: { respondentName?: string; respondentEmail?: string }): Promise<Session> {
     if (!isSupabaseConfigured()) {
       await new Promise(resolve => setTimeout(resolve, 150));
       const newSession: Session = {
         id: `sess-${Date.now()}`,
-        interviewer_id: interviewerId,
-        respondent_name: data?.respondent_name || null,
-        respondent_email: data?.respondent_email || null,
-        status: 'pending',
-        started_at: null,
-        ended_at: null,
-        duration_minutes: null,
-        transcript: null,
-        summary: null,
-        feedback: null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        interviewerId,
+        conversationType: 'live',
+        startedAt: new Date().toISOString(),
+        completed: false,
+        createdAt: new Date().toISOString(),
       };
       mockSessions.push(newSession);
       return newSession;
     }
 
-    const sessionData: SessionInsert = {
-      interviewer_id: interviewerId,
-      respondent_name: data?.respondent_name,
-      respondent_email: data?.respondent_email,
-      status: 'pending',
-    };
-
     const { data: session, error } = await supabase
       .from('sessions')
-      .insert(sessionData)
+      .insert({
+        interviewer_id: interviewerId,
+        respondent_name: data?.respondentName || null,
+        respondent_email: data?.respondentEmail || null,
+        conversation_type: 'live',
+        completed: false,
+      })
       .select()
       .single();
 
     if (error) throw error;
-    return session;
+    return rowToSession(session as unknown as SessionRow);
   },
 
   /**
-   * Get interviewer collaborators/members (via project membership - interviewers inherit from projects)
+   * Get interviewer members (via project membership)
    */
   async getInterviewerMembers(interviewerId: string): Promise<InterviewerMembershipWithUser[]> {
     if (!isSupabaseConfigured()) {
       return [];
     }
 
-    // Get the interviewer's project first
     const { data: interviewer, error: intError } = await supabase
       .from('interviewers')
       .select('project_id')
@@ -608,25 +674,325 @@ export const interviewersService = {
 
     if (intError || !interviewer) return [];
 
-    // Get project members (interviewers inherit access from projects)
     const { data, error } = await supabase
       .from('project_memberships')
-      .select(`
-        *,
-        profile:profiles(*)
-      `)
+      .select(`*, profile:profiles(*)`)
       .eq('project_id', interviewer.project_id);
 
     if (error) throw error;
 
-    return (data || []).map(m => ({
-      id: m.id,
-      interviewer_id: interviewerId,
-      user_id: m.user_id,
-      role: m.role as InterviewerRole,
-      created_at: m.created_at,
-      profile: m.profile as unknown as Profile,
+    return (data || []).map(m => {
+      const profile = m.profile as unknown as { id: string; email: string; name: string | null; avatar_url: string | null; created_at: string; updated_at: string } | null;
+      const membership: InterviewerMembershipWithUser = {
+        id: m.id,
+        interviewerId,
+        userId: m.user_id,
+        role: m.role as InterviewerRole,
+        createdAt: m.created_at,
+      };
+      if (profile) {
+        membership.user = {
+          id: profile.id,
+          email: profile.email || '',
+          name: profile.name || '',
+          avatar: profile.avatar_url || undefined,
+          isActive: true,
+          isSuperuser: false,
+          createdAt: profile.created_at,
+          updatedAt: profile.updated_at,
+        };
+      }
+      return membership;
+    });
+  },
+
+  // ==========================================
+  // LEGACY ALIASES (backward compatibility)
+  // ==========================================
+
+  /** @deprecated Use getInterviewers instead */
+  async getAgents(projectId?: string) {
+    return this.getInterviewers(projectId);
+  },
+
+  /** @deprecated Use getArchivedInterviewers instead */
+  async getArchivedAgents(projectId?: string) {
+    return this.getArchivedInterviewers(projectId);
+  },
+
+  /** @deprecated Use getDeletedInterviewers instead */
+  async getTrashedAgents(projectId?: string) {
+    return this.getDeletedInterviewers(projectId);
+  },
+
+  /** @deprecated Use getInterviewer instead */
+  async getAgent(id: string) {
+    return this.getInterviewer(id);
+  },
+
+  /** @deprecated Use createInterviewer instead */
+  async createAgent(input: CreateInterviewerInput) {
+    return this.createInterviewer(input);
+  },
+
+  /** @deprecated Use updateInterviewer instead */
+  async updateAgent(id: string, input: UpdateInterviewerInput) {
+    return this.updateInterviewer(id, input);
+  },
+
+  /** @deprecated Use archiveInterviewer instead */
+  async archiveAgent(id: string) {
+    return this.archiveInterviewer(id);
+  },
+
+  /** @deprecated Use restoreInterviewer instead */
+  async unarchiveAgent(id: string) {
+    return this.restoreInterviewer(id);
+  },
+
+  /** @deprecated Use restoreInterviewer instead */
+  async restoreAgent(id: string) {
+    return this.restoreInterviewer(id);
+  },
+
+  /** @deprecated Use deleteInterviewer instead */
+  async deleteAgent(id: string) {
+    return this.deleteInterviewer(id);
+  },
+
+  /** @deprecated Use deleteInterviewer instead */
+  async moveToTrash(id: string) {
+    return this.deleteInterviewer(id);
+  },
+
+  /** @deprecated Use permanentlyDeleteInterviewer instead */
+  async permanentlyDeleteAgent(id: string) {
+    return this.permanentlyDeleteInterviewer(id);
+  },
+
+  /** @deprecated Use deployInterviewer instead */
+  async deployAgent(id: string) {
+    return this.deployInterviewer(id);
+  },
+
+  /** @deprecated Use deployInterviewer instead */
+  async activateAgent(id: string) {
+    return this.deployInterviewer(id);
+  },
+
+  /** @deprecated Use pauseInterviewer instead */
+  async pauseAgent(id: string) {
+    return this.pauseInterviewer(id);
+  },
+
+  /** @deprecated Use getInterviewerSessions instead */
+  async getAgentInterviews(interviewerId: string) {
+    return this.getInterviewerSessions(interviewerId);
+  },
+
+  /** @deprecated Use getInterviewerMembers instead */
+  async getAgentCollaborators(interviewerId: string) {
+    return this.getInterviewerMembers(interviewerId);
+  },
+
+  /** Get last interview date for an interviewer */
+  async getLastInterviewDate(interviewerId: string): Promise<string | null> {
+    const sessions = await this.getInterviewerSessions(interviewerId);
+    if (sessions.length === 0) return null;
+    return sessions[0].startedAt;
+  },
+
+  /** Get interview guide */
+  async getAgentGuide(id: string): Promise<InterviewGuide | null> {
+    if (!isSupabaseConfigured()) {
+      return mockGuides[id] || null;
+    }
+    const interviewer = await this.getInterviewer(id);
+    return interviewer ? (mockGuides[id] || null) : null;
+  },
+
+  /** Update interview guide */
+  async updateAgentGuide(id: string, guide: Partial<InterviewGuide>): Promise<InterviewGuide> {
+    const existing = mockGuides[id] || { id: `guide-${id}`, interviewerId: id };
+    mockGuides[id] = { ...existing, ...guide } as InterviewGuide;
+    return mockGuides[id];
+  },
+
+  /** Get knowledge assets */
+  async getAgentKnowledge(id: string): Promise<KnowledgeAsset[]> {
+    return mockKnowledge[id] || [];
+  },
+
+  /** Add knowledge asset */
+  async addKnowledgeAsset(id: string, asset: Partial<KnowledgeAsset>): Promise<KnowledgeAsset> {
+    const newAsset: KnowledgeAsset = {
+      id: `ka-${Date.now()}`,
+      interviewerId: id,
+      title: asset.title || 'Untitled',
+      type: asset.type || 'text',
+      contentText: asset.contentText,
+      fileName: asset.fileName,
+      fileSize: asset.fileSize,
+    };
+    if (!mockKnowledge[id]) mockKnowledge[id] = [];
+    mockKnowledge[id].push(newAsset);
+    return newAsset;
+  },
+
+  /** Get agent stats */
+  async getAgentStats(id: string) {
+    const sessions = await this.getInterviewerSessions(id);
+    return {
+      totalSessions: sessions.length,
+      completedSessions: sessions.filter(s => s.completed).length,
+      avgDuration: sessions.length > 0 
+        ? sessions.reduce((acc, s) => acc + (s.durationSec || 0), 0) / sessions.length 
+        : 0,
+    };
+  },
+
+  /** Get user permission for an interviewer */
+  async getUserPermission(interviewerId: string): Promise<{ role: AgentPermission; canEdit: boolean; canDelete: boolean } | null> {
+    const interviewer = await this.getInterviewer(interviewerId);
+    if (!interviewer) return null;
+    
+    if (!isSupabaseConfigured()) {
+      return { role: 'owner', canEdit: true, canDelete: true };
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const { data: membership } = await supabase
+      .from('project_memberships')
+      .select('role')
+      .eq('project_id', interviewer.projectId)
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (!membership) return null;
+    
+    const role = membership.role as AgentPermission;
+    return {
+      role,
+      canEdit: role === 'owner' || role === 'editor',
+      canDelete: role === 'owner',
+    };
+  },
+
+  /** Search users (for sharing) */
+  async searchUsers(query: string, _existingIds?: string[]): Promise<User[]> {
+    if (!isSupabaseConfigured()) {
+      return [];
+    }
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .or(`email.ilike.%${query}%,name.ilike.%${query}%`)
+      .limit(10);
+
+    if (error) throw error;
+    return (data || []).map(profile => ({
+      id: profile.id,
+      email: profile.email || '',
+      name: profile.name || '',
+      avatar: profile.avatar_url || undefined,
+      isActive: true,
+      isSuperuser: false,
+      createdAt: profile.created_at,
+      updatedAt: profile.updated_at,
     }));
+  },
+
+  /** Invite collaborator */
+  async inviteCollaborator(interviewerId: string, userId: string, role: InterviewerRole) {
+    const interviewer = await this.getInterviewer(interviewerId);
+    if (!interviewer?.projectId) throw new Error('Interviewer not found');
+
+    if (!isSupabaseConfigured()) {
+      return { id: `mock-${Date.now()}`, interviewerId, userId, role, createdAt: new Date().toISOString() };
+    }
+
+    const { data, error } = await supabase
+      .from('project_memberships')
+      .insert({ project_id: interviewer.projectId, user_id: userId, role })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return { id: data.id, interviewerId, userId, role: data.role, createdAt: data.created_at };
+  },
+
+  /** Update collaborator permission */
+  async updateCollaboratorPermission(interviewerId: string, userId: string, role: InterviewerRole) {
+    const interviewer = await this.getInterviewer(interviewerId);
+    if (!interviewer?.projectId) throw new Error('Interviewer not found');
+
+    if (!isSupabaseConfigured()) {
+      return { id: `mock-${Date.now()}`, interviewerId, userId, role, createdAt: new Date().toISOString() };
+    }
+
+    const { data, error } = await supabase
+      .from('project_memberships')
+      .update({ role })
+      .eq('project_id', interviewer.projectId)
+      .eq('user_id', userId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return { id: data.id, interviewerId, userId, role: data.role, createdAt: data.created_at };
+  },
+
+  /** Remove collaborator */
+  async removeCollaborator(interviewerId: string, userId: string) {
+    const interviewer = await this.getInterviewer(interviewerId);
+    if (!interviewer?.projectId) throw new Error('Interviewer not found');
+
+    if (!isSupabaseConfigured()) {
+      return;
+    }
+
+    const { error } = await supabase
+      .from('project_memberships')
+      .delete()
+      .eq('project_id', interviewer.projectId)
+      .eq('user_id', userId);
+
+    if (error) throw error;
+  },
+
+  /** Transfer ownership */
+  async transferOwnership(interviewerId: string, newOwnerId: string) {
+    const interviewer = await this.getInterviewer(interviewerId);
+    if (!interviewer?.projectId) throw new Error('Interviewer not found');
+
+    if (!isSupabaseConfigured()) {
+      return;
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    await supabase
+      .from('project_memberships')
+      .update({ role: 'editor' })
+      .eq('project_id', interviewer.projectId)
+      .eq('user_id', user.id);
+
+    await supabase
+      .from('project_memberships')
+      .update({ role: 'owner' })
+      .eq('project_id', interviewer.projectId)
+      .eq('user_id', newOwnerId);
+  },
+
+  /** Provision contact (returns mock phone number) */
+  async provisionContact(id: string) {
+    const phoneNumber = `+1${Math.floor(Math.random() * 9000000000) + 1000000000}`;
+    await this.updateInterviewer(id, { phoneNumber });
+    return { phoneNumber };
   },
 };
 
