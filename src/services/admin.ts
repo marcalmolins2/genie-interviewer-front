@@ -16,52 +16,14 @@ export interface UserRole {
   created_at: string;
 }
 
-// Archetype info for admin management
-export interface ArchetypeInfo {
-  id: string;
-  title: string;
-  description: string;
-  icon: string;
-  useCase: string;
-  examples: string[];
-  hasVariant?: boolean;
-}
+// Re-export ArchetypeInfo from types to ensure compatibility
+import { ARCHETYPES, ArchetypeInfo, Archetype } from '@/types';
 
-// Mock archetype storage
-let mockArchetypes: ArchetypeInfo[] = [
-  {
-    id: 'market_research',
-    title: 'Market Research',
-    description: 'In-depth market and competitive analysis interviews',
-    icon: 'TrendingUp',
-    useCase: 'Market sizing, competitive intelligence, trend analysis',
-    examples: ['Market opportunity assessment', 'Competitive landscape analysis'],
-  },
-  {
-    id: 'ux_research',
-    title: 'UX Research',
-    description: 'User experience and usability research',
-    icon: 'Users',
-    useCase: 'User feedback, usability testing, journey mapping',
-    examples: ['User interview sessions', 'Product feedback collection'],
-  },
-  {
-    id: 'academic',
-    title: 'Academic Research',
-    description: 'Academic and scholarly research interviews',
-    icon: 'BookOpen',
-    useCase: 'Qualitative research, data collection, scholarly inquiry',
-    examples: ['Research interviews', 'Data collection sessions'],
-  },
-  {
-    id: 'custom',
-    title: 'Custom',
-    description: 'Fully customizable interview format',
-    icon: 'Settings',
-    useCase: 'Specialized use cases requiring unique configurations',
-    examples: ['Custom interview formats', 'Specialized assessments'],
-  },
-];
+// Re-export for backward compatibility
+export type { ArchetypeInfo };
+
+// Mock archetype storage - use ARCHETYPES from types
+let mockArchetypes: ArchetypeInfo[] = [...ARCHETYPES];
 
 // Analytics types
 export interface ProjectMember {
@@ -309,7 +271,7 @@ export const adminService = {
     return [...mockArchetypes];
   },
 
-  async createArchetype(data: Omit<ArchetypeInfo, 'id'> & { id: string }): Promise<ArchetypeInfo> {
+  async createArchetype(data: Omit<ArchetypeInfo, 'id'> & { id: Archetype }): Promise<ArchetypeInfo> {
     await new Promise(resolve => setTimeout(resolve, 100));
     const newArchetype: ArchetypeInfo = { ...data };
     mockArchetypes.push(newArchetype);
@@ -421,8 +383,8 @@ export const adminService = {
       membersByRole,
       members,
       totalInterviewers: (interviewers || []).length,
-      interviewersByStatus: Object.entries(statusCounts).map(([status, count]) => ({ status, count })),
-      interviewersByChannel: Object.entries(channelCounts).map(([channel, count]) => ({ channel, count })),
+      interviewersByStatus: Object.entries(statusCounts).map(([status, count]) => ({ status, count: count as number })),
+      interviewersByChannel: Object.entries(channelCounts).map(([channel, count]) => ({ channel, count: count as number })),
       totalSessions: (sessions || []).length,
       liveSessions: (sessions || []).filter(s => s.status !== 'test').length,
       testSessions: (sessions || []).filter(s => s.status === 'test').length,
@@ -558,7 +520,7 @@ export const adminService = {
 
 // Export individual functions for backward compatibility
 export const getArchetypes = () => adminService.getArchetypes();
-export const createArchetype = (data: Omit<ArchetypeInfo, 'id'> & { id: string }) => adminService.createArchetype(data);
+export const createArchetype = (data: Omit<ArchetypeInfo, 'id'> & { id: Archetype }) => adminService.createArchetype(data);
 export const updateArchetype = (id: string, data: Partial<ArchetypeInfo>) => adminService.updateArchetype(id, data);
 export const deleteArchetype = (id: string) => adminService.deleteArchetype(id);
 export const getProjectList = () => adminService.getProjectList();

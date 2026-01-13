@@ -61,6 +61,7 @@ interface InterviewerData {
   researchGoals: string;
   interviewGuide: string;
   knowledgeText: string;
+  projectId?: string;
 }
 
 const phaseLabels = {
@@ -431,6 +432,7 @@ Or if you prefer more control, you can switch to our manual setup process.`,
     
     try {
       const newInterviewer = await agentsService.createAgent({
+        projectId: interviewerData.projectId || 'proj-1', // Use selected project or default
         name: interviewerData.name,
         archetype: interviewerData.archetype,
         language: interviewerData.language,
