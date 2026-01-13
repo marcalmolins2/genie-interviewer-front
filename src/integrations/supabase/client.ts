@@ -1,23 +1,27 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  console.warn('Supabase credentials not configured. Some features may not work.');
-}
+// Check if Supabase is properly configured
+export const isSupabaseConfigured = (): boolean => {
+  return Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
+};
 
-export const supabase = createClient(
-  SUPABASE_URL || '',
-  SUPABASE_ANON_KEY || '',
-  {
+// Create a real or placeholder Supabase client
+let supabaseInstance: SupabaseClient | null = null;
+
+if (isSupabaseConfigured()) {
+  supabaseInstance = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
     },
-  }
-);
+  });
+} else {
+  console.warn('Supabase credentials not configured. Running in mock mode.');
+}
 
-export const isSupabaseConfigured = () => {
-  return Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
-};
+// Export the client - will be null if not configured
+// Services should check isSupabaseConfigured() before using
+export const supabase = supabaseInstance as SupabaseClient;
