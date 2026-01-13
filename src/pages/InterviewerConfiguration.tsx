@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,7 @@ import { Stepper } from "@/components/Stepper";
 import { ArchetypeCard } from "@/components/ArchetypeCard";
 import { ChannelSelector } from "@/components/ChannelSelector";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, ArrowRight, Upload, FileText, X, AlertCircle, Edit, FolderOpen, Play, Square } from "lucide-react";
+import { ArrowLeft, ArrowRight, Upload, FileText, X, AlertCircle, Edit, FolderOpen, Play, Square, Loader2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { ARCHETYPES, Channel, Archetype, PRICE_BY_CHANNEL, GuideSchema, PROJECT_TYPE_LABELS, Project } from "@/types";
 import { interviewersService, agentsService } from "@/services/interviewers";
@@ -30,6 +30,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+
+interface InterviewerConfigurationProps {
+  mode?: 'create' | 'edit';
+}
 
 interface CreateInterviewerForm {
   // Step 0: Project Selection
@@ -191,11 +195,15 @@ const FieldError = ({ error }: { error?: string }) => {
   return <p className="text-xs text-destructive mt-1">{error}</p>;
 };
 
-export default function CreateInterviewerManual() {
+export default function InterviewerConfiguration({ mode = 'create' }: InterviewerConfigurationProps) {
   const { selectedProjectId: sidebarProjectId, projects, refreshProjects, isLoadingProjects } = useProjectContext();
+  const { interviewerId } = useParams();
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const [currentStep, setCurrentStep] = useState(0);
-  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  const [isLoadingInterviewer, setIsLoadingInterviewer] = useState(mode === 'edit');
+  const [currentStep, setCurrentStep] = useState(mode === 'edit' ? 3 : 0); // Start on Review step in edit mode
+  const [completedSteps, setCompletedSteps] = useState<number[]>(mode === 'edit' ? [0, 1, 2] : []);
   const [form, setForm] = useState<CreateInterviewerForm>({
     selectedProjectId: sidebarProjectId,
     title: "",
@@ -218,6 +226,7 @@ export default function CreateInterviewerManual() {
     knowledgeFiles: [],
     caseCode: "",
   });
+  const [initialForm, setInitialForm] = useState<CreateInterviewerForm | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [isCreating, setIsCreating] = useState(false);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
@@ -225,11 +234,83 @@ export default function CreateInterviewerManual() {
   const [showValidation, setShowValidation] = useState(false);
   const [showCreateProjectDialog, setShowCreateProjectDialog] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
-  const navigate = useNavigate();
-  const { toast } = useToast();
+
+  // Load existing interviewer data in edit mode
+  useEffect(() => {
+    if (mode === 'edit' && interviewerId) {
+      loadExistingInterviewer(interviewerId);
+    }
+  }, [mode, interviewerId]);
+
+  const loadExistingInterviewer = async (id: string) => {
+    setIsLoadingInterviewer(true);
+    try {
+      const [interviewer, guide, knowledge] = await Promise.all([
+        agentsService.getAgent(id),
+        agentsService.getAgentGuide(id),
+        agentsService.getAgentKnowledge(id)
+      ]);
+
+      if (!interviewer) {
+        toast({ title: "Interviewer not found", variant: "destructive" });
+        navigate('/app/interviewers');
+        return;
+      }
+
+      // Check for archived status
+      if (interviewer.status === 'archived') {
+        toast({ title: "Cannot edit archived interviewer", variant: "destructive" });
+        navigate(`/app/interviewers/${id}`);
+        return;
+      }
+
+      const textKnowledge = knowledge.find(k => k.type === 'text');
+
+      // Map interviewer data to form fields
+      const loadedForm: CreateInterviewerForm = {
+        selectedProjectId: interviewer.projectId || sidebarProjectId || null,
+        title: interviewer.title || interviewer.name || '',
+        description: interviewer.description || '',
+        name: interviewer.name || '',
+        archetype: interviewer.archetype || null,
+        language: interviewer.language || 'en',
+        voiceId: interviewer.voiceId || 'alloy',
+        channel: interviewer.channel || 'inbound_call',
+        targetDuration: String(interviewer.targetDuration || 20),
+        interviewContext: interviewer.interviewContext || '',
+        introContext: interviewer.introContext || '',
+        enableScreener: interviewer.enableScreener || false,
+        screenerQuestions: interviewer.screenerQuestions || '',
+        introductionQuestions: interviewer.introductionQuestions || '',
+        interviewGuide: guide?.rawText || '',
+        guideStructured: guide?.structured || null,
+        closeContext: interviewer.closeContext || '',
+        knowledgeText: textKnowledge?.contentText || '',
+        knowledgeFiles: [], // Can't restore File objects
+        caseCode: interviewer.caseCode || '',
+      };
+
+      setForm(loadedForm);
+      setInitialForm(loadedForm);
+
+      // Mark all content steps as completed
+      setCompletedSteps([0, 1, 2]);
+      setCurrentStep(3); // Review step
+
+    } catch (error) {
+      toast({ title: "Error loading interviewer", variant: "destructive" });
+      navigate('/app/interviewers');
+    } finally {
+      setIsLoadingInterviewer(false);
+    }
+  };
 
   // Check if user has made any changes
   const hasUnsavedChanges = useCallback(() => {
+    if (mode === 'edit' && initialForm) {
+      // Compare current form with initial loaded form
+      return JSON.stringify(form) !== JSON.stringify(initialForm);
+    }
     return (
       form.title.trim() !== '' ||
       form.description.trim() !== '' ||
@@ -244,27 +325,35 @@ export default function CreateInterviewerManual() {
       form.knowledgeText.trim() !== '' ||
       form.knowledgeFiles.length > 0
     );
-  }, [form]);
+  }, [form, mode, initialForm]);
 
   const handleCancel = () => {
     if (hasUnsavedChanges()) {
       setShowCancelDialog(true);
     } else {
-      navigate('/app/interviewers');
+      if (mode === 'edit' && interviewerId) {
+        navigate(`/app/interviewers/${interviewerId}`);
+      } else {
+        navigate('/app/interviewers');
+      }
     }
   };
 
   const confirmCancel = () => {
     setShowCancelDialog(false);
-    navigate('/app/interviewers');
+    if (mode === 'edit' && interviewerId) {
+      navigate(`/app/interviewers/${interviewerId}`);
+    } else {
+      navigate('/app/interviewers');
+    }
   };
 
-  // Pre-select project from sidebar if not already selected
+  // Pre-select project from sidebar if not already selected (only in create mode)
   useEffect(() => {
-    if (sidebarProjectId && !form.selectedProjectId) {
+    if (mode === 'create' && sidebarProjectId && !form.selectedProjectId) {
       setForm((prev) => ({ ...prev, selectedProjectId: sidebarProjectId }));
     }
-  }, [sidebarProjectId]);
+  }, [sidebarProjectId, mode]);
 
   const selectedProject = projects.find((p) => p.id === form.selectedProjectId);
 
@@ -504,14 +593,39 @@ export default function CreateInterviewerManual() {
     if (!form.archetype || !form.selectedProjectId) return;
     setIsCreating(true);
     try {
-      // TODO: Update service to accept projectId, title, description when backend supports it
       const agent = await agentsService.createAgent({
-        name: form.name || form.title, // Use title as fallback for name
+        name: form.name || form.title,
+        title: form.title,
+        description: form.description,
         archetype: form.archetype,
         language: form.language,
         voiceId: form.voiceId,
         channel: form.channel,
+        projectId: form.selectedProjectId,
+        targetDuration: parseInt(form.targetDuration),
+        interviewContext: form.interviewContext,
+        introContext: form.introContext,
+        enableScreener: form.enableScreener,
+        screenerQuestions: form.screenerQuestions,
+        introductionQuestions: form.introductionQuestions,
+        closeContext: form.closeContext,
+        caseCode: form.caseCode,
       });
+      
+      // Update guide if provided
+      if (form.interviewGuide) {
+        await agentsService.updateAgentGuide(agent.id, form.interviewGuide, form.guideStructured);
+      }
+      
+      // Add knowledge if provided
+      if (form.knowledgeText) {
+        await agentsService.addKnowledgeAsset(agent.id, {
+          title: 'Knowledge Base',
+          type: 'text',
+          contentText: form.knowledgeText,
+        });
+      }
+      
       await agentsService.provisionContact(agent.id);
       toast({ title: "Success!", description: "Your interviewer has been created and is ready to test." });
       navigate(`/app/interviewers/${agent.id}`);
@@ -522,9 +636,84 @@ export default function CreateInterviewerManual() {
     }
   };
 
+  const updateInterviewer = async () => {
+    if (!interviewerId || !form.archetype) return;
+    setIsCreating(true);
+    try {
+      await agentsService.updateAgent(interviewerId, {
+        name: form.name || form.title,
+        title: form.title,
+        description: form.description,
+        archetype: form.archetype,
+        language: form.language,
+        voiceId: form.voiceId,
+        channel: form.channel,
+        targetDuration: parseInt(form.targetDuration),
+        interviewContext: form.interviewContext,
+        introContext: form.introContext,
+        enableScreener: form.enableScreener,
+        screenerQuestions: form.screenerQuestions,
+        introductionQuestions: form.introductionQuestions,
+        closeContext: form.closeContext,
+      });
+      
+      // Update guide
+      await agentsService.updateAgentGuide(interviewerId, form.interviewGuide, form.guideStructured);
+      
+      toast({ title: "Success!", description: "Interviewer updated successfully." });
+      navigate(`/app/interviewers/${interviewerId}`);
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to update interviewer.", variant: "destructive" });
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (mode === 'edit') {
+      await updateInterviewer();
+    } else {
+      await createInterviewer();
+    }
+  };
+
   const renderStepContent = () => {
     switch (currentStep) {
       case 0:
+        // In edit mode, show project as read-only
+        if (mode === 'edit' && selectedProject) {
+          return (
+            <div className="space-y-6 max-w-2xl mx-auto">
+              <div>
+                <h2 className="text-2xl font-bold mb-2">Project</h2>
+                <p className="text-muted-foreground">
+                  This interviewer belongs to the following project.
+                </p>
+              </div>
+
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-muted">
+                      <FolderOpen className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <p className="font-medium">{selectedProject.name}</p>
+                      <Badge variant="secondary" className="mt-1">
+                        {PROJECT_TYPE_LABELS[selectedProject.projectType]}
+                      </Badge>
+                      {selectedProject.caseCode && (
+                        <p className="text-xs text-muted-foreground mt-1">{selectedProject.caseCode}</p>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          );
+        }
+        
+        // Create mode - show project selector
         return (
           <div className="space-y-6 max-w-2xl mx-auto">
             <div>
@@ -1180,6 +1369,33 @@ Key Research Goals:
     }
   };
 
+  // Show loading spinner while loading interviewer data in edit mode
+  if (isLoadingInterviewer) {
+    return (
+      <ConfigurationLayout 
+        header={
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center gap-4">
+              <Button variant="outline" size="sm" onClick={() => navigate('/app/interviewers')}>
+                <X className="h-4 w-4 mr-2" />
+                Cancel
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold">Edit Interviewer</h1>
+                <p className="text-muted-foreground text-sm">Loading interviewer configuration...</p>
+              </div>
+            </div>
+          </div>
+        } 
+        footer={<div className="container mx-auto px-4 p-4" />}
+      >
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </ConfigurationLayout>
+    );
+  }
+
   const headerContent = (
     <div className="container mx-auto px-4 py-4">
       <div className="flex items-center justify-between">
@@ -1189,8 +1405,14 @@ Key Research Goals:
             Cancel
           </Button>
           <div>
-            <h1 className="text-2xl font-bold">Create New Interviewer</h1>
-            <p className="text-muted-foreground text-sm">Follow the steps to configure and deploy your interview agent</p>
+            <h1 className="text-2xl font-bold">
+              {mode === 'edit' ? 'Edit Interviewer' : 'Create New Interviewer'}
+            </h1>
+            <p className="text-muted-foreground text-sm">
+              {mode === 'edit' 
+                ? 'Review and modify your interviewer configuration' 
+                : 'Follow the steps to configure and deploy your interview agent'}
+            </p>
           </div>
         </div>
       </div>
@@ -1205,7 +1427,7 @@ Key Research Goals:
             <ArrowLeft className="h-4 w-4 mr-2" />
             Previous
           </Button>
-          {completedSteps.includes(0) && (
+          {mode === 'create' && completedSteps.includes(0) && (
             <Button variant="secondary" onClick={saveDraft} disabled={isSavingDraft}>
               {isSavingDraft ? "Saving..." : "Save Draft"}
             </Button>
@@ -1246,11 +1468,13 @@ Key Research Goals:
               }}
             >
               <Button
-                onClick={createInterviewer}
+                onClick={handleSubmit}
                 disabled={!validateStep(currentStep) || isCreating}
                 className={!validateStep(currentStep) || isCreating ? "pointer-events-none" : ""}
               >
-                {isCreating ? "Creating..." : "Publish"}
+                {isCreating 
+                  ? (mode === 'edit' ? "Saving..." : "Creating...") 
+                  : (mode === 'edit' ? "Save Changes" : "Publish")}
               </Button>
             </div>
           )}
