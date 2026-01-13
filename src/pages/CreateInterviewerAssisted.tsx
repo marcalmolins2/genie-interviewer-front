@@ -226,20 +226,16 @@ export default function CreateInterviewerAssisted() {
     
     // Suggest archetype based on goals
     const lowerMessage = userMessage.toLowerCase();
-    let suggestedArchetype: Archetype = 'diagnostic';
+    let suggestedArchetype: Archetype = 'customer_interview';
     
-    if (lowerMessage.includes('user') || lowerMessage.includes('ux') || lowerMessage.includes('experience')) {
-      suggestedArchetype = 'customer_user';
-    } else if (lowerMessage.includes('market') || lowerMessage.includes('customer')) {
-      suggestedArchetype = 'investigative';
-    } else if (lowerMessage.includes('expert') || lowerMessage.includes('deep')) {
-      suggestedArchetype = 'expert_deep_dive';
-    } else if (lowerMessage.includes('focus') || lowerMessage.includes('group')) {
-      suggestedArchetype = 'panel_moderator';
-    } else if (lowerMessage.includes('survey') || lowerMessage.includes('quick') || lowerMessage.includes('poll')) {
-      suggestedArchetype = 'rapid_survey';
-    } else if (lowerMessage.includes('stakeholder') || lowerMessage.includes('business') || lowerMessage.includes('strategy')) {
-      suggestedArchetype = 'client_stakeholder';
+    if (lowerMessage.includes('user') || lowerMessage.includes('ux') || lowerMessage.includes('experience') || lowerMessage.includes('customer') || lowerMessage.includes('feedback')) {
+      suggestedArchetype = 'customer_interview';
+    } else if (lowerMessage.includes('expert') || lowerMessage.includes('technical') || lowerMessage.includes('specialist') || lowerMessage.includes('deep')) {
+      suggestedArchetype = 'expert_interview';
+    } else if (lowerMessage.includes('stakeholder') || lowerMessage.includes('strategy') || lowerMessage.includes('assumption') || lowerMessage.includes('hypothesis') || lowerMessage.includes('belief')) {
+      suggestedArchetype = 'belief_audit';
+    } else if (lowerMessage.includes('maturity') || lowerMessage.includes('capability') || lowerMessage.includes('assessment') || lowerMessage.includes('benchmark') || lowerMessage.includes('readiness')) {
+      suggestedArchetype = 'maturity_assessment';
     }
 
     const archetype = ARCHETYPES.find(a => a.id === suggestedArchetype);
@@ -250,34 +246,29 @@ export default function CreateInterviewerAssisted() {
 ${archetype?.description}\n
 **Use case:** ${archetype?.useCase}\n
 Does this sound like what you need? If not, I can suggest other types like:
-- Expert Deep-Dive (technical discussions with specialists)
-- Customer User (end-user needs and experiences)
-- Investigative (market research and analysis)
-- Panel Moderator (group discussions and workshops)
-- Rapid Survey (quick polls and feedback)`,
+- Expert Interview (technical discussions with specialists)
+- Customer Interview (end-user needs and experiences)
+- Belief Audit (strategic alignment and assumption testing)
+- Maturity Assessment (capability and readiness evaluation)`,
       ConversationPhase.ARCHETYPE_SELECTION
     );
   };
 
   const handleArchetypeSelection = (userMessage: string) => {
     const lowerMessage = userMessage.toLowerCase();
-    let selectedArchetype: Archetype = 'diagnostic';
+    let selectedArchetype: Archetype = 'customer_interview';
     
     if (lowerMessage.includes('yes') || lowerMessage.includes('perfect') || lowerMessage.includes('sounds good')) {
       // Keep the previously suggested archetype from interviewerData
-      selectedArchetype = interviewerData.archetype || 'diagnostic';
-    } else if (lowerMessage.includes('user') || lowerMessage.includes('customer') || lowerMessage.includes('ux')) {
-      selectedArchetype = 'customer_user';
-    } else if (lowerMessage.includes('market') || lowerMessage.includes('investigative')) {
-      selectedArchetype = 'investigative';
-    } else if (lowerMessage.includes('expert') || lowerMessage.includes('deep')) {
-      selectedArchetype = 'expert_deep_dive';
-    } else if (lowerMessage.includes('panel') || lowerMessage.includes('group') || lowerMessage.includes('moderator')) {
-      selectedArchetype = 'panel_moderator';
-    } else if (lowerMessage.includes('survey') || lowerMessage.includes('rapid') || lowerMessage.includes('quick')) {
-      selectedArchetype = 'rapid_survey';
-    } else if (lowerMessage.includes('stakeholder') || lowerMessage.includes('client')) {
-      selectedArchetype = 'client_stakeholder';
+      selectedArchetype = interviewerData.archetype || 'customer_interview';
+    } else if (lowerMessage.includes('user') || lowerMessage.includes('customer') || lowerMessage.includes('ux') || lowerMessage.includes('feedback')) {
+      selectedArchetype = 'customer_interview';
+    } else if (lowerMessage.includes('expert') || lowerMessage.includes('technical') || lowerMessage.includes('deep') || lowerMessage.includes('specialist')) {
+      selectedArchetype = 'expert_interview';
+    } else if (lowerMessage.includes('belief') || lowerMessage.includes('stakeholder') || lowerMessage.includes('assumption') || lowerMessage.includes('hypothesis') || lowerMessage.includes('strategy')) {
+      selectedArchetype = 'belief_audit';
+    } else if (lowerMessage.includes('maturity') || lowerMessage.includes('assessment') || lowerMessage.includes('capability') || lowerMessage.includes('readiness')) {
+      selectedArchetype = 'maturity_assessment';
     }
 
     setInterviewerData(prev => ({ ...prev, archetype: selectedArchetype }));

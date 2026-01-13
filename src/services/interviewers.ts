@@ -114,7 +114,7 @@ const mockAgents: Agent[] = [
   {
     id: 'agent-genai-strategy',
     name: 'GenAI Strategy Consulting Research',
-    archetype: 'expert_deep_dive',
+    archetype: 'expert_interview',
     createdAt: '2024-11-25T08:00:00Z',
     updatedAt: '2024-12-15T14:30:00Z',
     status: 'live',
@@ -129,7 +129,7 @@ const mockAgents: Agent[] = [
   {
     id: 'agent-1',
     name: 'EU Battery Expert Deep-Dive',
-    archetype: 'expert_deep_dive',
+    archetype: 'expert_interview',
     createdAt: '2024-12-01T10:00:00Z',
     updatedAt: '2024-12-20T09:00:00Z',
     status: 'ready_to_test',
@@ -144,7 +144,7 @@ const mockAgents: Agent[] = [
   {
     id: 'agent-2',
     name: 'Retail NPS Pulse',
-    archetype: 'rapid_survey',
+    archetype: 'customer_interview',
     createdAt: '2024-11-28T14:30:00Z',
     updatedAt: '2024-12-10T16:45:00Z',
     status: 'live',
@@ -158,7 +158,7 @@ const mockAgents: Agent[] = [
   {
     id: 'agent-3',
     name: 'Customer Feedback Portal',
-    archetype: 'customer_user',
+    archetype: 'customer_interview',
     createdAt: '2024-12-05T09:15:00Z',
     updatedAt: '2024-12-18T11:20:00Z',
     status: 'paused',
@@ -173,7 +173,7 @@ const mockAgents: Agent[] = [
   {
     id: 'agent-4',
     name: 'Active Call Demo Agent',
-    archetype: 'diagnostic',
+    archetype: 'maturity_assessment',
     createdAt: '2024-12-01T11:00:00Z',
     updatedAt: '2024-12-22T08:30:00Z',
     status: 'live',
@@ -188,7 +188,7 @@ const mockAgents: Agent[] = [
   {
     id: 'agent-web-link',
     name: 'Web Interview Demo',
-    archetype: 'customer_user',
+    archetype: 'customer_interview',
     createdAt: '2024-12-10T09:00:00Z',
     updatedAt: '2024-12-12T10:15:00Z',
     status: 'live',
@@ -711,7 +711,7 @@ export const interviewersService = {
     const newAgent: Agent = {
       id: `agent-${Date.now()}`,
       name: data.name || 'Untitled Agent',
-      archetype: data.archetype || 'rapid_survey',
+      archetype: data.archetype || 'customer_interview',
       createdAt: new Date().toISOString(),
       status: 'ready_to_test',
       language: data.language || 'en',

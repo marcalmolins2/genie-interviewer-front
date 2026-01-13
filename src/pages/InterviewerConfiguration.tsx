@@ -12,7 +12,8 @@ import { ChannelSelector } from "@/components/ChannelSelector";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, ArrowRight, Upload, FileText, X, AlertCircle, Edit, FolderOpen, Play, Square, Loader2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
-import { ARCHETYPES, Channel, Archetype, PRICE_BY_CHANNEL, GuideSchema, PROJECT_TYPE_LABELS, Project } from "@/types";
+import { ARCHETYPES, Channel, Archetype, ExpertSource, PRICE_BY_CHANNEL, GuideSchema, PROJECT_TYPE_LABELS, Project } from "@/types";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { interviewersService, agentsService } from "@/services/interviewers";
 import { useToast } from "@/hooks/use-toast";
 import { RichTextEditor } from "@/components/RichTextEditor";
@@ -44,6 +45,7 @@ interface CreateInterviewerForm {
   description: string;
   name: string;
   archetype: Archetype | null;
+  expertSource: ExpertSource; // Only used when archetype is 'expert_interview'
   language: string;
   voiceId: string;
 
@@ -210,6 +212,7 @@ export default function InterviewerConfiguration({ mode = 'create' }: Interviewe
     description: "",
     name: "",
     archetype: null,
+    expertSource: "internal",
     language: "en",
     voiceId: "alloy",
     channel: "inbound_call",
@@ -273,6 +276,7 @@ export default function InterviewerConfiguration({ mode = 'create' }: Interviewe
         description: interviewer.description || '',
         name: interviewer.name || '',
         archetype: interviewer.archetype || null,
+        expertSource: (interviewer as any).expertSource || 'internal',
         language: interviewer.language || 'en',
         voiceId: interviewer.voiceId || 'alloy',
         channel: interviewer.channel || 'inbound_call',
@@ -802,18 +806,69 @@ export default function InterviewerConfiguration({ mode = 'create' }: Interviewe
 
             {/* Archetype Selection */}
             <div>
-              <h3 className="text-lg font-semibold mb-3">Choose Archetype *</h3>
+              <h3 className="text-lg font-semibold mb-3">What type of interview are you running? *</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {ARCHETYPES.map((archetype) => (
                   <ArchetypeCard
                     key={archetype.id}
                     archetype={archetype}
                     selected={form.archetype === archetype.id}
-                    onSelect={() => updateForm({ archetype: archetype.id })}
+                    onSelect={() => updateForm({ 
+                      archetype: archetype.id,
+                      expertSource: archetype.id === 'expert_interview' ? form.expertSource : 'internal'
+                    })}
                   />
                 ))}
               </div>
             </div>
+
+            {/* Expert Source Toggle - Only shown for Expert Interview */}
+            {form.archetype === 'expert_interview' && (
+              <Card className="border-primary/20 bg-primary/5">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">How are you sourcing experts?</CardTitle>
+                  <CardDescription>
+                    This affects the interview workflow and how the AI moderator behaves
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <RadioGroup 
+                    value={form.expertSource} 
+                    onValueChange={(value) => updateForm({ expertSource: value as ExpertSource })}
+                    className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                  >
+                    <div 
+                      className={`flex items-start space-x-3 border rounded-lg p-4 cursor-pointer transition-colors ${
+                        form.expertSource === 'internal' ? "border-primary bg-primary/10" : "border-muted hover:border-primary/50"
+                      }`}
+                      onClick={() => updateForm({ expertSource: 'internal' })}
+                    >
+                      <RadioGroupItem value="internal" id="internal" className="mt-1" />
+                      <Label htmlFor="internal" className="cursor-pointer flex-1">
+                        <span className="font-medium">Direct / Internal</span>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Experts you've identified directly or within your organization
+                        </p>
+                      </Label>
+                    </div>
+                    <div 
+                      className={`flex items-start space-x-3 border rounded-lg p-4 cursor-pointer transition-colors ${
+                        form.expertSource === 'expert_network' ? "border-primary bg-primary/10" : "border-muted hover:border-primary/50"
+                      }`}
+                      onClick={() => updateForm({ expertSource: 'expert_network' })}
+                    >
+                      <RadioGroupItem value="expert_network" id="expert_network" className="mt-1" />
+                      <Label htmlFor="expert_network" className="cursor-pointer flex-1">
+                        <span className="font-medium">Expert Network</span>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Third-party sourced (e.g., GLG, AlphaSights, Guidepoint)
+                        </p>
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Agent Persona */}
             <Card>
@@ -1218,7 +1273,14 @@ Key Research Goals:
                 </div>
                 <div>
                   <Label className="text-muted-foreground">Archetype</Label>
-                  <p className="font-medium">{archetype?.title}</p>
+                  <p className="font-medium">
+                    {archetype?.title}
+                    {form.archetype === 'expert_interview' && (
+                      <Badge variant="outline" className="ml-2">
+                        {form.expertSource === 'expert_network' ? 'Expert Network' : 'Direct/Internal'}
+                      </Badge>
+                    )}
+                  </p>
                 </div>
                 <div>
                   <Label className="text-muted-foreground">Agent Name</Label>
