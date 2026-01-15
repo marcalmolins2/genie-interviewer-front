@@ -9,6 +9,7 @@ import { CreateProjectDialog } from '@/components/CreateProjectDialog';
 import { useProjectContext } from '@/pages/InterviewersLayout';
 import { Archetype, Channel, GuideSchema } from '@/types';
 import { ContextDumpInput } from '@/components/guided-config/ContextDumpInput';
+import { ClarifyQuestions, detectGaps, GapType } from '@/components/guided-config/ClarifyQuestions';
 
 // Step definitions for content flow
 const CONTENT_STEPS = [
@@ -31,7 +32,9 @@ interface GuidedConfigState {
   // Step data
   contextDump: string;
   uploadedDocuments: File[];
+  detectedGaps: GapType[];
   followUpAnswers: Record<string, string>;
+  selectedChips: Record<string, string[]>;
   interviewContext: string;
   introduction: string;
   interviewGuide: GuideSchema | null;
@@ -60,7 +63,9 @@ const initialState: GuidedConfigState = {
   needsClarification: false,
   contextDump: '',
   uploadedDocuments: [],
+  detectedGaps: [],
   followUpAnswers: {},
+  selectedChips: {},
   interviewContext: '',
   introduction: '',
   interviewGuide: null,
@@ -145,6 +150,24 @@ export default function CreateInterviewerGuided() {
 
   const handleNext = () => {
     const maxStep = 3;
+    
+    // When leaving Step 0 (Describe), detect gaps
+    if (state.currentStep === 0) {
+      const gaps = detectGaps(state.contextDump);
+      const needsClarification = gaps.length > 0;
+      
+      setState(prev => ({
+        ...prev,
+        detectedGaps: gaps,
+        needsClarification,
+        currentStep: needsClarification ? 1 : 2,
+        completedSteps: prev.completedSteps.includes(0)
+          ? prev.completedSteps
+          : [...prev.completedSteps, 0],
+      }));
+      return;
+    }
+    
     if (state.currentStep < maxStep) {
       let nextStep = state.currentStep + 1;
       // Skip clarify step if not needed
@@ -283,10 +306,29 @@ export default function CreateInterviewerGuided() {
                       <p className="text-muted-foreground mb-6">
                         Just a couple questions to help us create the perfect interview setup.
                       </p>
-                      {/* TODO: Replace with ClarifyQuestions component */}
-                      <div className="text-center text-muted-foreground py-12">
-                        Clarification questions will appear here if needed.
-                      </div>
+                      <ClarifyQuestions
+                        detectedGaps={state.detectedGaps}
+                        answers={state.followUpAnswers}
+                        onAnswerChange={(gapId, value) => 
+                          setState(prev => ({
+                            ...prev,
+                            followUpAnswers: { ...prev.followUpAnswers, [gapId]: value },
+                          }))
+                        }
+                        selectedChips={state.selectedChips}
+                        onChipSelect={(gapId, chip) => 
+                          setState(prev => {
+                            const currentChips = prev.selectedChips[gapId] || [];
+                            const newChips = currentChips.includes(chip)
+                              ? currentChips.filter(c => c !== chip)
+                              : [...currentChips, chip];
+                            return {
+                              ...prev,
+                              selectedChips: { ...prev.selectedChips, [gapId]: newChips },
+                            };
+                          })
+                        }
+                      />
                     </div>
                   )}
 
