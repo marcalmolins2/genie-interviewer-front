@@ -8,6 +8,7 @@ import { ProjectCombobox } from '@/components/ProjectCombobox';
 import { CreateProjectDialog } from '@/components/CreateProjectDialog';
 import { useProjectContext } from '@/pages/InterviewersLayout';
 import { Archetype, Channel, GuideSchema } from '@/types';
+import { ContextDumpInput } from '@/components/guided-config/ContextDumpInput';
 
 // Step definitions for content flow
 const CONTENT_STEPS = [
@@ -267,19 +268,11 @@ export default function CreateInterviewerGuided() {
                       <p className="text-muted-foreground mb-6">
                         Tell us about your research goals, target audience, and what you want to learn.
                       </p>
-                      {/* TODO: Replace with ContextDumpInput component */}
-                      <textarea
+                      <ContextDumpInput
                         value={state.contextDump}
-                        onChange={(e) => setState(prev => ({ ...prev, contextDump: e.target.value }))}
-                        placeholder={`Tell us about your interview...
-
-• What do you want to learn? (your main research question)
-• Who will you interview? (role, industry, experience)
-• Key topics to explore
-• How long should each interview be?
-
-You can also upload research briefs, interview guides, or background documents.`}
-                        className="w-full min-h-[300px] p-4 rounded-lg border bg-background resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+                        onChange={(value) => setState(prev => ({ ...prev, contextDump: value }))}
+                        uploadedDocuments={state.uploadedDocuments}
+                        onDocumentsChange={(files) => setState(prev => ({ ...prev, uploadedDocuments: files }))}
                       />
                     </div>
                   )}
