@@ -10,7 +10,7 @@ import { useProjectContext } from '@/pages/InterviewersLayout';
 import { Archetype, Channel, GuideSchema } from '@/types';
 import { ContextDumpInput } from '@/components/guided-config/ContextDumpInput';
 import { ClarifyQuestions, detectGaps, GapType } from '@/components/guided-config/ClarifyQuestions';
-import { AIRefinementSidebar, Suggestion, PreviewChange } from '@/components/guided-config/AIRefinementSidebar';
+import { AIRefinementSidebar, Suggestion } from '@/components/guided-config/AIRefinementSidebar';
 
 // Step definitions for content flow
 const CONTENT_STEPS = [
@@ -99,11 +99,20 @@ export default function CreateInterviewerGuided() {
   const [showCreateProject, setShowCreateProject] = useState(false);
   
   // AI Refinement sidebar state
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
-  const [selectedText, setSelectedText] = useState<string>('');
-  const [coveredTopics, setCoveredTopics] = useState<string[]>([]);
-  const [missingTopics, setMissingTopics] = useState<string[]>([]);
+  const [initialSuggestions] = useState<Suggestion[]>([
+    {
+      id: '1',
+      type: 'improvement',
+      title: 'Add more specificity',
+      description: 'Consider adding specific metrics or KPIs you want to explore.',
+    },
+    {
+      id: '2',
+      type: 'addition',
+      title: 'Include competitor context',
+      description: 'Adding competitor landscape context could help guide follow-up questions.',
+    },
+  ]);
 
   // Determine visible steps (hide clarify if not needed)
   const visibleSteps = state.needsClarification 
@@ -199,75 +208,14 @@ export default function CreateInterviewerGuided() {
     }
   };
 
-  // AI Refinement handlers
-  const handleRefreshSuggestions = useCallback(() => {
-    setIsLoadingSuggestions(true);
-    // TODO: Call AI to generate suggestions based on current content
-    // For now, simulate with mock suggestions
-    setTimeout(() => {
-      const mockSuggestions: Suggestion[] = [
-        {
-          id: '1',
-          type: 'improvement',
-          title: 'Add more specificity',
-          description: 'Consider adding specific metrics or KPIs you want to explore.',
-        },
-        {
-          id: '2',
-          type: 'addition',
-          title: 'Include competitor context',
-          description: 'Adding competitor landscape context could help guide follow-up questions.',
-        },
-      ];
-      setSuggestions(mockSuggestions);
-      setIsLoadingSuggestions(false);
-      
-      // Mock coverage analysis
-      setCoveredTopics(['Research goals', 'Target audience']);
-      setMissingTopics(['Timeline', 'Budget constraints']);
-    }, 1000);
-  }, []);
-
-  const handleApplySuggestion = useCallback((suggestion: Suggestion) => {
-    // TODO: Apply the suggestion to the content
-    setSuggestions(prev => prev.filter(s => s.id !== suggestion.id));
-  }, []);
-
-  const handleDismissSuggestion = useCallback((suggestionId: string) => {
-    setSuggestions(prev => prev.filter(s => s.id !== suggestionId));
-  }, []);
-
-  const handleAddContext = useCallback(async (context: string): Promise<PreviewChange | null> => {
-    // TODO: Call AI to generate preview changes
-    // For now, return mock preview
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    return {
-      original: state.currentStep === 2 ? state.interviewContext : state.introduction,
-      updated: `${state.currentStep === 2 ? state.interviewContext : state.introduction}\n\nAdditional context: ${context}`,
-      summary: `Added new context about: ${context.slice(0, 50)}...`,
-    };
-  }, [state.currentStep, state.interviewContext, state.introduction]);
-
-  const handleApplyContextChanges = useCallback((changes: PreviewChange) => {
+  // Handle content changes from AI sidebar
+  const handleApplyContentChanges = useCallback((newContent: string) => {
     if (state.currentStep === 2) {
-      setState(prev => ({ ...prev, interviewContext: changes.updated }));
+      setState(prev => ({ ...prev, interviewContext: newContent }));
     } else {
-      setState(prev => ({ ...prev, introduction: changes.updated }));
+      setState(prev => ({ ...prev, introduction: newContent }));
     }
   }, [state.currentStep]);
-
-  const handleImproveSelection = useCallback(async (text: string): Promise<string | null> => {
-    // TODO: Call AI to improve the selected text
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return `Improved version: ${text}`;
-  }, []);
-
-  const handleApplyImprovement = useCallback((improvedText: string) => {
-    // TODO: Replace selected text with improved version
-    // This would need integration with the editor to replace the selection
-    console.log('Apply improvement:', improvedText);
-    setSelectedText('');
-  }, []);
 
   const canGoNext = () => {
     switch (state.currentStep) {
@@ -469,18 +417,8 @@ export default function CreateInterviewerGuided() {
                     <AIRefinementSidebar
                       currentContent={state.currentStep === 2 ? state.interviewContext : state.introduction}
                       contentType={state.currentStep === 2 ? 'research-brief' : 'interview-guide'}
-                      suggestions={suggestions}
-                      onApplySuggestion={handleApplySuggestion}
-                      onDismissSuggestion={handleDismissSuggestion}
-                      onRefreshSuggestions={handleRefreshSuggestions}
-                      isLoadingSuggestions={isLoadingSuggestions}
-                      onAddContext={handleAddContext}
-                      onApplyContextChanges={handleApplyContextChanges}
-                      selectedText={selectedText}
-                      onImproveSelection={handleImproveSelection}
-                      onApplyImprovement={handleApplyImprovement}
-                      coveredTopics={coveredTopics}
-                      missingTopics={missingTopics}
+                      onApplyChanges={handleApplyContentChanges}
+                      initialSuggestions={initialSuggestions}
                     />
                   </div>
                 )}
