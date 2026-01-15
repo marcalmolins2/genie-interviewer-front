@@ -13,6 +13,8 @@ import InterviewersArchive from "./pages/InterviewersArchive";
 import InterviewerCreationSelector from "./pages/InterviewerCreationSelector";
 import InterviewerConfiguration from "./pages/InterviewerConfiguration";
 import CreateInterviewerAssisted from "./pages/CreateInterviewerAssisted";
+import CreateInterviewerGuided from "./pages/CreateInterviewerGuided";
+import GuidedConfigReview from "./pages/GuidedConfigReview";
 import InterviewerOverview from "./pages/InterviewerOverview";
 import InterviewerInsights from "./pages/InterviewerInsights";
 import SessionDetail from "./pages/SessionDetail";
@@ -61,6 +63,16 @@ const App = () => (
               <Route path="new/assisted" element={
                 <FeatureFlagRoute flag="ASSISTED_CONFIGURATION" redirectTo="/app/interviewers/new">
                   <CreateInterviewerAssisted />
+                </FeatureFlagRoute>
+              } />
+              <Route path="new/guided" element={
+                <FeatureFlagRoute flag="GUIDED_CONFIGURATION" redirectTo="/app/interviewers/new">
+                  <CreateInterviewerGuided />
+                </FeatureFlagRoute>
+              } />
+              <Route path="new/guided/review" element={
+                <FeatureFlagRoute flag="GUIDED_CONFIGURATION" redirectTo="/app/interviewers/new">
+                  <GuidedConfigReview />
                 </FeatureFlagRoute>
               } />
               {/* Edit route inside layout for ProjectContext access */}

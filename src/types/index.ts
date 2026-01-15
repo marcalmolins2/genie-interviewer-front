@@ -99,6 +99,7 @@ export interface Interviewer {
   contact: { phoneNumber?: string; chatUrl?: string; chatPassword?: string; linkId?: string };
   credentialsReady: boolean;
   targetDurationMin?: number;
+  interviewContext?: string;        // Rich text research brief (guided config)
   createdAt: string;
   updatedAt: string;
   // Populated relations

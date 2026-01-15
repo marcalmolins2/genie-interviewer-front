@@ -1,6 +1,7 @@
 export type FeatureFlagKey = 
   | 'ASSISTED_CONFIGURATION'
   | 'MANUAL_CONFIGURATION'
+  | 'GUIDED_CONFIGURATION'
   | 'CROSS_SESSION_INSIGHTS'
   | 'CHATBOT'
   | 'ROADMAP_EXAMPLE';
@@ -26,6 +27,12 @@ export const FEATURE_FLAGS: Record<FeatureFlagKey, FeatureFlagDefinition> = {
     defaultEnabled: true,
     description: 'Manual step-by-step interviewer creation',
     category: 'production',
+  },
+  GUIDED_CONFIGURATION: {
+    key: 'GUIDED_CONFIGURATION',
+    defaultEnabled: false,
+    description: 'AI-guided interviewer creation with context analysis',
+    category: 'experimental',
   },
   CROSS_SESSION_INSIGHTS: {
     key: 'CROSS_SESSION_INSIGHTS',
