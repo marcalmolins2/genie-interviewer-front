@@ -392,6 +392,7 @@ export interface Agent {
   introductionQuestions?: string;
   closeContext?: string;
   caseCode?: string;
+  pronunciationHints?: string;
 }
 
 export interface AgentCollaborator {
