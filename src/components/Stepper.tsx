@@ -5,6 +5,7 @@ interface Step {
   id: string;
   title: string;
   description?: string;
+  optional?: boolean;
 }
 
 interface StepperProps {
@@ -49,13 +50,20 @@ export function Stepper({ steps, currentStep, completedSteps = [], onStepClick, 
                 </button>
                 
                 <div className="ml-3">
-                  <p className={cn(
-                    'text-sm font-medium',
-                    isCurrent && 'text-primary',
-                    isUpcoming && 'text-muted-foreground'
-                  )}>
-                    {step.title}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className={cn(
+                      'text-sm font-medium',
+                      isCurrent && 'text-primary',
+                      isUpcoming && 'text-muted-foreground'
+                    )}>
+                      {step.title}
+                    </p>
+                    {step.optional && (
+                      <span className="text-xs text-muted-foreground font-normal border border-muted-foreground/30 rounded-full px-1.5 py-0.5 leading-none">
+                        Optional
+                      </span>
+                    )}
+                  </div>
                   {step.description && (
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {step.description}

@@ -8,11 +8,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Stepper } from "@/components/Stepper";
 import { ArchetypeCard } from "@/components/ArchetypeCard";
-import { ChannelSelector } from "@/components/ChannelSelector";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, ArrowRight, Upload, FileText, X, AlertCircle, Edit, FolderOpen, Play, Square, Loader2 } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
-import { ARCHETYPES, Channel, Archetype, ExpertSource, PRICE_BY_CHANNEL, GuideSchema, PROJECT_TYPE_LABELS, Project } from "@/types";
+import { ArrowLeft, ArrowRight, Upload, FileText, X, FolderOpen, Play, Square, Loader2, SkipForward } from "lucide-react";
+import { ARCHETYPES, Archetype, ExpertSource, GuideSchema, PROJECT_TYPE_LABELS } from "@/types";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { interviewersService, agentsService } from "@/services/interviewers";
 import { useToast } from "@/hooks/use-toast";
@@ -37,34 +35,31 @@ interface InterviewerConfigurationProps {
 }
 
 interface CreateInterviewerForm {
-  // Step 0: Project Selection
+  // Step 1: Project & Setup
   selectedProjectId: string | null;
-
-  // Step 1: Interviewer Identity & Configuration
   title: string;
   description: string;
-  name: string;
   archetype: Archetype | null;
-  expertSource: ExpertSource; // Only used when archetype is 'expert_interview'
+  expertSource: ExpertSource;
   language: string;
-  voiceId: string;
+  targetDuration: string;
 
   // Step 2: Interview Content
-  channel: Channel;
-  targetDuration: string;
   interviewContext: string;
-  introContext: string;
   enableScreener: boolean;
   screenerQuestions: string;
   introductionQuestions: string;
   interviewGuide: string;
   guideStructured: GuideSchema | null;
-  closeContext: string;
   knowledgeText: string;
   knowledgeFiles: File[];
 
-  // Step 5: Deploy
-  caseCode: string;
+  // Step 3: Fine-Tune (all optional)
+  voiceId: string;
+  name: string;
+  introContext: string;
+  closeContext: string;
+  pronunciationHints: string;
 }
 
 type FieldErrors = Record<string, string>;
@@ -88,15 +83,12 @@ const voices = [
 ];
 
 const steps = [
-  { id: "project", title: "Select Project", description: "Choose or create" },
-  { id: "interviewer", title: "Configure Interviewer", description: "Identity and archetype" },
-  { id: "content", title: "Interview Content", description: "Guide and knowledge" },
-  { id: "review", title: "Review", description: "Summary" },
-  { id: "test", title: "Test", description: "Try before deploying" },
-  { id: "deploy", title: "Deploy", description: "Generate number" },
+  { id: "setup", title: "Project & Setup", description: "Foundation" },
+  { id: "content", title: "Interview Content", description: "Research design" },
+  { id: "finetune", title: "Fine-Tune", description: "Optional", optional: true },
 ];
 
-// Validation helper functions
+// ============= Validation helpers =============
 const TITLE_PATTERN = /^[a-zA-Z0-9\s.,\-_'&()]+$/;
 const AGENT_NAME_PATTERN = /^[a-zA-Z\s-]*$/;
 
@@ -117,7 +109,7 @@ const validateDescription = (value: string): string => {
 
 const validateAgentName = (value: string): string => {
   const trimmed = value.trim();
-  if (!trimmed) return ""; // Optional field
+  if (!trimmed) return "";
   if (trimmed.length < 2) return "Agent name must be at least 2 characters";
   if (trimmed.length > 20) return "Agent name must be shorter than 20 characters";
   if (!AGENT_NAME_PATTERN.test(trimmed)) return "Agent name can only contain letters, spaces, and dashes";
@@ -136,6 +128,7 @@ const validateTargetDuration = (value: string): string => {
 
 const validateInterviewContext = (value: string): string => {
   const trimmed = value.trim();
+  if (!trimmed) return "Research context is required";
   if (trimmed.length > 2000) return "Interview context must be shorter than 2000 characters";
   return "";
 };
@@ -148,17 +141,17 @@ const validateIntroContext = (value: string): string => {
 
 const validateScreenerQuestions = (value: string): string => {
   const trimmed = value.trim();
-  if (!trimmed) return "Screener / warm-up questions are required";
-  if (trimmed.length < 10) return "Screener questions must be at least 10 characters";
+  if (!trimmed) return "Screener criteria is required";
+  if (trimmed.length < 10) return "Screener criteria must be at least 10 characters";
   if (trimmed.length > 2000) return "Screener text must be shorter than 2,000 characters";
   return "";
 };
 
 const validateIntroductionQuestions = (value: string): string => {
   const trimmed = value.trim();
-  if (!trimmed) return "Introduction questions are required";
-  if (trimmed.length < 10) return "Introduction questions must be at least 10 characters";
-  if (trimmed.length > 2000) return "Introduction questions must be shorter than 2,000 characters";
+  if (!trimmed) return "Warm-up questions are required";
+  if (trimmed.length < 10) return "Warm-up questions must be at least 10 characters";
+  if (trimmed.length > 2000) return "Warm-up questions must be shorter than 2,000 characters";
   return "";
 };
 
@@ -181,7 +174,7 @@ const validateKnowledgeText = (value: string): string => {
   return "";
 };
 
-// Character counter component
+// ============= Helper components =============
 const CharacterCounter = ({ current, max, error }: { current: number; max: number; error?: string }) => (
   <div className="flex justify-between items-center mt-1">
     <span className="text-xs text-destructive">{error}</span>
@@ -191,11 +184,13 @@ const CharacterCounter = ({ current, max, error }: { current: number; max: numbe
   </div>
 );
 
-// Inline error component
 const FieldError = ({ error }: { error?: string }) => {
   if (!error) return null;
   return <p className="text-xs text-destructive mt-1">{error}</p>;
 };
+
+// Archetypes that support a knowledge base
+const KB_ARCHETYPES: Archetype[] = ['expert_interview', 'belief_audit', 'customer_interview', 'maturity_assessment'];
 
 export default function InterviewerConfiguration({ mode = 'create' }: InterviewerConfigurationProps) {
   const { selectedProjectId: sidebarProjectId, projects, refreshProjects, isLoadingProjects } = useProjectContext();
@@ -204,30 +199,30 @@ export default function InterviewerConfiguration({ mode = 'create' }: Interviewe
   const { toast } = useToast();
 
   const [isLoadingInterviewer, setIsLoadingInterviewer] = useState(mode === 'edit');
-  const [currentStep, setCurrentStep] = useState(mode === 'edit' ? 3 : 0); // Start on Review step in edit mode
+  // Edit mode starts at step 2 (Interview Content); create starts at 0
+  const [currentStep, setCurrentStep] = useState(mode === 'edit' ? 1 : 0);
   const [completedSteps, setCompletedSteps] = useState<number[]>(mode === 'edit' ? [0, 1, 2] : []);
   const [form, setForm] = useState<CreateInterviewerForm>({
     selectedProjectId: sidebarProjectId,
     title: "",
     description: "",
-    name: "",
     archetype: null,
     expertSource: "internal",
     language: "en",
-    voiceId: "alloy",
-    channel: "inbound_call",
     targetDuration: "20",
     interviewContext: "",
-    introContext: "",
     enableScreener: false,
     screenerQuestions: "",
     introductionQuestions: "",
     interviewGuide: "",
     guideStructured: null,
-    closeContext: "",
     knowledgeText: "",
     knowledgeFiles: [],
-    caseCode: "",
+    voiceId: "alloy",
+    name: "",
+    introContext: "",
+    closeContext: "",
+    pronunciationHints: "",
   });
   const [initialForm, setInitialForm] = useState<CreateInterviewerForm | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
@@ -260,7 +255,6 @@ export default function InterviewerConfiguration({ mode = 'create' }: Interviewe
         return;
       }
 
-      // Check for archived status
       if (interviewer.status === 'archived') {
         toast({ title: "Cannot edit archived interviewer", variant: "destructive" });
         navigate(`/app/interviewers/${id}`);
@@ -269,38 +263,33 @@ export default function InterviewerConfiguration({ mode = 'create' }: Interviewe
 
       const textKnowledge = knowledge.find(k => k.type === 'text');
 
-      // Map interviewer data to form fields
       const loadedForm: CreateInterviewerForm = {
         selectedProjectId: interviewer.projectId || sidebarProjectId || null,
         title: interviewer.title || interviewer.name || '',
         description: interviewer.description || '',
-        name: interviewer.name || '',
         archetype: interviewer.archetype || null,
         expertSource: (interviewer as any).expertSource || 'internal',
         language: interviewer.language || 'en',
-        voiceId: interviewer.voiceId || 'alloy',
-        channel: interviewer.channel || 'inbound_call',
         targetDuration: String(interviewer.targetDuration || 20),
         interviewContext: interviewer.interviewContext || '',
-        introContext: interviewer.introContext || '',
         enableScreener: interviewer.enableScreener || false,
         screenerQuestions: interviewer.screenerQuestions || '',
         introductionQuestions: interviewer.introductionQuestions || '',
         interviewGuide: guide?.rawText || '',
         guideStructured: guide?.structured || null,
-        closeContext: interviewer.closeContext || '',
         knowledgeText: textKnowledge?.contentText || '',
-        knowledgeFiles: [], // Can't restore File objects
-        caseCode: interviewer.caseCode || '',
+        knowledgeFiles: [],
+        voiceId: interviewer.voiceId || 'alloy',
+        name: interviewer.name || '',
+        introContext: interviewer.introContext || '',
+        closeContext: interviewer.closeContext || '',
+        pronunciationHints: (interviewer as any).pronunciationHints || '',
       };
 
       setForm(loadedForm);
       setInitialForm(loadedForm);
-
-      // Mark all content steps as completed
       setCompletedSteps([0, 1, 2]);
-      setCurrentStep(3); // Review step
-
+      setCurrentStep(1); // Land on Interview Content in edit mode
     } catch (error) {
       toast({ title: "Error loading interviewer", variant: "destructive" });
       navigate('/app/interviewers');
@@ -309,10 +298,8 @@ export default function InterviewerConfiguration({ mode = 'create' }: Interviewe
     }
   };
 
-  // Check if user has made any changes
   const hasUnsavedChanges = useCallback(() => {
     if (mode === 'edit' && initialForm) {
-      // Compare current form with initial loaded form
       return JSON.stringify(form) !== JSON.stringify(initialForm);
     }
     return (
@@ -368,39 +355,17 @@ export default function InterviewerConfiguration({ mode = 'create' }: Interviewe
   const validateField = useCallback((field: string, value: string) => {
     let error = "";
     switch (field) {
-      case "title":
-        error = validateTitle(value);
-        break;
-      case "description":
-        error = validateDescription(value);
-        break;
-      case "name":
-        error = validateAgentName(value);
-        break;
-      case "targetDuration":
-        error = validateTargetDuration(value);
-        break;
-      case "interviewContext":
-        error = validateInterviewContext(value);
-        break;
-      case "introContext":
-        error = validateIntroContext(value);
-        break;
-      case "screenerQuestions":
-        error = validateScreenerQuestions(value);
-        break;
-      case "introductionQuestions":
-        error = validateIntroductionQuestions(value);
-        break;
-      case "interviewGuide":
-        error = validateInterviewGuide(value);
-        break;
-      case "closeContext":
-        error = validateCloseContext(value);
-        break;
-      case "knowledgeText":
-        error = validateKnowledgeText(value);
-        break;
+      case "title": error = validateTitle(value); break;
+      case "description": error = validateDescription(value); break;
+      case "name": error = validateAgentName(value); break;
+      case "targetDuration": error = validateTargetDuration(value); break;
+      case "interviewContext": error = validateInterviewContext(value); break;
+      case "introContext": error = validateIntroContext(value); break;
+      case "screenerQuestions": error = validateScreenerQuestions(value); break;
+      case "introductionQuestions": error = validateIntroductionQuestions(value); break;
+      case "interviewGuide": error = validateInterviewGuide(value); break;
+      case "closeContext": error = validateCloseContext(value); break;
+      case "knowledgeText": error = validateKnowledgeText(value); break;
     }
     setFieldErrors((prev) => ({ ...prev, [field]: error }));
     return error;
@@ -413,25 +378,19 @@ export default function InterviewerConfiguration({ mode = 'create' }: Interviewe
 
   const previewVoice = (voiceId: string) => {
     window.speechSynthesis.cancel();
-    
     const voice = voices.find(v => v.value === voiceId);
     const voiceName = voice?.label || voiceId;
-    
     const utterance = new SpeechSynthesisUtterance(
       `Hi, I'm ${voiceName}. I'll be conducting your interview today.`
     );
-    
     const availableVoices = window.speechSynthesis.getVoices();
     if (availableVoices.length > 0) {
       const englishVoice = availableVoices.find(v => v.lang.startsWith('en'));
       if (englishVoice) utterance.voice = englishVoice;
     }
-    
     setPreviewingVoice(voiceId);
-    
     utterance.onend = () => setPreviewingVoice(null);
     utterance.onerror = () => setPreviewingVoice(null);
-    
     window.speechSynthesis.speak(utterance);
   };
 
@@ -440,43 +399,28 @@ export default function InterviewerConfiguration({ mode = 'create' }: Interviewe
     setPreviewingVoice(null);
   };
 
+  // ============= Step validation =============
   const validateStep = (step: number): boolean => {
     switch (step) {
       case 0:
-        return form.selectedProjectId !== null;
-      case 1:
         return (
+          form.selectedProjectId !== null &&
           !validateTitle(form.title) &&
           !validateDescription(form.description) &&
-          form.archetype !== null &&
-          !validateAgentName(form.name)
+          form.archetype !== null
         );
-      case 2: {
-        const durationValid = !validateTargetDuration(form.targetDuration);
-        const interviewContextValid = !validateInterviewContext(form.interviewContext);
-        const introContextValid = !validateIntroContext(form.introContext);
+      case 1: {
+        const contextValid = !validateInterviewContext(form.interviewContext);
         const questionsValid = form.enableScreener
           ? !validateScreenerQuestions(form.screenerQuestions)
           : !validateIntroductionQuestions(form.introductionQuestions);
         const guideValid = !validateInterviewGuide(form.interviewGuide);
-        const closeContextValid = !validateCloseContext(form.closeContext);
         const knowledgeValid = !validateKnowledgeText(form.knowledgeText);
-        return (
-          durationValid &&
-          interviewContextValid &&
-          introContextValid &&
-          questionsValid &&
-          guideValid &&
-          closeContextValid &&
-          knowledgeValid
-        );
+        return contextValid && questionsValid && guideValid && knowledgeValid;
       }
-      case 3:
+      case 2:
+        // All optional — always valid
         return true;
-      case 4:
-        return true;
-      case 5:
-        return form.caseCode.trim().length > 0;
       default:
         return true;
     }
@@ -484,26 +428,17 @@ export default function InterviewerConfiguration({ mode = 'create' }: Interviewe
 
   const getValidationMessage = (step: number): string => {
     const missingFields: string[] = [];
-
     switch (step) {
       case 0: {
         if (!form.selectedProjectId) missingFields.push("Please select a project");
+        const titleError = validateTitle(form.title);
+        if (titleError) missingFields.push(titleError);
+        if (!form.archetype) missingFields.push("Archetype selection is required");
         break;
       }
       case 1: {
-        const titleError = validateTitle(form.title);
-        const descError = validateDescription(form.description);
-        if (titleError) missingFields.push(titleError);
-        if (descError) missingFields.push(descError);
-        if (!form.archetype) missingFields.push("Archetype selection is required");
-        const nameError = validateAgentName(form.name);
-        if (nameError) missingFields.push(nameError);
-        break;
-      }
-      case 2: {
-        const durationError = validateTargetDuration(form.targetDuration);
-        if (durationError) missingFields.push(durationError);
-
+        const contextError = validateInterviewContext(form.interviewContext);
+        if (contextError) missingFields.push(contextError);
         if (form.enableScreener) {
           const screenerError = validateScreenerQuestions(form.screenerQuestions);
           if (screenerError) missingFields.push(screenerError);
@@ -511,18 +446,12 @@ export default function InterviewerConfiguration({ mode = 'create' }: Interviewe
           const introQError = validateIntroductionQuestions(form.introductionQuestions);
           if (introQError) missingFields.push(introQError);
         }
-
         const guideError = validateInterviewGuide(form.interviewGuide);
         if (guideError) missingFields.push(guideError);
         break;
       }
-      case 5:
-        if (form.caseCode.trim().length === 0) missingFields.push("Case Code is required");
-        break;
     }
-
-    if (missingFields.length === 0) return "";
-    return missingFields[0]; // Show first error
+    return missingFields.length === 0 ? "" : missingFields[0];
   };
 
   const nextStep = () => {
@@ -544,18 +473,17 @@ export default function InterviewerConfiguration({ mode = 'create' }: Interviewe
   };
 
   const goToStep = (stepIndex: number) => {
-    const allPreviousStepsCompleted =
-      stepIndex === 3 && completedSteps.includes(0) && completedSteps.includes(1) && completedSteps.includes(2);
-
-    if ((completedSteps.includes(stepIndex) || allPreviousStepsCompleted) && stepIndex < steps.length) {
-      setCurrentStep(stepIndex);
-      setShowValidation(false);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (completedSteps.includes(stepIndex) || stepIndex <= Math.max(...completedSteps, -1) + 1) {
+      if (stepIndex < steps.length) {
+        setCurrentStep(stepIndex);
+        setShowValidation(false);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     }
   };
 
   const saveDraft = async () => {
-    if (!validateStep(0)) {
+    if (!form.selectedProjectId) {
       toast({
         title: "Cannot save draft",
         description: "Please select a project first.",
@@ -563,7 +491,6 @@ export default function InterviewerConfiguration({ mode = 'create' }: Interviewe
       });
       return;
     }
-
     setIsSavingDraft(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -604,7 +531,7 @@ export default function InterviewerConfiguration({ mode = 'create' }: Interviewe
         archetype: form.archetype,
         language: form.language,
         voiceId: form.voiceId,
-        channel: form.channel,
+        channel: 'web_link',
         projectId: form.selectedProjectId,
         targetDuration: parseInt(form.targetDuration),
         interviewContext: form.interviewContext,
@@ -613,15 +540,13 @@ export default function InterviewerConfiguration({ mode = 'create' }: Interviewe
         screenerQuestions: form.screenerQuestions,
         introductionQuestions: form.introductionQuestions,
         closeContext: form.closeContext,
-        caseCode: form.caseCode,
-      });
-      
-      // Update guide if provided
+        pronunciationHints: form.pronunciationHints,
+      } as any);
+
       if (form.interviewGuide) {
         await agentsService.updateAgentGuide(agent.id, form.interviewGuide, form.guideStructured);
       }
-      
-      // Add knowledge if provided
+
       if (form.knowledgeText) {
         await agentsService.addKnowledgeAsset(agent.id, {
           title: 'Knowledge Base',
@@ -629,7 +554,7 @@ export default function InterviewerConfiguration({ mode = 'create' }: Interviewe
           contentText: form.knowledgeText,
         });
       }
-      
+
       await agentsService.provisionContact(agent.id);
       toast({ title: "Success!", description: "Your interviewer has been created and is ready to test." });
       navigate(`/app/interviewers/${agent.id}`);
@@ -651,7 +576,6 @@ export default function InterviewerConfiguration({ mode = 'create' }: Interviewe
         archetype: form.archetype,
         language: form.language,
         voiceId: form.voiceId,
-        channel: form.channel,
         targetDuration: parseInt(form.targetDuration),
         interviewContext: form.interviewContext,
         introContext: form.introContext,
@@ -659,11 +583,11 @@ export default function InterviewerConfiguration({ mode = 'create' }: Interviewe
         screenerQuestions: form.screenerQuestions,
         introductionQuestions: form.introductionQuestions,
         closeContext: form.closeContext,
-      });
-      
-      // Update guide
+        pronunciationHints: form.pronunciationHints,
+      } as any);
+
       await agentsService.updateAgentGuide(interviewerId, form.interviewGuide, form.guideStructured);
-      
+
       toast({ title: "Success!", description: "Interviewer updated successfully." });
       navigate(`/app/interviewers/${interviewerId}`);
     } catch (error) {
@@ -681,220 +605,499 @@ export default function InterviewerConfiguration({ mode = 'create' }: Interviewe
     }
   };
 
+  // ============= Step content rendering =============
   const renderStepContent = () => {
     switch (currentStep) {
+      // ─────────────────────────────────────────────
+      // Step 1: Project & Setup
+      // ─────────────────────────────────────────────
       case 0:
-        // In edit mode, show project as read-only
-        if (mode === 'edit') {
-          if (selectedProject) {
-            return (
-              <div className="space-y-6 max-w-2xl mx-auto">
-                <div>
-                  <h2 className="text-2xl font-bold mb-2">Project</h2>
-                  <p className="text-muted-foreground">
-                    This interviewer belongs to the following project.
-                  </p>
-                </div>
-
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-muted">
-                        <FolderOpen className="h-5 w-5 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <p className="font-medium">{selectedProject.name}</p>
-                        <Badge variant="secondary" className="mt-1">
-                          {PROJECT_TYPE_LABELS[selectedProject.projectType]}
-                        </Badge>
-                        {selectedProject.caseCode && (
-                          <p className="text-xs text-muted-foreground mt-1">{selectedProject.caseCode}</p>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            );
-          }
-          
-          // Project not found in edit mode
-          return (
-            <div className="space-y-6 max-w-2xl mx-auto">
-              <div>
-                <h2 className="text-2xl font-bold mb-2">Project</h2>
-                <p className="text-muted-foreground">
-                  This interviewer belongs to the following project.
-                </p>
-              </div>
-              <div className="text-center py-8 bg-muted/30 rounded-lg border border-dashed">
-                <p className="text-muted-foreground">Project not found for this interviewer.</p>
-              </div>
-            </div>
-          );
-        }
-        
-        // Create mode - show project selector
         return (
-          <div className="space-y-6 max-w-2xl mx-auto">
+          <div className="space-y-8">
             <div>
-              <h2 className="text-2xl font-bold mb-2">Select Project</h2>
+              <h2 className="text-2xl font-bold mb-1">Project & Setup</h2>
               <p className="text-muted-foreground">
-                Choose which project this interviewer belongs to, or create a new project.
+                Make the foundational choices that shape your entire interview.
               </p>
             </div>
 
-            <ProjectCombobox
-              projects={projects}
-              selectedProjectId={form.selectedProjectId}
-              onProjectSelect={(id) => updateForm({ selectedProjectId: id })}
-              onCreateProject={() => setShowCreateProjectDialog(true)}
-              loading={isLoadingProjects}
-            />
-
-            <CreateProjectDialog
-              open={showCreateProjectDialog}
-              onOpenChange={setShowCreateProjectDialog}
-              onProjectCreated={handleProjectCreated}
-            />
-          </div>
-        );
-
-      case 1:
-        return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">Configure Interviewer</h2>
-              <p className="text-muted-foreground">Define your interviewer's identity and select an archetype.</p>
-            </div>
-
-            {/* Interviewer Identity */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Interviewer Identity</CardTitle>
-                <CardDescription>
-                  Give your interviewer a clear title and description to help identify its purpose.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="title">Interviewer Title *</Label>
-                  <Input
-                    id="title"
-                    value={form.title}
-                    onChange={(e) => handleFieldChange("title", e.target.value)}
-                    placeholder="e.g., EU Battery Market Expert Interview"
-                    className={`mt-1 ${fieldErrors.title ? "border-destructive" : ""}`}
-                    maxLength={80}
+            {/* Project Selection */}
+            <section className="space-y-3">
+              <div>
+                <h3 className="text-base font-semibold">Project *</h3>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Which project does this interviewer belong to?
+                </p>
+              </div>
+              {mode === 'edit' ? (
+                selectedProject ? (
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-muted">
+                          <FolderOpen className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                        <div>
+                          <p className="font-medium">{selectedProject.name}</p>
+                          <Badge variant="secondary" className="mt-1">
+                            {PROJECT_TYPE_LABELS[selectedProject.projectType]}
+                          </Badge>
+                          {selectedProject.caseCode && (
+                            <p className="text-xs text-muted-foreground mt-1">{selectedProject.caseCode}</p>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="text-center py-8 bg-muted/30 rounded-lg border border-dashed">
+                    <p className="text-muted-foreground">Project not found for this interviewer.</p>
+                  </div>
+                )
+              ) : (
+                <>
+                  <ProjectCombobox
+                    projects={projects}
+                    selectedProjectId={form.selectedProjectId}
+                    onProjectSelect={(id) => updateForm({ selectedProjectId: id })}
+                    onCreateProject={() => setShowCreateProjectDialog(true)}
+                    loading={isLoadingProjects}
                   />
-                  <CharacterCounter current={form.title.length} max={80} error={fieldErrors.title} />
-                </div>
-                <div>
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    value={form.description}
-                    onChange={(e) => handleFieldChange("description", e.target.value)}
-                    placeholder="Describe what this interviewer is designed to accomplish..."
-                    className={`mt-1 min-h-[100px] ${fieldErrors.description ? "border-destructive" : ""}`}
-                    maxLength={500}
+                  <CreateProjectDialog
+                    open={showCreateProjectDialog}
+                    onOpenChange={setShowCreateProjectDialog}
+                    onProjectCreated={handleProjectCreated}
                   />
-                  <CharacterCounter current={form.description.length} max={500} error={fieldErrors.description} />
-                </div>
-              </CardContent>
-            </Card>
+                </>
+              )}
+            </section>
+
+            {/* Title & Description */}
+            <section className="space-y-3">
+              <div>
+                <h3 className="text-base font-semibold">Interviewer Identity</h3>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Give your interviewer a clear title to identify its purpose.
+                </p>
+              </div>
+              <Card>
+                <CardContent className="pt-6 space-y-4">
+                  <div>
+                    <Label htmlFor="title">Interviewer Title *</Label>
+                    <Input
+                      id="title"
+                      value={form.title}
+                      onChange={(e) => handleFieldChange("title", e.target.value)}
+                      placeholder="e.g., EU Battery Market Expert Interview"
+                      className={`mt-1 ${fieldErrors.title ? "border-destructive" : ""}`}
+                      maxLength={80}
+                    />
+                    <CharacterCounter current={form.title.length} max={80} error={fieldErrors.title} />
+                  </div>
+                  <div>
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea
+                      id="description"
+                      value={form.description}
+                      onChange={(e) => handleFieldChange("description", e.target.value)}
+                      placeholder="Describe what this interviewer is designed to accomplish..."
+                      className={`mt-1 min-h-[80px] ${fieldErrors.description ? "border-destructive" : ""}`}
+                      maxLength={500}
+                    />
+                    <CharacterCounter current={form.description.length} max={500} error={fieldErrors.description} />
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
 
             {/* Archetype Selection */}
-            <div>
-              <h3 className="text-lg font-semibold mb-3">What type of interview are you running? *</h3>
+            <section className="space-y-3">
+              <div>
+                <h3 className="text-base font-semibold">Interview Type *</h3>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Choose the archetype that best fits your research goal.
+                </p>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {ARCHETYPES.map((archetype) => (
                   <ArchetypeCard
                     key={archetype.id}
                     archetype={archetype}
                     selected={form.archetype === archetype.id}
-                    onSelect={() => updateForm({ 
+                    onSelect={() => updateForm({
                       archetype: archetype.id,
                       expertSource: archetype.id === 'expert_interview' ? form.expertSource : 'internal'
                     })}
                   />
                 ))}
               </div>
+            </section>
+
+            {/* Expert Source — conditional */}
+            {form.archetype === 'expert_interview' && (
+              <section className="space-y-3">
+                <div>
+                  <h3 className="text-base font-semibold">Expert Source</h3>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    How are you sourcing experts for this research?
+                  </p>
+                </div>
+                <Card>
+                  <CardContent className="pt-6">
+                    <RadioGroup
+                      value={form.expertSource}
+                      onValueChange={(value) => updateForm({ expertSource: value as ExpertSource })}
+                      className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                    >
+                      <div
+                        className={`flex items-start space-x-3 border rounded-lg p-4 cursor-pointer transition-colors ${
+                          form.expertSource === 'internal' ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+                        }`}
+                        onClick={() => updateForm({ expertSource: 'internal' })}
+                      >
+                        <RadioGroupItem value="internal" id="internal" className="mt-1" />
+                        <Label htmlFor="internal" className="cursor-pointer flex-1">
+                          <span className="font-medium">Direct / Internal</span>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Experts you've identified directly or within your organization
+                          </p>
+                        </Label>
+                      </div>
+                      <div
+                        className={`flex items-start space-x-3 border rounded-lg p-4 cursor-pointer transition-colors ${
+                          form.expertSource === 'expert_network' ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+                        }`}
+                        onClick={() => updateForm({ expertSource: 'expert_network' })}
+                      >
+                        <RadioGroupItem value="expert_network" id="expert_network" className="mt-1" />
+                        <Label htmlFor="expert_network" className="cursor-pointer flex-1">
+                          <span className="font-medium">Expert Network</span>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Third-party sourced (e.g., GLG, AlphaSights, Guidepoint)
+                          </p>
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                  </CardContent>
+                </Card>
+              </section>
+            )}
+
+            {/* Language & Duration */}
+            <section className="space-y-3">
+              <div>
+                <h3 className="text-base font-semibold">Language & Duration</h3>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Language constrains available voice options in Step 3.
+                </p>
+              </div>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <Label htmlFor="language">Language *</Label>
+                      <Select value={form.language} onValueChange={(value) => updateForm({ language: value })}>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {languages.map((lang) => (
+                            <SelectItem key={lang.value} value={lang.value}>
+                              {lang.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="targetDuration">Target Duration *</Label>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Input
+                          type="number"
+                          id="targetDuration"
+                          value={form.targetDuration}
+                          onChange={(e) => handleFieldChange("targetDuration", e.target.value)}
+                          placeholder="20"
+                          className={`w-24 ${fieldErrors.targetDuration ? "border-destructive" : ""}`}
+                          min={3}
+                          max={60}
+                        />
+                        <span className="text-sm text-muted-foreground">minutes</span>
+                      </div>
+                      <FieldError error={fieldErrors.targetDuration} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+          </div>
+        );
+
+      // ─────────────────────────────────────────────
+      // Step 2: Interview Content
+      // ─────────────────────────────────────────────
+      case 1:
+        return (
+          <div className="space-y-10">
+            <div>
+              <h2 className="text-2xl font-bold mb-1">Interview Content</h2>
+              <p className="text-muted-foreground">
+                Write the research content that defines what your interviewer does in conversations.
+              </p>
             </div>
 
-            {/* Expert Source Toggle - Only shown for Expert Interview */}
-            {form.archetype === 'expert_interview' && (
+            {/* Section A: Research Context */}
+            <section className="space-y-4">
+              <div className="flex items-baseline gap-3">
+                <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60 w-5">A</span>
+                <div>
+                  <h3 className="text-base font-semibold">Research Context *</h3>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    What are you trying to learn? Articulate your research objective before writing specific questions.
+                  </p>
+                </div>
+              </div>
               <Card>
-                <CardHeader>
-                  <CardTitle>Expert Source</CardTitle>
+                <CardContent className="pt-6">
+                  <RichTextEditor
+                    value={form.interviewContext}
+                    onChange={(value) => handleFieldChange("interviewContext", value)}
+                    placeholder={`Example
+
+Purpose: These interviews will inform our client's market entry strategy for the European renewable energy sector. Insights will shape recommendations on target segments, partnership models, and competitive positioning.
+
+Respondents: Senior executives and technical leaders from wind and solar energy companies
+
+Key Research Goals:
+• Map the competitive landscape and identify emerging players disrupting traditional market dynamics
+• Understand regulatory and policy factors driving investment decisions across key European markets
+• Identify technology trends that will reshape cost structures over the next 5 years`}
+                    minHeight="220px"
+                  />
+                  <CharacterCounter
+                    current={form.interviewContext.length}
+                    max={2000}
+                    error={fieldErrors.interviewContext}
+                  />
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Section B: Interview Guide */}
+            <section className="space-y-4">
+              <div className="flex items-baseline gap-3">
+                <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60 w-5">B</span>
+                <div>
+                  <h3 className="text-base font-semibold">Interview Guide</h3>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    Define the screening approach and write the core interview questions.
+                  </p>
+                </div>
+              </div>
+
+              {/* Screening Mode Picker */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-semibold">Opening approach *</CardTitle>
                   <CardDescription>
-                    How are you sourcing experts? This affects the interview workflow.
+                    How should the interviewer open the conversation?
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <RadioGroup 
-                    value={form.expertSource} 
-                    onValueChange={(value) => updateForm({ expertSource: value as ExpertSource })}
-                    className="grid grid-cols-1 md:grid-cols-2 gap-4"
-                  >
-                    <div 
-                      className={`flex items-start space-x-3 border rounded-lg p-4 cursor-pointer transition-colors ${
-                        form.expertSource === 'internal' ? "border-primary bg-primary/10" : "border-muted hover:border-primary/50"
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      className={`text-left border rounded-lg p-4 transition-colors ${
+                        form.enableScreener
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/50"
                       }`}
-                      onClick={() => updateForm({ expertSource: 'internal' })}
+                      onClick={() => updateForm({ enableScreener: true })}
                     >
-                      <RadioGroupItem value="internal" id="internal" className="mt-1" />
-                      <Label htmlFor="internal" className="cursor-pointer flex-1">
-                        <span className="font-medium">Direct / Internal</span>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Experts you've identified directly or within your organization
-                        </p>
-                      </Label>
-                    </div>
-                    <div 
-                      className={`flex items-start space-x-3 border rounded-lg p-4 cursor-pointer transition-colors ${
-                        form.expertSource === 'expert_network' ? "border-primary bg-primary/10" : "border-muted hover:border-primary/50"
+                      <p className="font-medium text-sm">Screen participants</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Evaluate whether participants meet specific criteria before the main interview.
+                      </p>
+                    </button>
+                    <button
+                      type="button"
+                      className={`text-left border rounded-lg p-4 transition-colors ${
+                        !form.enableScreener
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/50"
                       }`}
-                      onClick={() => updateForm({ expertSource: 'expert_network' })}
+                      onClick={() => updateForm({ enableScreener: false })}
                     >
-                      <RadioGroupItem value="expert_network" id="expert_network" className="mt-1" />
-                      <Label htmlFor="expert_network" className="cursor-pointer flex-1">
-                        <span className="font-medium">Expert Network</span>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Third-party sourced (e.g., GLG, AlphaSights, Guidepoint)
-                        </p>
-                      </Label>
-                    </div>
-                  </RadioGroup>
+                      <p className="font-medium text-sm">Warm-up only</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Open with rapport-building questions before the main interview. No qualification gate.
+                      </p>
+                    </button>
+                  </div>
                 </CardContent>
               </Card>
-            )}
 
-            {/* Agent Persona */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Interviewer Persona</CardTitle>
-                <CardDescription>Configure the interviewer's name, language, and voice</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="language">Language *</Label>
-                  <Select value={form.language} onValueChange={(value) => updateForm({ language: value })}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {languages.map((lang) => (
-                        <SelectItem key={lang.value} value={lang.value}>
-                          {lang.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Conditional field: screener or warm-up */}
+              {form.enableScreener ? (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold">Screening criteria *</CardTitle>
+                    <CardDescription>
+                      Define the criteria used to qualify participants. Participants who don't qualify may be disqualified.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <RichTextEditor
+                      value={form.screenerQuestions}
+                      onChange={(value) => handleFieldChange("screenerQuestions", value)}
+                      placeholder="Example: Are you over 18 years old? Have you used our product in the last 6 months?"
+                    />
+                    <CharacterCounter
+                      current={form.screenerQuestions.length}
+                      max={2000}
+                      error={fieldErrors.screenerQuestions}
+                    />
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold">Warm-up questions *</CardTitle>
+                    <CardDescription>
+                      Opening questions to ease participants into the conversation before the main interview.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <RichTextEditor
+                      value={form.introductionQuestions}
+                      onChange={(value) => handleFieldChange("introductionQuestions", value)}
+                      placeholder="Example: Tell me a bit about yourself and your role. How long have you been in this industry?"
+                    />
+                    <CharacterCounter
+                      current={form.introductionQuestions.length}
+                      max={2000}
+                      error={fieldErrors.introductionQuestions}
+                    />
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Interview Guide */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-semibold">Interview guide *</CardTitle>
+                  <CardDescription>
+                    The main body of your interview. Structure your questions in sections to explore your research topics in depth.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <RichTextEditor
+                    value={form.interviewGuide}
+                    onChange={(value) => handleFieldChange("interviewGuide", value)}
+                    placeholder="Structure your interview in sections with questions..."
+                    minHeight="280px"
+                  />
+                  <CharacterCounter
+                    current={form.interviewGuide.length}
+                    max={10000}
+                    error={fieldErrors.interviewGuide}
+                  />
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Section C: Knowledge Base — conditional on archetype */}
+            {form.archetype && KB_ARCHETYPES.includes(form.archetype) && (
+              <section className="space-y-4">
+                <div className="flex items-baseline gap-3">
+                  <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60 w-5">C</span>
                   <div>
-                    <Label htmlFor="voice">Voice (for calls)</Label>
+                    <h3 className="text-base font-semibold">Knowledge Base <span className="text-muted-foreground font-normal">(optional)</span></h3>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                      Background material the interviewer can draw on during conversations.
+                    </p>
+                  </div>
+                </div>
+                <Card>
+                  <CardContent className="pt-6 space-y-4">
+                    <div>
+                      <Label htmlFor="knowledgeText">Text Knowledge</Label>
+                      <Textarea
+                        id="knowledgeText"
+                        value={form.knowledgeText}
+                        onChange={(e) => handleFieldChange("knowledgeText", e.target.value)}
+                        placeholder="Add background information, product details, company context, etc."
+                        className={`mt-1 min-h-[120px] ${fieldErrors.knowledgeText ? "border-destructive" : ""}`}
+                        maxLength={10000}
+                      />
+                      <CharacterCounter current={form.knowledgeText.length} max={10000} error={fieldErrors.knowledgeText} />
+                    </div>
+                    <div>
+                      <Label>Upload Files</Label>
+                      <div className="mt-2">
+                        <Button variant="outline" asChild>
+                          <label className="cursor-pointer">
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload Documents
+                            <input
+                              type="file"
+                              multiple
+                              accept=".pdf,.doc,.docx,.ppt,.pptx"
+                              onChange={handleFileUpload}
+                              className="hidden"
+                            />
+                          </label>
+                        </Button>
+                      </div>
+                      {form.knowledgeFiles.length > 0 && (
+                        <div className="mt-4 space-y-2">
+                          {form.knowledgeFiles.map((file, index) => (
+                            <div key={index} className="flex items-center justify-between p-2 border rounded">
+                              <div className="flex items-center gap-2">
+                                <FileText className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-sm">{file.name}</span>
+                                <Badge variant="secondary">{(file.size / 1024).toFixed(1)} KB</Badge>
+                              </div>
+                              <Button variant="ghost" size="sm" onClick={() => removeFile(index)}>
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </section>
+            )}
+          </div>
+        );
+
+      // ─────────────────────────────────────────────
+      // Step 3: Fine-Tune (all optional)
+      // ─────────────────────────────────────────────
+      case 2:
+        return (
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-2xl font-bold mb-1">Fine-Tune Your Interviewer</h2>
+              <p className="text-muted-foreground">
+                All fields are optional — every one has a sensible default. You can also adjust these after testing.
+              </p>
+            </div>
+
+            {/* Voice */}
+            <section className="space-y-3">
+              <div>
+                <h3 className="text-base font-semibold">Voice</h3>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Select a voice for the interviewer. Defaults to Alloy.
+                </p>
+              </div>
+              <Card>
+                <CardContent className="pt-6 space-y-3">
+                  <div>
+                    <Label htmlFor="voice">Voice</Label>
                     <div className="flex gap-2 mt-1">
                       <Select value={form.voiceId} onValueChange={(value) => updateForm({ voiceId: value })}>
                         <SelectTrigger className="flex-1">
@@ -904,9 +1107,7 @@ export default function InterviewerConfiguration({ mode = 'create' }: Interviewe
                           {voices.map((voice) => (
                             <SelectItem key={voice.value} value={voice.value}>
                               <span>{voice.label}</span>
-                              <span className="text-muted-foreground ml-2 text-xs">
-                                {voice.description}
-                              </span>
+                              <span className="text-muted-foreground ml-2 text-xs">{voice.description}</span>
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -935,511 +1136,103 @@ export default function InterviewerConfiguration({ mode = 'create' }: Interviewe
                       Preview uses browser TTS. Actual interviews use OpenAI voices.
                     </p>
                   </div>
-                  <div>
-                    <Label htmlFor="name">Interviewer Name</Label>
-                    <Input
-                      id="name"
-                      value={form.name}
-                      onChange={(e) => handleFieldChange("name", e.target.value)}
-                      placeholder="e.g., Sam"
-                      className={`mt-1 ${fieldErrors.name ? "border-destructive" : ""}`}
-                      maxLength={20}
-                    />
-                    <CharacterCounter current={form.name.length} max={20} error={fieldErrors.name} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        );
+                </CardContent>
+              </Card>
+            </section>
 
-      case 2:
-        return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">Interview Content Configuration</h2>
-              <p className="text-muted-foreground">Configure the interview flow, questions, and knowledge base.</p>
-            </div>
-
-            {/* Interview Context */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Interview Context</CardTitle>
-                <CardDescription>
-                  Define the broader purpose, goals and scope of your interview. Describe the purpose of the interview
-                  for your case, who the respondents are, and your key 2-4 research objectives. You can also add details
-                  on what the interviewer should probe for in each topic area.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <RichTextEditor
-                  value={form.interviewContext}
-                  onChange={(value) => handleFieldChange("interviewContext", value)}
-                  placeholder={`Example
-
-Purpose: These interviews will inform our client's market entry strategy for the European renewable energy sector. Insights will shape recommendations on target segments, partnership models, and competitive positioning.
-
-Respondents: Senior executives and technical leaders from wind and solar energy companies
-
-Key Research Goals:
-• Map the competitive landscape and identify emerging players disrupting traditional market dynamics
-• Understand regulatory and policy factors driving investment decisions across key European markets
-• Identify technology trends that will reshape cost structures over the next 5 years`}
-                  minHeight="260px"
-                />
-                <CharacterCounter
-                  current={form.interviewContext.length}
-                  max={2000}
-                  error={fieldErrors.interviewContext}
-                />
-              </CardContent>
-            </Card>
-
-            {/* Target Duration */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Target Interview Duration *</CardTitle>
-                <CardDescription>Estimated time for completing the interview (3-60 minutes)</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2">
+            {/* Interviewer Name */}
+            <section className="space-y-3">
+              <div>
+                <h3 className="text-base font-semibold">Interviewer Name</h3>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  A persona name for the interviewer (e.g., "Sam"). Used in greetings.
+                </p>
+              </div>
+              <Card>
+                <CardContent className="pt-6">
+                  <Label htmlFor="name">Name</Label>
                   <Input
-                    type="number"
-                    id="targetDuration"
-                    value={form.targetDuration}
-                    onChange={(e) => handleFieldChange("targetDuration", e.target.value)}
-                    placeholder="20"
-                    className={`w-24 ${fieldErrors.targetDuration ? "border-destructive" : ""}`}
-                    min={3}
-                    max={60}
+                    id="name"
+                    value={form.name}
+                    onChange={(e) => handleFieldChange("name", e.target.value)}
+                    placeholder="e.g., Sam"
+                    className={`mt-1 ${fieldErrors.name ? "border-destructive" : ""}`}
+                    maxLength={20}
                   />
-                  <span className="text-sm text-muted-foreground">minutes</span>
-                </div>
-                <FieldError error={fieldErrors.targetDuration} />
-              </CardContent>
-            </Card>
-
-            {/* Introduction */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Introduction</CardTitle>
-                <CardDescription>
-                  Opening message and context. The agent uses this to greet participants, explain the interview purpose,
-                  and set expectations. Leave empty to use default.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Textarea
-                  id="introContext"
-                  value={form.introContext}
-                  onChange={(e) => handleFieldChange("introContext", e.target.value)}
-                  placeholder="Example: Thank you for joining us today. This interview will take about 20 minutes. We'll be discussing your experience with our product and gathering feedback to improve our services."
-                  className={`min-h-[100px] ${fieldErrors.introContext ? "border-destructive" : ""}`}
-                  maxLength={600}
-                />
-                <CharacterCounter current={form.introContext.length} max={600} error={fieldErrors.introContext} />
-              </CardContent>
-            </Card>
-
-            {/* Enable Screener */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Enable Screener</CardTitle>
-                <CardDescription>
-                  Pre-qualify participants before the main interview to ensure they meet your criteria
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="enableScreener"
-                    checked={form.enableScreener}
-                    onCheckedChange={(checked) => updateForm({ enableScreener: checked })}
-                  />
-                  <Label htmlFor="enableScreener" className="cursor-pointer">
-                    Use screener questions
-                  </Label>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Screener Questions (conditional) */}
-            {form.enableScreener && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Screener Questions *</CardTitle>
-                  <CardDescription>
-                    Questions asked at the start to qualify participants. Use these to filter out unqualified
-                    respondents before the main interview begins.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <RichTextEditor
-                    value={form.screenerQuestions}
-                    onChange={(value) => handleFieldChange("screenerQuestions", value)}
-                    placeholder="Example: Are you over 18 years old? Have you used our product in the last 6 months?"
-                  />
-                  <CharacterCounter
-                    current={form.screenerQuestions.length}
-                    max={2000}
-                    error={fieldErrors.screenerQuestions}
-                  />
+                  <CharacterCounter current={form.name.length} max={20} error={fieldErrors.name} />
                 </CardContent>
               </Card>
-            )}
+            </section>
 
-            {/* Introduction Questions (conditional - only if no screener) */}
-            {!form.enableScreener && (
+            {/* Conversation Flow */}
+            <section className="space-y-3">
+              <div>
+                <h3 className="text-base font-semibold">Conversation Flow</h3>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Customize how the interviewer opens and closes conversations. Leave empty to use defaults.
+                </p>
+              </div>
               <Card>
-                <CardHeader>
-                  <CardTitle>Introduction Questions *</CardTitle>
-                  <CardDescription>
-                    Warm-up questions to build rapport and ease into the interview. These are asked after the
-                    introduction when no screener is used.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <RichTextEditor
-                    value={form.introductionQuestions}
-                    onChange={(value) => handleFieldChange("introductionQuestions", value)}
-                    placeholder="Example: Tell me a bit about yourself and your role. How long have you been in this industry?"
-                  />
-                  <CharacterCounter
-                    current={form.introductionQuestions.length}
-                    max={2000}
-                    error={fieldErrors.introductionQuestions}
-                  />
+                <CardContent className="pt-6 space-y-5">
+                  <div>
+                    <Label htmlFor="introContext">Introduction context</Label>
+                    <p className="text-xs text-muted-foreground mt-0.5 mb-2">
+                      The interviewer already identifies itself as AI, explains the topic, and asks for consent. This context adds to that default — it doesn't replace it.
+                    </p>
+                    <Textarea
+                      id="introContext"
+                      value={form.introContext}
+                      onChange={(e) => handleFieldChange("introContext", e.target.value)}
+                      placeholder="e.g., Thank you for joining us today. This interview will take about 20 minutes."
+                      className={`min-h-[90px] ${fieldErrors.introContext ? "border-destructive" : ""}`}
+                      maxLength={600}
+                    />
+                    <CharacterCounter current={form.introContext.length} max={600} error={fieldErrors.introContext} />
+                  </div>
+                  <div>
+                    <Label htmlFor="closeContext">Closing context</Label>
+                    <p className="text-xs text-muted-foreground mt-0.5 mb-2">
+                      What the interviewer says at the end of the conversation.
+                    </p>
+                    <Textarea
+                      id="closeContext"
+                      value={form.closeContext}
+                      onChange={(e) => handleFieldChange("closeContext", e.target.value)}
+                      placeholder="e.g., Thank you for your time. Your feedback will help us improve our services."
+                      className={`min-h-[90px] ${fieldErrors.closeContext ? "border-destructive" : ""}`}
+                      maxLength={600}
+                    />
+                    <CharacterCounter current={form.closeContext.length} max={600} error={fieldErrors.closeContext} />
+                  </div>
                 </CardContent>
               </Card>
-            )}
+            </section>
 
-            {/* Interview Guide */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Interview Guide *</CardTitle>
-                <CardDescription>
-                  The main body of your interview. Structure your questions in sections to explore your research topics
-                  in depth.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <RichTextEditor
-                  value={form.interviewGuide}
-                  onChange={(value) => handleFieldChange("interviewGuide", value)}
-                  placeholder="Structure your interview in sections with questions..."
-                />
-                <CharacterCounter current={form.interviewGuide.length} max={10000} error={fieldErrors.interviewGuide} />
-              </CardContent>
-            </Card>
-
-            {/* Closing Context */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Closing</CardTitle>
-                <CardDescription>
-                  Final remarks and next steps. Thank participants and explain what happens after the interview
-                  concludes. Leave empty to use default.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Textarea
-                  id="closeContext"
-                  value={form.closeContext}
-                  onChange={(e) => handleFieldChange("closeContext", e.target.value)}
-                  placeholder="Example: Thank you for your time and valuable insights. Your feedback will help us improve our product. You'll receive a summary via email within 48 hours, and we may reach out for follow-up questions."
-                  className={`min-h-[100px] ${fieldErrors.closeContext ? "border-destructive" : ""}`}
-                  maxLength={600}
-                />
-                <CharacterCounter current={form.closeContext.length} max={600} error={fieldErrors.closeContext} />
-              </CardContent>
-            </Card>
-
-            {/* Knowledge Base */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Knowledge Base</CardTitle>
-                <CardDescription>
-                  Background information and documents the agent can reference during the interview to provide context
-                  or answer questions (optional).
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="knowledgeText">Text Knowledge</Label>
+            {/* Pronunciation */}
+            <section className="space-y-3">
+              <div>
+                <h3 className="text-base font-semibold">Pronunciation Reference</h3>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  List terms with non-obvious pronunciation — company names, technical terms, proper nouns.
+                </p>
+              </div>
+              <Card>
+                <CardContent className="pt-6">
+                  <Label htmlFor="pronunciationHints">Pronunciation hints</Label>
                   <Textarea
-                    id="knowledgeText"
-                    value={form.knowledgeText}
-                    onChange={(e) => handleFieldChange("knowledgeText", e.target.value)}
-                    placeholder="Add background information, product details, company context, etc."
-                    className={`mt-1 min-h-[120px] ${fieldErrors.knowledgeText ? "border-destructive" : ""}`}
-                    maxLength={10000}
+                    id="pronunciationHints"
+                    value={form.pronunciationHints}
+                    onChange={(e) => updateForm({ pronunciationHints: e.target.value })}
+                    placeholder={"e.g., McKinsey = mak-IN-zee\nAtos = AY-tos\nNovartis = no-VAR-tis"}
+                    className="mt-1 min-h-[100px] font-mono text-sm"
+                    maxLength={1000}
                   />
-                  <CharacterCounter current={form.knowledgeText.length} max={10000} error={fieldErrors.knowledgeText} />
-                </div>
-                <div>
-                  <Label>Upload Files</Label>
-                  <div className="mt-2">
-                    <Button variant="outline" asChild>
-                      <label className="cursor-pointer">
-                        <Upload className="h-4 w-4 mr-2" />
-                        Upload Documents
-                        <input
-                          type="file"
-                          multiple
-                          accept=".pdf,.doc,.docx,.ppt,.pptx"
-                          onChange={handleFileUpload}
-                          className="hidden"
-                        />
-                      </label>
-                    </Button>
+                  <div className="flex justify-end mt-1">
+                    <span className="text-xs text-muted-foreground">{form.pronunciationHints.length}/1000</span>
                   </div>
-                  {form.knowledgeFiles.length > 0 && (
-                    <div className="mt-4 space-y-2">
-                      {form.knowledgeFiles.map((file, index) => (
-                        <div key={index} className="flex items-center justify-between p-2 border rounded">
-                          <div className="flex items-center gap-2">
-                            <FileText className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm">{file.name}</span>
-                            <Badge variant="secondary">{(file.size / 1024).toFixed(1)} KB</Badge>
-                          </div>
-                          <Button variant="ghost" size="sm" onClick={() => removeFile(index)}>
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        );
-
-      case 3:
-        const archetype = ARCHETYPES.find((a) => a.id === form.archetype);
-        return (
-          <div className="space-y-6 max-w-3xl mx-auto">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">Review Configuration</h2>
-              <p className="text-muted-foreground">Review all details before testing.</p>
-            </div>
-
-            {/* Project Card */}
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                <CardTitle>Project</CardTitle>
-                <Button variant="ghost" size="sm" onClick={() => goToStep(0)} className="gap-2">
-                  <Edit className="h-4 w-4" />
-                  Edit
-                </Button>
-              </CardHeader>
-              <CardContent>
-                {selectedProject && (
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-muted">
-                      <FolderOpen className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                    <div>
-                      <p className="font-medium">{selectedProject.name}</p>
-                      <Badge variant="secondary" className="mt-1">
-                        {PROJECT_TYPE_LABELS[selectedProject.projectType]}
-                      </Badge>
-                      {selectedProject.caseCode && (
-                        <p className="text-xs text-muted-foreground mt-1">{selectedProject.caseCode}</p>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Interviewer Configuration Card */}
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                <CardTitle>Interviewer Configuration</CardTitle>
-                <Button variant="ghost" size="sm" onClick={() => goToStep(1)} className="gap-2">
-                  <Edit className="h-4 w-4" />
-                  Edit
-                </Button>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label className="text-muted-foreground">Title</Label>
-                  <p className="font-medium">{form.title}</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Description</Label>
-                  <p className="font-medium">{form.description || "Not provided"}</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Archetype</Label>
-                  <p className="font-medium">
-                    {archetype?.title}
-                    {form.archetype === 'expert_interview' && (
-                      <Badge variant="outline" className="ml-2">
-                        {form.expertSource === 'expert_network' ? 'Expert Network' : 'Direct/Internal'}
-                      </Badge>
-                    )}
-                  </p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Agent Name</Label>
-                  <p className="font-medium">{form.name || "Not provided"}</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Language</Label>
-                  <p className="font-medium">{languages.find((l) => l.value === form.language)?.label}</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Voice</Label>
-                  <p className="font-medium">{voices.find((v) => v.value === form.voiceId)?.label}</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                <CardTitle>Interview Content</CardTitle>
-                <Button variant="ghost" size="sm" onClick={() => goToStep(2)} className="gap-2">
-                  <Edit className="h-4 w-4" />
-                  Edit
-                </Button>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label className="text-muted-foreground">Target Duration</Label>
-                  <p className="font-medium">{form.targetDuration} minutes</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Interview Context</Label>
-                  <p className="font-medium">
-                    {form.interviewContext
-                      ? `${form.interviewContext.replace(/<[^>]*>/g, "").substring(0, 100)}${form.interviewContext.length > 100 ? "..." : ""}`
-                      : "Not provided"}
-                  </p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Intro Context</Label>
-                  <p className="font-medium">{form.introContext || "Using default"}</p>
-                </div>
-                {form.enableScreener && (
-                  <div>
-                    <Label className="text-muted-foreground">Screener Questions</Label>
-                    <div 
-                      className="font-medium prose prose-sm max-w-none [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_li]:my-0.5"
-                      dangerouslySetInnerHTML={{ __html: form.screenerQuestions || "Not provided" }}
-                    />
-                  </div>
-                )}
-                {!form.enableScreener && form.introductionQuestions && (
-                  <div>
-                    <Label className="text-muted-foreground">Introduction Questions</Label>
-                    <div 
-                      className="font-medium prose prose-sm max-w-none [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_li]:my-0.5"
-                      dangerouslySetInnerHTML={{ __html: form.introductionQuestions }}
-                    />
-                  </div>
-                )}
-                <div>
-                  <Label className="text-muted-foreground">Interview Guide</Label>
-                  <div 
-                    className="font-medium prose prose-sm max-w-none [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_li]:my-0.5 [&_h1]:text-lg [&_h1]:font-semibold [&_h1]:mt-3 [&_h1]:mb-1 [&_h2]:text-base [&_h2]:font-semibold [&_h2]:mt-2 [&_h2]:mb-1 [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:mt-2 [&_h3]:mb-1 [&_p]:my-1"
-                    dangerouslySetInnerHTML={{ __html: form.interviewGuide || "Not provided" }}
-                  />
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Close Context</Label>
-                  <p className="font-medium">{form.closeContext || "Using default"}</p>
-                </div>
-                {(form.knowledgeText || form.knowledgeFiles.length > 0) && (
-                  <div>
-                    <Label className="text-muted-foreground">Knowledge Base</Label>
-                    {form.knowledgeText && (
-                      <p className="font-medium">
-                        {form.knowledgeText.substring(0, 100)}
-                        {form.knowledgeText.length > 100 ? "..." : ""}
-                      </p>
-                    )}
-                    {form.knowledgeFiles.length > 0 && (
-                      <ul className="list-disc pl-4 mt-2">
-                        {form.knowledgeFiles.map((file, index) => (
-                          <li key={index} className="text-sm">
-                            {file.name}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        );
-
-      case 4:
-        return (
-          <div className="space-y-6 max-w-2xl mx-auto">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">Test Your Configuration</h2>
-              <p className="text-muted-foreground">Try out your interviewer before launching.</p>
-            </div>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="bg-muted/50 p-8 rounded-lg border text-center">
-                  <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-lg font-medium mb-2">Test Interface Coming Soon</p>
-                  <p className="text-sm text-muted-foreground">
-                    For now, proceed to deploy and test from the agent overview page.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        );
-
-      case 5:
-        return (
-          <div className="space-y-6 max-w-2xl mx-auto">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">Deploy Your Interviewer</h2>
-              <p className="text-muted-foreground">Select the medium and generate your phone number.</p>
-            </div>
-            <Card>
-              <CardHeader>
-                <CardTitle>Select Channel</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ChannelSelector value={form.channel} onChange={(channel) => updateForm({ channel })} />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Pricing</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="bg-muted/50 p-4 rounded-lg border text-center">
-                  <p className="text-3xl font-bold">${PRICE_BY_CHANNEL[form.channel]}</p>
-                  <p className="text-sm text-muted-foreground mt-1">per interview</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Client Information</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div>
-                  <Label htmlFor="caseCode">Case Code *</Label>
-                  <Input
-                    id="caseCode"
-                    value={form.caseCode}
-                    onChange={(e) => updateForm({ caseCode: e.target.value })}
-                    placeholder="e.g., BCG-2024-0001"
-                    className="mt-1"
-                  />
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </section>
           </div>
         );
 
@@ -1448,13 +1241,12 @@ Key Research Goals:
     }
   };
 
-  // Show loading spinner while loading interviewer data in edit mode
-  // Also wait for projects to load so we can resolve selectedProject
+  // ============= Loading guard =============
   const isLoading = isLoadingInterviewer || (mode === 'edit' && isLoadingProjects);
-  
+
   if (isLoading) {
     return (
-      <ConfigurationLayout 
+      <ConfigurationLayout
         header={
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center gap-4">
@@ -1468,7 +1260,7 @@ Key Research Goals:
               </div>
             </div>
           </div>
-        } 
+        }
         footer={<div className="container mx-auto px-4 p-4" />}
       >
         <div className="flex items-center justify-center h-64">
@@ -1478,6 +1270,7 @@ Key Research Goals:
     );
   }
 
+  // ============= Header & Footer =============
   const headerContent = (
     <div className="container mx-auto px-4 py-4">
       <div className="flex items-center justify-between">
@@ -1488,12 +1281,12 @@ Key Research Goals:
           </Button>
           <div>
             <h1 className="text-2xl font-bold">
-              {mode === 'edit' ? 'Edit Interviewer' : 'Create New Interviewer'}
+              {mode === 'edit' ? 'Edit Interviewer' : 'Design Your Interview'}
             </h1>
             <p className="text-muted-foreground text-sm">
-              {mode === 'edit' 
-                ? 'Review and modify your interviewer configuration' 
-                : 'Follow the steps to configure and deploy your interview agent'}
+              {mode === 'edit'
+                ? 'Modify your interviewer configuration'
+                : 'Build your research interview in three steps'}
             </p>
           </div>
         </div>
@@ -1501,35 +1294,67 @@ Key Research Goals:
     </div>
   );
 
+  const isLastStep = currentStep === steps.length - 1;
+  const isOnFinetuneStep = currentStep === 2;
+
   const footerContent = (
     <div className="container mx-auto px-4 p-4">
       <div className="flex justify-between items-center">
+        {/* Left: Previous + Save Draft */}
         <div className="flex gap-2">
           <Button variant="outline" onClick={prevStep} disabled={currentStep === 0}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Previous
           </Button>
-          {mode === 'create' && completedSteps.includes(0) && (
+          {(mode === 'create' ? form.selectedProjectId : true) && (
             <Button variant="secondary" onClick={saveDraft} disabled={isSavingDraft}>
               {isSavingDraft ? "Saving..." : "Save Draft"}
             </Button>
           )}
         </div>
+
+        {/* Center: step indicator */}
         <div className="text-sm text-muted-foreground">
           Step {currentStep + 1} of {steps.length}
         </div>
-        <div className="relative">
+
+        {/* Right: Next / Skip & Save / Save */}
+        <div className="relative flex gap-2">
+          {/* Validation tooltip */}
           {!validateStep(currentStep) && showValidation && getValidationMessage(currentStep) && (
             <div className="absolute bottom-full right-0 mb-2 w-64 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-md px-3 py-2 text-xs text-amber-900 dark:text-amber-200">
               {getValidationMessage(currentStep)}
             </div>
           )}
-          {currentStep < steps.length - 1 ? (
+
+          {/* Edit mode: Save Changes always visible */}
+          {mode === 'edit' && (
+            <Button
+              onClick={handleSubmit}
+              disabled={isCreating}
+              variant="outline"
+            >
+              {isCreating ? "Saving..." : "Save Changes"}
+            </Button>
+          )}
+
+          {/* Skip & Save — only on Step 3 in create mode */}
+          {mode === 'create' && isOnFinetuneStep && (
+            <Button
+              variant="outline"
+              onClick={handleSubmit}
+              disabled={isCreating}
+            >
+              <SkipForward className="h-4 w-4 mr-2" />
+              Skip & Save
+            </Button>
+          )}
+
+          {/* Main action button */}
+          {!isLastStep ? (
             <div
               onClick={() => {
-                if (!validateStep(currentStep)) {
-                  setShowValidation(true);
-                }
+                if (!validateStep(currentStep)) setShowValidation(true);
               }}
             >
               <Button
@@ -1544,19 +1369,17 @@ Key Research Goals:
           ) : (
             <div
               onClick={() => {
-                if (!validateStep(currentStep) && !isCreating) {
-                  setShowValidation(true);
-                }
+                if (!validateStep(currentStep) && !isCreating) setShowValidation(true);
               }}
             >
               <Button
                 onClick={handleSubmit}
-                disabled={!validateStep(currentStep) || isCreating}
-                className={!validateStep(currentStep) || isCreating ? "pointer-events-none" : ""}
+                disabled={isCreating}
+                className={isCreating ? "pointer-events-none" : ""}
               >
-                {isCreating 
-                  ? (mode === 'edit' ? "Saving..." : "Creating...") 
-                  : (mode === 'edit' ? "Save Changes" : "Publish")}
+                {isCreating
+                  ? (mode === 'edit' ? "Saving..." : "Creating...")
+                  : (mode === 'edit' ? "Save Changes" : "Save Interviewer")}
               </Button>
             </div>
           )}
@@ -1569,7 +1392,12 @@ Key Research Goals:
     <>
       <ConfigurationLayout header={headerContent} footer={footerContent}>
         <div className="container mx-auto px-4 py-8">
-          <Stepper steps={steps} currentStep={currentStep} completedSteps={completedSteps} onStepClick={goToStep} />
+          <Stepper
+            steps={steps}
+            currentStep={currentStep}
+            completedSteps={completedSteps}
+            onStepClick={goToStep}
+          />
         </div>
         <div className="container mx-auto px-4 pb-20">{renderStepContent()}</div>
       </ConfigurationLayout>
@@ -1584,8 +1412,8 @@ Key Research Goals:
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Continue editing</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={confirmCancel} 
+            <AlertDialogAction
+              onClick={confirmCancel}
               className="bg-destructive hover:bg-destructive/90"
             >
               Discard
