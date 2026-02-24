@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { InterviewerStatusBadge } from '@/components/InterviewerStatusBadge';
-import { Plus, Search, MoreHorizontal, Edit, Phone, Globe, Users, Archive as ArchiveIcon, Trash2, Filter } from 'lucide-react';
+import { Plus, Search, MoreHorizontal, Edit, Users, Archive as ArchiveIcon, Trash2, Filter } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -22,9 +22,9 @@ import { useInterviewerSort } from '@/hooks/useInterviewerSort';
 import { InterviewerSortDropdown } from '@/components/InterviewerSortDropdown';
 import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 
-const channelIcons: Record<Channel, typeof Phone> = {
-  inbound_call: Phone,
-  web_link: Globe
+const channelEmojis: Record<Channel, string> = {
+  inbound_call: '📞',
+  web_link: '🌐'
 };
 
 interface InterviewerWithProject extends Agent {
@@ -254,7 +254,7 @@ export default function InterviewersList() {
   const selectedProject = selectedProjectId ? projects.find(p => p.id === selectedProjectId) : null;
 
   const renderInterviewerCard = (interviewer: InterviewerWithProject) => {
-    const ChannelIcon = channelIcons[interviewer.channel as Channel];
+    const channelEmoji = channelEmojis[interviewer.channel as Channel];
     return (
       <Card 
         key={interviewer.id} 
@@ -313,7 +313,7 @@ export default function InterviewersList() {
               {interviewer.archetype.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
             </Badge>
             <Badge variant="outline" className="text-xs flex items-center gap-1">
-              <ChannelIcon className="h-3 w-3" />
+              <span className="text-sm leading-none">{channelEmoji}</span>
               {interviewer.channel.replace('_', ' ')}
             </Badge>
           </div>
@@ -487,7 +487,7 @@ export default function InterviewersList() {
                               }}
                             />
                             <Label htmlFor={`channel-${channel}`} className="text-sm font-normal cursor-pointer flex items-center gap-2">
-                              {React.createElement(channelIcons[channel], { className: "h-4 w-4" })}
+                              <span className="text-base leading-none">{channelEmojis[channel]}</span>
                               {channel.replace('_', ' ').charAt(0).toUpperCase() + channel.replace('_', ' ').slice(1)}
                             </Label>
                           </div>
